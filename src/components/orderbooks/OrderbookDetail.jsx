@@ -337,7 +337,7 @@ export default function OrderbookDetail({ orderId, onClose, onUpdated }) {
               {/* Incoterms Type */}
               <div>
                 <label className="text-xs font-medium text-slate-600 mb-1 block">Incoterms *</label>
-                {isDraft ? (
+                {isEditable ? (
                   <Select value={form.incoterms_type || ""} onValueChange={(v) => handleFormChange({ incoterms_type: v })}>
                     <SelectTrigger className="bg-white"><SelectValue /></SelectTrigger>
                     <SelectContent>
