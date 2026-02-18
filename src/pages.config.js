@@ -52,7 +52,6 @@ import Finance from './pages/Finance';
 import FreightRates from './pages/FreightRates';
 import FreightSheets from './pages/FreightSheets';
 import Logistics from './pages/Logistics';
-import Orders from './pages/Orders';
 import Partners from './pages/Partners';
 import Products from './pages/Products';
 import __Layout from './Layout.jsx';
@@ -64,7 +63,6 @@ export const PAGES = {
     "FreightRates": FreightRates,
     "FreightSheets": FreightSheets,
     "Logistics": Logistics,
-    "Orders": Orders,
     "Partners": Partners,
     "Products": Products,
 }
