@@ -66,10 +66,11 @@ export default function PartnerForm({ item, onClose, onSaved }) {
   const handleSave = async () => {
     setSaving(true);
     const data = { ...form };
-    // cast numeric fields
-    if (data.carrier_truck_count) data.carrier_truck_count = Number(data.carrier_truck_count);
-    if (data.carrier_capacity_tons) data.carrier_capacity_tons = Number(data.carrier_capacity_tons);
-    if (data.customer_credit_limit) data.customer_credit_limit = Number(data.customer_credit_limit);
+    // cast numeric fields — send undefined if empty, number otherwise
+    const toNum = (v) => (v === "" || v === null || v === undefined) ? undefined : Number(v);
+    data.carrier_truck_count = toNum(data.carrier_truck_count);
+    data.carrier_capacity_tons = toNum(data.carrier_capacity_tons);
+    data.customer_credit_limit = toNum(data.customer_credit_limit);
     if (item?.id) await base44.entities.Partner.update(item.id, data);
     else await base44.entities.Partner.create(data);
     setSaving(false);
