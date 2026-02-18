@@ -189,14 +189,24 @@ export default function FreightSheetDetail({ sheet, onBack, onUpdated, user }) {
       )}
 
       {/* Summary bar */}
-      <div className="cx-glass px-5 py-3 flex gap-6 flex-wrap text-sm">
-        <div><span className="text-slate-400 text-xs">Alap kiterh.</span><div className="font-semibold text-slate-700">{currentSheet.default_load_tons} t</div></div>
-        <div><span className="text-slate-400 text-xs">Deviza</span><div className="font-semibold text-slate-700">{currentSheet.currency}</div></div>
-        <div><span className="text-slate-400 text-xs">Aktív sorok</span><div className="font-semibold text-slate-700">{activeCount} / {lines.length}</div></div>
-        <div><span className="text-slate-400 text-xs">Incoterms</span><div className="font-semibold text-slate-700">{currentSheet.incoterms || "-"}</div></div>
-        {currentSheet.origin_city && <div><span className="text-slate-400 text-xs">Rakodás</span><div className="font-semibold text-slate-700">{currentSheet.origin_city}</div></div>}
-        {currentSheet.notes && <div><span className="text-slate-400 text-xs">Megjegyzés</span><div className="font-semibold text-slate-700">{currentSheet.notes}</div></div>}
-      </div>
+       <div className="cx-glass px-5 py-3 flex gap-6 flex-wrap text-sm">
+         <div><span className="text-slate-400 text-xs">Alap kiterh.</span><div className="font-semibold text-slate-700">{currentSheet.default_load_tons} t</div></div>
+         <div><span className="text-slate-400 text-xs">Deviza</span><div className="font-semibold text-slate-700">{currentSheet.currency}</div></div>
+         <div><span className="text-slate-400 text-xs">Aktív sorok</span><div className="font-semibold text-slate-700">{activeCount} / {lines.length}</div></div>
+         <div><span className="text-slate-400 text-xs">Incoterms</span><div className="font-semibold text-slate-700">{currentSheet.incoterms || "-"}</div></div>
+         {currentSheet.origin_city && <div><span className="text-slate-400 text-xs">Rakodás</span><div className="font-semibold text-slate-700">{currentSheet.origin_city}</div></div>}
+         {currentSheet.notes && <div><span className="text-slate-400 text-xs">Megjegyzés</span><div className="font-semibold text-slate-700">{currentSheet.notes}</div></div>}
+       </div>
+
+       {/* Logo upload section (Draft only) */}
+       {isDraft && (
+         <LogoUpload
+           sheetId={currentSheet.id}
+           currentLogoUrl={currentSheet.sheet_logo_url}
+           isDraft={isDraft}
+           onLogoUpdated={(logoUrl) => setCurrentSheet(prev => ({ ...prev, sheet_logo_url: logoUrl }))}
+         />
+       )}
 
       {/* Edit form (draft only) */}
       {showEdit && (
