@@ -120,7 +120,7 @@ export default function Layout({ children, currentPageName }) {
         </header>
 
         {/* Page content */}
-        <main className="flex-1 overflow-auto p-4 lg:p-6">
+        <main className="flex-1 overflow-auto p-4 lg:p-6" style={{ background: "var(--cx-bg)" }}>
           {children}
         </main>
       </div>
