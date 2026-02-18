@@ -153,16 +153,31 @@ export default function FreightSheetDetail({ sheet, onBack, onUpdated, user }) {
         </div>
       </div>
 
+      {/* Activation error or pre-check hints */}
+      {isDraft && !canActivate && (
+        <div className="rounded-lg px-4 py-2.5 text-xs bg-amber-50 border border-amber-200 text-amber-800 space-y-1">
+          <div className="font-semibold flex items-center gap-1.5"><AlertCircle className="w-3.5 h-3.5" /> Aktiválási feltételek:</div>
+          {activationChecks.map((c, i) => (
+            <div key={i} className={`flex items-center gap-1.5 ${c.ok ? "text-green-700" : "text-red-600"}`}>
+              <span>{c.ok ? "✓" : "✗"}</span> {c.label}
+            </div>
+          ))}
+        </div>
+      )}
+      {activateError && (
+        <div className="rounded-lg px-4 py-2.5 text-xs bg-red-50 border border-red-200 text-red-700">{activateError}</div>
+      )}
+
       {/* Status notice for non-draft */}
       {!isDraft && (
         <div className={`rounded-lg px-4 py-2.5 text-xs flex items-center gap-2 ${
           isActive
-            ? "bg-amber-50 border border-amber-200 text-amber-700"
+            ? "bg-green-50 border border-green-200 text-green-700"
             : "bg-slate-50 border border-slate-200 text-slate-500"
         }`}>
           {isActive
-            ? "⚠️ Active lap: közvetlen szerkesztés helyett \"Új verzió\" gombbal hozz létre módosított változatot. A régi lap automatikusan archiválódik."
-            : "📦 Archivált lap – csak olvasható. Sorokat nem lehet módosítani."}
+            ? "✅ Aktív lap: közvetlen szerkesztés nem lehetséges. Módosításhoz hozz létre Új verziót (régi lap automatikusan archiválódik)."
+            : "📦 Archivált lap – csak olvasható. Admin visszaállíthatja Draft státuszba."}
         </div>
       )}
 
