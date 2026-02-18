@@ -137,7 +137,7 @@ export default function Partners() {
       )}
       <DataTable
         columns={columns}
-        data={partners}
+        data={visiblePartners}
         isLoading={isLoading}
         onRowClick={(r) => r.status !== "archived" && setSelectedPartner(r)}
       />
