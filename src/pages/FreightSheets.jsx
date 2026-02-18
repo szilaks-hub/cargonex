@@ -192,11 +192,21 @@ export default function FreightSheets() {
         addLabel="Új lap"
       />
 
-      {/* Status legend */}
-      <div className="flex gap-3 flex-wrap text-xs text-slate-500">
-        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-yellow-400 inline-block" /> Draft – szerkeszthető, törölhető</span>
-        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-green-500 inline-block" /> Active – módosítás = Új verzió</span>
-        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-slate-400 inline-block" /> Archived – csak olvasható</span>
+      {/* Status legend + show archived toggle */}
+      <div className="flex items-center justify-between flex-wrap gap-2">
+        <div className="flex gap-3 flex-wrap text-xs text-slate-500">
+          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-yellow-400 inline-block" /> Draft – szerkeszthető, aktiválható</span>
+          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-green-500 inline-block" /> Active – módosítás = Új verzió</span>
+          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-slate-400 inline-block" /> Archived – csak olvasható</span>
+        </div>
+        {isAdmin && (
+          <button
+            onClick={() => setShowArchived(v => !v)}
+            className={`text-xs px-3 py-1.5 rounded-lg border transition-colors ${showArchived ? "bg-slate-200 border-slate-300 text-slate-700" : "bg-white border-slate-200 text-slate-500 hover:bg-slate-50"}`}
+          >
+            {showArchived ? "🗂 Archivált elrejtése" : "🗂 Archivált megjelenítése"}
+          </button>
+        )}
       </div>
 
       {showForm && (
