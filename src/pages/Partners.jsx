@@ -53,7 +53,22 @@ export default function Partners() {
         ))}
       </div>
     )},
-    { header: "Country / Ország", key: "country", render: (r) => r.country || "-" },
+    { header: "Country / Ország", render: (r) => {
+      const codes = r.countries?.length ? r.countries : (r.country ? [r.country] : []);
+      if (!codes.length) return <span className="text-slate-400">-</span>;
+      return (
+        <div className="flex flex-wrap gap-1">
+          {codes.map((code) => {
+            const c = COUNTRIES.find((x) => x.code === code);
+            return (
+              <span key={code} className="inline-flex items-center bg-blue-50 text-blue-700 border border-blue-200 rounded-full px-2 py-0.5 text-[10px] font-medium">
+                {c ? c.en : code}
+              </span>
+            );
+          })}
+        </div>
+      );
+    }},
     { header: "Email", key: "email", render: (r) => r.email || "-" },
     { header: "Status", render: (r) => <StatusBadge status={r.status} /> },
     { header: "", render: (r) => (
