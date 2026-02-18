@@ -34,12 +34,33 @@ export default function Logistics() {
 
   return (
     <div className="space-y-4">
-      <PageHeader
-        title="Logistics / Logisztika"
-        subtitle="Truck scheduling and loading / Kamionok ütemezés és rakodás"
-        onAdd={() => { setEditItem(null); setShowForm(true); }}
-        addLabel="New Truck / Új kamion"
-      />
+      <div className="flex items-start justify-between">
+        <PageHeader
+          title="Logistics / Logisztika"
+          subtitle="Truck scheduling and loading / Kamionok ütemezés és rakodás"
+          onAdd={() => { setEditItem(null); setShowForm(true); }}
+          addLabel="New Truck / Új kamion"
+        />
+        <div className="flex items-center gap-1 rounded-lg p-1 mt-0.5" style={{ background: "#e4e7ec" }}>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => setView("list")}
+            className={`gap-1.5 text-xs h-7 px-3 ${view === "list" ? "bg-white shadow-sm text-slate-800" : "text-slate-500 hover:text-slate-700"}`}
+          >
+            <List className="w-3.5 h-3.5" /> List
+          </Button>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => setView("map")}
+            className={`gap-1.5 text-xs h-7 px-3 ${view === "map" ? "bg-white shadow-sm text-slate-800" : "text-slate-500 hover:text-slate-700"}`}
+          >
+            <Map className="w-3.5 h-3.5" /> Map
+          </Button>
+        </div>
+      </div>
+
       {showForm && (
         <TruckForm
           item={editItem}
@@ -47,7 +68,12 @@ export default function Logistics() {
           onSaved={() => { qc.invalidateQueries({ queryKey: ["trucks"] }); setShowForm(false); setEditItem(null); }}
         />
       )}
-      <DataTable columns={columns} data={trucks} isLoading={isLoading} onRowClick={(r) => { setEditItem(r); setShowForm(true); }} />
+
+      {view === "list" ? (
+        <DataTable columns={columns} data={trucks} isLoading={isLoading} onRowClick={(r) => { setEditItem(r); setShowForm(true); }} />
+      ) : (
+        <ShipmentMap trucks={trucks} />
+      )}
     </div>
   );
 }
