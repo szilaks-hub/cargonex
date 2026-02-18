@@ -3,6 +3,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 // Dependency map definitions
 const DEPENDENCY_MAP = {
   PurchaseOrder: [
+    { entity: 'OrderLine', field: 'order_id', label: 'Order Lines' },
     { entity: 'Truck', field: 'order_id', label: 'Logistics' },
     { entity: 'FinanceCustoms', field: 'order_id', label: 'Finance/Customs' }
   ],
@@ -134,7 +135,7 @@ Deno.serve(async (req) => {
             canArchive: true,
             dependencies: dependencySnapshot
           },
-          { status: 400 }
+          { status: 409 }
         );
       } else {
         return Response.json(

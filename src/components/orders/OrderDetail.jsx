@@ -98,13 +98,25 @@ export default function OrderDetail({ order, onBack }) {
         )}
       </div>
 
-      {/* Order info */}
-      <div className="bg-[#1a1e23] border border-[#2d333b] rounded-xl p-5 grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <div><p className="text-xs text-[#8b949e]">Incoterms</p><p className="text-sm font-medium text-[#e6edf3] mt-0.5">{order.incoterms}</p></div>
-        <div><p className="text-xs text-[#8b949e]">Date / Dátum</p><p className="text-sm font-medium text-[#e6edf3] mt-0.5">{order.order_date}</p></div>
-        <div><p className="text-xs text-[#8b949e]">Total Ordered</p><p className="text-sm font-medium text-[#e6edf3] mt-0.5">{order.total_ordered_tons?.toFixed(2) || 0} t</p></div>
-        <div><p className="text-xs text-[#8b949e]">Notes</p><p className="text-sm text-[#e6edf3] mt-0.5">{order.notes || "-"}</p></div>
-      </div>
+      {/* Order summary cards */}
+       <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+         <div className="bg-white border border-slate-200 rounded-lg p-4 shadow-sm">
+           <p className="text-xs font-medium text-slate-500 uppercase">Incoterms</p>
+           <p className="text-sm font-semibold text-slate-900 mt-1">{order.incoterms}</p>
+         </div>
+         <div className="bg-white border border-slate-200 rounded-lg p-4 shadow-sm">
+           <p className="text-xs font-medium text-slate-500 uppercase">Date / Dátum</p>
+           <p className="text-sm font-semibold text-slate-900 mt-1">{order.order_date}</p>
+         </div>
+         <div className="bg-white border border-slate-200 rounded-lg p-4 shadow-sm">
+           <p className="text-xs font-medium text-slate-500 uppercase">Total Ordered</p>
+           <p className="text-sm font-semibold text-slate-900 mt-1">{order.total_ordered_tons?.toFixed(2) || 0} t</p>
+         </div>
+         <div className="bg-white border border-slate-200 rounded-lg p-4 shadow-sm">
+           <p className="text-xs font-medium text-slate-500 uppercase">Status</p>
+           <div className="mt-1"><StatusBadge status={order.status} /></div>
+         </div>
+       </div>
 
       {/* Order lines */}
       <div>
@@ -202,14 +214,14 @@ function OrderLineForm({ order, item, products, onClose, onSaved }) {
   };
 
   return (
-    <div className="bg-[#22272e] border border-[#2d333b] rounded-lg p-4 mb-3 space-y-3">
+     <div className="bg-white border border-slate-200 rounded-lg p-4 mb-3 space-y-3 shadow-sm">
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <div>
-          <Label className="text-[#8b949e] text-xs">Product *</Label>
+          <Label className="text-slate-700 text-xs font-medium">Product *</Label>
           <ProductPicker
             products={products}
             value={form.product_id}
-            dark={true}
+            dark={false}
             onChange={(p) => {
               set("product_id", p.id);
               set("product_name", `${p.category_name} ${p.diameter || ""} ${p.factory_code || ""}`.trim());
@@ -218,16 +230,16 @@ function OrderLineForm({ order, item, products, onClose, onSaved }) {
           />
         </div>
         <div>
-          <Label className="text-[#8b949e] text-xs">Ordered Qty (tons) *</Label>
-          <Input type="number" className="bg-[#1a1e23] border-[#2d333b] text-[#e6edf3]" value={form.ordered_quantity} onChange={(e) => set("ordered_quantity", e.target.value)} />
+          <Label className="text-slate-700 text-xs font-medium">Ordered Qty (tons) *</Label>
+          <Input type="number" className="bg-white border-slate-200 text-slate-900" value={form.ordered_quantity} onChange={(e) => set("ordered_quantity", e.target.value)} />
         </div>
         <div>
-          <Label className="text-[#8b949e] text-xs">Unit Price</Label>
-          <Input type="number" className="bg-[#1a1e23] border-[#2d333b] text-[#e6edf3]" value={form.unit_price} onChange={(e) => set("unit_price", e.target.value)} />
+          <Label className="text-slate-700 text-xs font-medium">Unit Price</Label>
+          <Input type="number" className="bg-white border-slate-200 text-slate-900" value={form.unit_price} onChange={(e) => set("unit_price", e.target.value)} />
         </div>
       </div>
       <div className="flex justify-end gap-2">
-        <Button variant="outline" size="sm" onClick={onClose} className="border-[#2d333b] text-[#8b949e]">Cancel</Button>
+        <Button variant="outline" size="sm" onClick={onClose} className="border-slate-200 text-slate-600">Cancel</Button>
         <Button size="sm" onClick={handleSave} disabled={saving} className="bg-blue-600 hover:bg-blue-700 text-white"><Save className="w-3 h-3 mr-1" /> Save</Button>
       </div>
     </div>
