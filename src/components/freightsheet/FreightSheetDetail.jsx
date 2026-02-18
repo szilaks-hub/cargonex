@@ -1,96 +1,90 @@
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Printer, Edit2, Trash2 } from "lucide-react";
+import { ArrowLeft, Printer, Edit2 } from "lucide-react";
 import StatusBadge from "@/components/ui/StatusBadge";
 import FreightSheetLineEditor from "./FreightSheetLineEditor";
 import FreightSheetPrint from "./FreightSheetPrint";
 import FreightSheetForm from "./FreightSheetForm";
 
-function InfoRow({ label, value }) {
-  return (
-    <div>
-      <p className="text-[10px] font-bold uppercase tracking-wide text-slate-400">{label}</p>
-      <p className="text-sm font-medium text-slate-700 mt-0.5">{value || "–"}</p>
-    </div>
-  );
-}
-
 export default function FreightSheetDetail({ sheet, onBack, onUpdated }) {
-  const [printing, setPrinting] = useState(false);
-  const [editing, setEditing] = useState(false);
-  const qc = useQueryClient();
+  const [showPrint, setShowPrint] = useState(false);
+  const [showEdit, setShowEdit] = useState(false);
 
-  const handleDelete = async () => {
-    if (!confirm("Delete this freight sheet?")) return;
-    await base44.entities.FreightSheet.delete(sheet.id);
-    onBack();
-  };
+  const { data: lines = [] } = useQuery({
+    queryKey: ["sheetLines", sheet.id],
+    queryFn: () => base44.entities.FreightSheetLine.filter({ sheet_id: sheet.id }, "sort_order"),
+  });
 
-  if (printing) return <FreightSheetPrint sheet={sheet} onClose={() => setPrinting(false)} />;
-
-  if (editing) return (
-    <FreightSheetForm
-      item={sheet}
-      onClose={() => setEditing(false)}
-      onSaved={() => { setEditing(false); qc.invalidateQueries({ queryKey: ["freightSheets"] }); onUpdated && onUpdated(); }}
-    />
-  );
-
-  const validityText = sheet.open_ended
-    ? `${sheet.valid_from} – visszavonásig`
-    : `${sheet.valid_from}${sheet.valid_to ? ` – ${sheet.valid_to}` : ""}`;
+  const activeCount = lines.filter(l => l.is_active !== false).length;
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       {/* Header */}
-      <div className="flex items-center gap-3">
-        <Button variant="ghost" onClick={onBack} className="text-slate-500 hover:text-slate-800 p-2">
-          <ArrowLeft className="w-4 h-4" />
-        </Button>
-        <div className="flex-1">
-          <div className="flex items-center gap-3">
-            <h2 className="text-xl font-bold text-slate-800">
-              {sheet.sheet_number || `FS-${sheet.id?.slice(0, 6)}`}
-            </h2>
-            <StatusBadge status={sheet.status} />
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <div className="flex items-center gap-3">
+          <Button variant="ghost" onClick={onBack} className="text-slate-500 hover:text-slate-800 p-2">
+            <ArrowLeft className="w-4 h-4" />
+          </Button>
+          <div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <h2 className="text-xl font-bold text-slate-800">
+                {sheet.carrier_name} → {sheet.destination_country}
+              </h2>
+              <StatusBadge status={sheet.status} />
+              {sheet.sheet_number && <span className="text-xs bg-slate-100 text-slate-500 px-2 py-0.5 rounded font-mono">{sheet.sheet_number}</span>}
+            </div>
+            <p className="text-xs text-slate-500 mt-0.5">
+              {sheet.supplier_name && <span>{sheet.supplier_name} · </span>}
+              {sheet.supplier_site_name && <span>{sheet.supplier_site_name} · </span>}
+              {sheet.valid_from} {sheet.valid_until_revoked ? "→ visszavonásig" : `→ ${sheet.valid_to || "?"}`}
+              {sheet.incoterms && <span> · {sheet.incoterms}</span>}
+            </p>
           </div>
-          <p className="text-sm text-slate-500 mt-0.5">
-            {sheet.carrier_name} → {sheet.destination_country}
-          </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={() => setEditing(true)} className="border-slate-300 gap-2 text-sm">
-            <Edit2 className="w-4 h-4" /> Edit
+          <Button variant="outline" onClick={() => setShowEdit(true)} className="gap-2 border-[#c6ccda] text-slate-600">
+            <Edit2 className="w-3.5 h-3.5" /> Edit Header
           </Button>
-          <Button onClick={() => setPrinting(true)} className="bg-slate-800 hover:bg-slate-900 text-white gap-2 text-sm">
-            <Printer className="w-4 h-4" /> Nyilatkozat
-          </Button>
-          <Button variant="ghost" onClick={handleDelete} className="text-red-500 hover:text-red-700 hover:bg-red-50 gap-1 text-sm">
-            <Trash2 className="w-4 h-4" />
+          <Button onClick={() => setShowPrint(true)} className="gap-2 text-white" style={{background: "linear-gradient(135deg,#e05a2b,#c0392b)"}}>
+            <Printer className="w-4 h-4" /> Nyomtatás
           </Button>
         </div>
       </div>
 
-      {/* Summary */}
-      <div className="bg-white border border-slate-200 rounded-xl p-5 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 shadow-sm">
-        <InfoRow label="Carrier / Fuvarozó" value={sheet.carrier_name} />
-        <InfoRow label="Supplier / Beszállító" value={sheet.supplier_name} />
-        <InfoRow label="Loading Site / Telephely" value={`${sheet.supplier_location_name || "–"} ${sheet.origin_country ? `(${sheet.origin_country})` : ""}`} />
-        <InfoRow label="Destination / Célország" value={sheet.destination_country} />
-        <InfoRow label="Validity / Érvényesség" value={validityText} />
-        <InfoRow label="Incoterms" value={sheet.incoterms} />
-        <InfoRow label="Currency / Deviza" value={sheet.currency} />
-        <InfoRow label="Default Load / Alap kit." value={sheet.default_load_tons ? `${sheet.default_load_tons} t` : "24 t"} />
-        {sheet.notes && <div className="col-span-2 lg:col-span-2">
-          <p className="text-[10px] font-bold uppercase tracking-wide text-slate-400">Notes</p>
-          <p className="text-sm text-slate-500 mt-0.5 italic">{sheet.notes}</p>
-        </div>}
+      {/* Summary bar */}
+      <div className="cx-glass px-5 py-3 flex gap-6 flex-wrap text-sm">
+        <div><span className="text-slate-400 text-xs">Alap kiterh.</span><div className="font-semibold text-slate-700">{sheet.default_load_tons} t</div></div>
+        <div><span className="text-slate-400 text-xs">Deviza</span><div className="font-semibold text-slate-700">{sheet.currency}</div></div>
+        <div><span className="text-slate-400 text-xs">Aktív sorok</span><div className="font-semibold text-slate-700">{activeCount} / {lines.length}</div></div>
+        <div><span className="text-slate-400 text-xs">Incoterms</span><div className="font-semibold text-slate-700">{sheet.incoterms || "-"}</div></div>
+        {sheet.origin_city && <div><span className="text-slate-400 text-xs">Rakodás</span><div className="font-semibold text-slate-700">{sheet.origin_city}</div></div>}
+        {sheet.notes && <div><span className="text-slate-400 text-xs">Megjegyzés</span><div className="font-semibold text-slate-700">{sheet.notes}</div></div>}
       </div>
 
-      {/* Lines */}
-      <FreightSheetLineEditor sheet={sheet} />
+      {/* Edit form */}
+      {showEdit && (
+        <FreightSheetForm
+          item={sheet}
+          onClose={() => setShowEdit(false)}
+          onSaved={() => { setShowEdit(false); onUpdated(); }}
+        />
+      )}
+
+      {/* Line editor */}
+      <div className="cx-table-wrap">
+        <div className="px-4 py-3 border-b border-slate-200 flex items-center justify-between">
+          <h3 className="text-sm font-semibold text-slate-700">Fuvar sorok / Freight Lines</h3>
+          <span className="text-xs text-slate-400">Soronként mentés a 💾 ikonnal · Új sor az utolsó kék sorban</span>
+        </div>
+        <FreightSheetLineEditor sheet={sheet} />
+      </div>
+
+      {/* Print modal */}
+      {showPrint && (
+        <FreightSheetPrint sheet={sheet} lines={lines} onClose={() => setShowPrint(false)} />
+      )}
     </div>
   );
 }

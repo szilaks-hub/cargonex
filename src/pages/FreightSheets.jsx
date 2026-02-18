@@ -4,83 +4,106 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import PageHeader from "@/components/ui/PageHeader";
 import DataTable from "@/components/ui/DataTable";
 import StatusBadge from "@/components/ui/StatusBadge";
+import RowActions from "@/components/ui/RowActions";
 import FreightSheetForm from "@/components/freightsheet/FreightSheetForm";
 import FreightSheetDetail from "@/components/freightsheet/FreightSheetDetail";
-import { Printer } from "lucide-react";
+import { FileText } from "lucide-react";
 
 export default function FreightSheets() {
   const [showForm, setShowForm] = useState(false);
   const [editItem, setEditItem] = useState(null);
-  const [selected, setSelected] = useState(null);
+  const [selectedSheet, setSelectedSheet] = useState(null);
   const qc = useQueryClient();
 
   const { data: sheets = [], isLoading } = useQuery({
     queryKey: ["freightSheets"],
-    queryFn: () => base44.entities.FreightSheet.list("-created_date"),
+    queryFn: () => base44.entities.FreightSheet.list("-valid_from"),
   });
 
-  const refresh = () => qc.invalidateQueries({ queryKey: ["freightSheets"] });
+  const handleArchive = async (r) => {
+    const newStatus = r.status === "archived" ? "active" : "archived";
+    await base44.entities.FreightSheet.update(r.id, { status: newStatus });
+    qc.invalidateQueries({ queryKey: ["freightSheets"] });
+  };
 
-  if (selected) {
+  const handleDelete = async (r) => {
+    await base44.entities.FreightSheet.delete(r.id);
+    qc.invalidateQueries({ queryKey: ["freightSheets"] });
+  };
+
+  const columns = [
+    { header: "Lap / Sheet", render: r => (
+      <div>
+        <div className="font-semibold text-slate-800">{r.carrier_name || "—"}</div>
+        {r.sheet_number && <div className="text-xs text-slate-400 font-mono">{r.sheet_number}</div>}
+      </div>
+    )},
+    { header: "Célország", render: r => (
+      <span className="font-mono font-semibold text-blue-700 bg-blue-50 px-2 py-0.5 rounded text-xs">{r.destination_country || "—"}</span>
+    )},
+    { header: "Beszállító / Telephely", render: r => (
+      <div>
+        <div className="text-xs text-slate-600">{r.supplier_name || "-"}</div>
+        {r.supplier_site_name && <div className="text-xs text-slate-400">{r.supplier_site_name}</div>}
+      </div>
+    )},
+    { header: "Érvényesség", render: r => (
+      <div className="text-xs">
+        <div className="text-slate-700">{r.valid_from}</div>
+        <div className="text-slate-400">{r.valid_until_revoked ? "→ visszavonásig" : `→ ${r.valid_to || "?"}`}</div>
+      </div>
+    )},
+    { header: "Kiterh.", render: r => <span className="text-xs text-slate-600">{r.default_load_tons} t</span> },
+    { header: "Deviza", key: "currency" },
+    { header: "Incoterms", key: "incoterms" },
+    { header: "Status", render: r => <StatusBadge status={r.status} /> },
+    { header: "", render: r => (
+      <RowActions
+        onEdit={() => { setEditItem(r); setShowForm(true); }}
+        onArchive={() => handleArchive(r)}
+        isArchived={r.status === "archived"}
+        canDelete={r.status === "archived"}
+        onDelete={() => handleDelete(r)}
+      />
+    )},
+  ];
+
+  if (selectedSheet) {
     return (
       <FreightSheetDetail
-        sheet={selected}
-        onBack={() => setSelected(null)}
-        onUpdated={() => {
-          refresh();
-          // Refresh the selected sheet data
-          base44.entities.FreightSheet.filter({ id: selected.id }).then(r => r[0] && setSelected(r[0]));
-        }}
+        sheet={selectedSheet}
+        onBack={() => setSelectedSheet(null)}
+        onUpdated={() => { qc.invalidateQueries({ queryKey: ["freightSheets"] }); setSelectedSheet(null); }}
       />
     );
   }
 
-  const columns = [
-    { header: "Sheet # / Sorszám", render: r => (
-      <span className="font-mono font-semibold text-blue-700">{r.sheet_number || `FS-${r.id?.slice(0, 6)}`}</span>
-    )},
-    { header: "Carrier / Fuvarozó", key: "carrier_name" },
-    { header: "Supplier / Beszállító", key: "supplier_name" },
-    { header: "Loading Site", key: "supplier_location_name" },
-    { header: "Destination", render: r => (
-      <span className="font-medium">{r.destination_country}</span>
-    )},
-    { header: "Incoterms", key: "incoterms" },
-    { header: "Valid From", key: "valid_from" },
-    { header: "Valid To", render: r => r.open_ended ? <span className="text-slate-400 italic text-xs">visszavonásig</span> : (r.valid_to || "–") },
-    { header: "Load (t)", render: r => r.default_load_tons || 24 },
-    { header: "Status", render: r => <StatusBadge status={r.status} /> },
-    { header: "", render: r => (
-      <button
-        onClick={e => { e.stopPropagation(); setSelected(r); }}
-        className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded"
-        title="Open / Print"
-      >
-        <Printer className="w-4 h-4" />
-      </button>
-    )},
-  ];
-
   return (
     <div className="space-y-4">
       <PageHeader
-        title="Freight Sheets / Fuvarozási Lapok"
-        subtitle="1 lap = 1 fuvarozó + 1 célország + 1 időszak"
+        title="Fuvarozási lapok / Freight Sheets"
+        subtitle="Fuvarozónként és célországonként · Nyilatkozat nyomtatással"
         onAdd={() => { setEditItem(null); setShowForm(true); }}
-        addLabel="New Sheet / Új lap"
+        addLabel="Új lap / New Sheet"
       />
       {showForm && (
         <FreightSheetForm
           item={editItem}
           onClose={() => { setShowForm(false); setEditItem(null); }}
-          onSaved={() => { refresh(); setShowForm(false); setEditItem(null); }}
+          onSaved={() => { qc.invalidateQueries({ queryKey: ["freightSheets"] }); setShowForm(false); setEditItem(null); }}
         />
       )}
       <DataTable
         columns={columns}
         data={sheets}
         isLoading={isLoading}
-        onRowClick={r => setSelected(r)}
+        onRowClick={r => r.status !== "archived" && setSelectedSheet(r)}
+        emptyMessage={
+          <div className="flex flex-col items-center gap-2 py-8 text-slate-400">
+            <FileText className="w-8 h-8 opacity-30" />
+            <p className="text-sm">Még nincs fuvarozási lap. Hozz létre egyet!</p>
+          </div>
+        }
       />
     </div>
   );
