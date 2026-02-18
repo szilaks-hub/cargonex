@@ -4,8 +4,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 const DEPENDENCY_MAP = {
   PurchaseOrder: [
     { entity: 'OrderLine', field: 'order_id', label: 'Order Lines' },
-    { entity: 'Truck', field: 'order_id', label: 'Logistics' },
-    { entity: 'FinanceCustoms', field: 'order_id', label: 'Finance/Customs' }
+    { entity: 'Truck', field: 'order_id', label: 'Logistics' }
   ],
   FreightSheet: [
     { entity: 'Truck', field: 'applied_freight_sheet_id', label: 'Logistics' }
@@ -147,8 +146,7 @@ Deno.serve(async (req) => {
         // Special case: PurchaseOrder with only OrderLines
         const onlyLines = entityName === 'PurchaseOrder' && 
                          dependencySnapshot['Order Lines'] > 0 && 
-                         dependencySnapshot['Logistics'] === 0 && 
-                         dependencySnapshot['Finance/Customs'] === 0;
+                         dependencySnapshot['Logistics'] === 0;
         
         if (onlyLines) {
           // Allow hard delete with cascade
