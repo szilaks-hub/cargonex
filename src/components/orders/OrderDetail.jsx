@@ -2,282 +2,262 @@ import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import DataTable from "@/components/ui/DataTable";
-import StatusBadge from "@/components/ui/StatusBadge";
-import { ArrowLeft, Plus, Save, X, Trash2, AlertTriangle } from "lucide-react";
-import ProductPicker from "@/components/products/ProductPicker";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { toast } from "sonner";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { X, Trash2 } from "lucide-react";
+import OrderForm from "./OrderForm";
+import OrderLineForm from "./OrderLineForm";
+import OrderSummary from "./OrderSummary";
 
-export default function OrderDetail({ order, onBack }) {
-  const [showLineForm, setShowLineForm] = useState(false);
-  const [editLine, setEditLine] = useState(null);
-  const [deleteDialog, setDeleteDialog] = useState({ open: false, message: "", action: null, cascade: false });
-  const [deleteReason, setDeleteReason] = useState("");
-  const [deleting, setDeleting] = useState(false);
-  const qc = useQueryClient();
+const statusStyles = {
+  draft: "bg-amber-50 text-amber-700 border-amber-200",
+  open: "bg-blue-50 text-blue-700 border-blue-200",
+  closed: "bg-emerald-50 text-emerald-700 border-emerald-200",
+  archived: "bg-slate-50 text-slate-500 border-slate-200"
+};
 
-  const { data: lines = [], isLoading } = useQuery({
-    queryKey: ["orderLines", order.id],
-    queryFn: () => base44.entities.OrderLine.filter({ order_id: order.id }),
+export default function OrderDetail({ orderId, onClose }) {
+  const [isEditing, setIsEditing] = useState(false);
+  const queryClient = useQueryClient();
+
+  const { data: order, isLoading: orderLoading } = useQuery({
+    queryKey: ['order', orderId],
+    queryFn: () => base44.entities.PurchaseOrder.filter({ id: orderId }).then(r => r?.[0]),
+    enabled: !!orderId
   });
 
-  const { data: products = [] } = useQuery({
-    queryKey: ["products"],
-    queryFn: () => base44.entities.Product.list(),
+  const { data: lines = [] } = useQuery({
+    queryKey: ['orderLines', orderId],
+    queryFn: () => base44.entities.PurchaseOrderLine.filter({ purchase_order_id: orderId }),
+    enabled: !!orderId
   });
 
-  const handleCheckDependencies = async () => {
-    setDeleting(true);
+  if (orderLoading) {
+    return (
+      <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
+        <div className="text-white">Loading...</div>
+      </div>
+    );
+  }
+
+  if (!order) {
+    return (
+      <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <Card className="p-6 text-center">
+          <p className="text-slate-600">Order not found</p>
+          <Button onClick={onClose} className="mt-4">Close</Button>
+        </Card>
+      </div>
+    );
+  }
+
+  const isDraft = order?.status === 'draft';
+
+  const handleStatusChange = async (newStatus) => {
     try {
-      const res = await base44.functions.invoke('deleteOrArchiveEntity', {
-        entityName: 'PurchaseOrder',
-        entityId: order.id,
-        requestedAction: 'HARD_DELETE',
-        reason: ''
-      });
-
-      if (res.data.canCascadeDelete) {
-        // Order has only lines, ask for confirmation
-        setDeleteDialog({
-          open: true,
-          message: `Rendelés ${res.data.dependencies['Order Lines']} tétellel. Törlöd a rendelést és az összes tételt?`,
-          action: 'HARD_DELETE',
-          cascade: true
-        });
-      } else if (res.status === 409) {
-        // Has logistics/finance/receipts, offer archive only
-        toast.error('Logisztikai/pénzügyi linkek miatt csak archiválható');
-        setDeleteDialog({
-          open: true,
-          message: `Rendelés logisztikai, pénzügyi vagy bevételezési linkekkel kapcsolódik. Csak archiválható.`,
-          action: 'ARCHIVE'
-        });
-      } else {
-        toast.error(res.data?.message || 'Ismeretlen hiba');
-        setDeleteDialog({ open: false, message: "", action: null, cascade: false });
+      const updateData = {
+        status: newStatus,
+      };
+      if (newStatus === 'closed') {
+        updateData.closed_at = new Date().toISOString();
+        const user = await base44.auth.me();
+        updateData.closed_by = user?.email;
       }
+      if (newStatus === 'archived') {
+        updateData.archived_at = new Date().toISOString();
+        const user = await base44.auth.me();
+        updateData.archived_by = user?.email;
+      }
+      await base44.entities.PurchaseOrder.update(orderId, updateData);
+      queryClient.invalidateQueries({ queryKey: ['order', orderId] });
     } catch (error) {
-      toast.error(`Hiba: ${error.message}`);
-      setDeleteDialog({ open: false, message: "", action: null, cascade: false });
-    } finally {
-      setDeleting(false);
+      alert('Error: ' + error.message);
     }
   };
 
-  const handleConfirmDelete = async () => {
-    setDeleting(true);
+  const handleDelete = async () => {
+    if (!confirm('Delete this order and all lines?')) return;
     try {
-      const res = await base44.functions.invoke('deleteOrArchiveEntity', {
-        entityName: 'PurchaseOrder',
-        entityId: order.id,
-        requestedAction: deleteDialog.action,
-        reason: deleteReason || 'User deletion'
-      });
-
-      if (res.data.success || res.status === 200) {
-        toast.success('Rendelés sikeresen törlve');
-        setDeleteDialog({ open: false, message: "", action: null, cascade: false });
-        qc.invalidateQueries({ queryKey: ["orders"] });
-        setTimeout(() => onBack(), 500);
-      } else if (res.status === 403) {
-        toast.error('Nincs jogosultság a törléshez');
-      } else if (res.status === 409) {
-        toast.error('A rendelésnek vannak függőségei. Archiválás szükséges.');
-        setDeleteDialog({
-          open: true,
-          message: `Rendelés logisztikai, pénzügyi vagy bevételezési linkekkel kapcsolódik. Csak archiválható.`,
-          action: 'ARCHIVE'
-        });
-      } else {
-        toast.error(res.data?.message || res.data?.error || 'Ismeretlen hiba');
+      // Delete lines first
+      for (const line of lines) {
+        await base44.entities.PurchaseOrderLine.delete(line.id);
       }
+      // Delete order
+      await base44.entities.PurchaseOrder.delete(orderId);
+      queryClient.invalidateQueries({ queryKey: ['orders'] });
+      onClose?.();
     } catch (error) {
-      toast.error(`Hiba: ${error.message}`);
-    } finally {
-      setDeleting(false);
+      alert('Error: ' + error.message);
     }
   };
 
-  const columns = [
-    { header: "Product / Termék", key: "product_name" },
-    { header: "HS Code / VTSZ", key: "hs_code" },
-    { header: "Ordered / Rendelt", render: (r) => `${r.ordered_quantity} t` },
-    { header: "Delivered / Szállított", render: (r) => `${r.delivered_quantity || 0} t` },
-    { header: "Remaining / Maradvány", render: (r) => `${(r.ordered_quantity - (r.delivered_quantity || 0)).toFixed(2)} t` },
-    { header: "Unit Price / Egységár", render: (r) => r.unit_price ? `${r.unit_price} ${r.currency || "EUR"}` : "-" },
-  ];
+  const handleDeleteLine = async (lineId) => {
+    if (!confirm('Delete this line?')) return;
+    try {
+      await base44.entities.PurchaseOrderLine.delete(lineId);
+      queryClient.invalidateQueries({ queryKey: ['orderLines', orderId] });
+    } catch (error) {
+      alert('Error: ' + error.message);
+    }
+  };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Button variant="ghost" onClick={onBack} className="text-[#8b949e] hover:text-white p-2">
-            <ArrowLeft className="w-4 h-4" />
-          </Button>
+    <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+        {/* Header */}
+        <div className="sticky top-0 bg-gradient-to-r from-slate-50 to-white border-b p-4 flex items-center justify-between">
           <div>
-            <h2 className="text-xl font-bold text-[#e6edf3]">
-              {order.order_number || `PO-${order.id?.slice(0, 6)}`}
-            </h2>
-            <div className="flex items-center gap-2 mt-1">
-              <span className="text-sm text-[#8b949e]">{order.supplier_name}</span>
-              <StatusBadge status={order.status} />
+            <h2 className="text-xl font-bold text-slate-800">{order.order_number || 'Draft'}</h2>
+            <p className="text-sm text-slate-500">{order.supplier_name}</p>
+          </div>
+          <button onClick={onClose} className="text-slate-400 hover:text-slate-600">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        <div className="p-6 space-y-6">
+          {/* Status and Actions */}
+          <div className="flex items-center justify-between">
+            <Badge className={`${statusStyles[order.status]} border`}>
+              {order.status?.toUpperCase()}
+            </Badge>
+            <div className="flex gap-2">
+              {isDraft && (
+                <>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => handleStatusChange('open')}
+                  >
+                    Open Order
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="text-red-600 hover:text-red-700"
+                    onClick={handleDelete}
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </>
+              )}
+              {order.status === 'open' && (
+                <>
+                  <Button size="sm" variant="outline" onClick={() => handleStatusChange('closed')}>
+                    Close Order
+                  </Button>
+                  <Button size="sm" variant="outline" onClick={() => handleStatusChange('archived')}>
+                    Archive
+                  </Button>
+                </>
+              )}
+              {order.status === 'closed' && (
+                <>
+                  <Button size="sm" variant="outline" onClick={() => handleStatusChange('open')}>
+                    Reopen
+                  </Button>
+                  <Button size="sm" variant="outline" onClick={() => handleStatusChange('archived')}>
+                    Archive
+                  </Button>
+                </>
+              )}
             </div>
           </div>
-        </div>
-        {!order.locked && (
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={handleCheckDependencies}
-            disabled={deleting}
-            className="border-red-600 text-red-600 hover:bg-red-50"
-          >
-            <Trash2 className="w-4 h-4 mr-1" /> {deleting ? 'Feldolgozás...' : 'Törlés'}
-          </Button>
-        )}
-      </div>
 
-      {/* Order summary cards */}
-       <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
-         <div className="bg-white border border-slate-200 rounded-lg p-4 shadow-sm">
-           <p className="text-xs font-medium text-slate-500 uppercase">Incoterms</p>
-           <p className="text-sm font-semibold text-slate-900 mt-1">{order.incoterms}</p>
-         </div>
-         <div className="bg-white border border-slate-200 rounded-lg p-4 shadow-sm">
-           <p className="text-xs font-medium text-slate-500 uppercase">Date / Dátum</p>
-           <p className="text-sm font-semibold text-slate-900 mt-1">{order.order_date}</p>
-         </div>
-         <div className="bg-white border border-slate-200 rounded-lg p-4 shadow-sm">
-           <p className="text-xs font-medium text-slate-500 uppercase">Total Ordered</p>
-           <p className="text-sm font-semibold text-slate-900 mt-1">{order.total_ordered_tons?.toFixed(2) || 0} t</p>
-         </div>
-         <div className="bg-white border border-slate-200 rounded-lg p-4 shadow-sm">
-           <p className="text-xs font-medium text-slate-500 uppercase">Status</p>
-           <div className="mt-1"><StatusBadge status={order.status} /></div>
-         </div>
-       </div>
+          {/* Form or Display */}
+          {isEditing || isDraft ? (
+            <OrderForm
+              orderId={orderId}
+              isDraft={isDraft}
+              onSaved={() => {
+                setIsEditing(false);
+                queryClient.invalidateQueries({ queryKey: ['order', orderId] });
+              }}
+            />
+          ) : (
+            <Card className="p-4 bg-slate-50">
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
+                <div>
+                  <div className="text-slate-500">Supplier</div>
+                  <div className="font-medium text-slate-800">{order.supplier_name}</div>
+                </div>
+                <div>
+                  <div className="text-slate-500">Site</div>
+                  <div className="font-medium text-slate-800">{order.supplier_site_name}</div>
+                </div>
+                <div>
+                  <div className="text-slate-500">Date</div>
+                  <div className="font-medium text-slate-800">{order.order_date}</div>
+                </div>
+                <div>
+                  <div className="text-slate-500">Currency</div>
+                  <div className="font-medium text-slate-800">{order.currency}</div>
+                </div>
+                <div>
+                  <div className="text-slate-500">Incoterms</div>
+                  <div className="font-medium text-slate-800">{order.incoterms_type} {order.incoterms_place}</div>
+                </div>
+                {order.payment_terms && (
+                  <div>
+                    <div className="text-slate-500">Payment Terms</div>
+                    <div className="font-medium text-slate-800">{order.payment_terms}</div>
+                  </div>
+                )}
+              </div>
+              {order.notes && (
+                <div className="mt-4 pt-4 border-t text-sm">
+                  <div className="text-slate-500 mb-1">Notes</div>
+                  <div className="text-slate-700">{order.notes}</div>
+                </div>
+              )}
+            </Card>
+          )}
 
-      {/* Order lines */}
-      <div>
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="text-sm font-medium text-[#e6edf3]">Order Lines / Tételek</h3>
-          <Button size="sm" onClick={() => { setEditLine(null); setShowLineForm(true); }} className="bg-blue-600 hover:bg-blue-700 text-white gap-1 text-xs">
-            <Plus className="w-3 h-3" /> Add Line
-          </Button>
-        </div>
-        {showLineForm && (
-          <OrderLineForm
-            order={order}
-            item={editLine}
-            products={products}
-            onClose={() => setShowLineForm(false)}
-            onSaved={() => {
-              qc.invalidateQueries({ queryKey: ["orderLines", order.id] });
-              setShowLineForm(false);
-            }}
-          />
-        )}
-        <DataTable columns={columns} data={lines} isLoading={isLoading} onRowClick={(r) => { setEditLine(r); setShowLineForm(true); }} />
-      </div>
-
-      {/* Delete/Archive Dialog */}
-      <Dialog open={deleteDialog.open} onOpenChange={(open) => {
-        if (!open) {
-          setDeleteDialog({ open: false, message: "", action: null, cascade: false });
-          setDeleteReason("");
-        }
-      }}>
-        <DialogContent className="bg-[#22272e] border-[#2d333b]">
-          <DialogHeader>
-            <DialogTitle className="text-[#e6edf3] flex items-center gap-2">
-              <AlertTriangle className="w-5 h-5 text-orange-500" />
-              {deleteDialog.action === 'ARCHIVE' ? 'Rendelés archiválása' : deleteDialog.cascade ? 'Rendelés + tételek törlése' : 'Rendelés törlése'}
-            </DialogTitle>
-            <DialogDescription className="text-[#8b949e]">
-              {deleteDialog.message}
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="flex justify-end gap-2">
-            <Button 
-              variant="outline" 
-              onClick={() => setDeleteDialog({ open: false, message: "", action: null, cascade: false })} 
-              disabled={deleting}
-              className="border-[#2d333b] text-[#8b949e]"
-            >
-              Mégsem
-            </Button>
-            <Button
-              onClick={handleConfirmDelete}
-              disabled={deleting}
-              className={deleteDialog.action === 'ARCHIVE' ? 'bg-amber-600 hover:bg-amber-700' : 'bg-red-600 hover:bg-red-700'}
-            >
-              {deleting ? 'Feldolgozás...' : deleteDialog.action === 'ARCHIVE' ? 'Archivál' : deleteDialog.cascade ? 'Törlés tételekkel' : 'Törlés'}
-            </Button>
+          {/* Lines */}
+          <div className="space-y-3">
+            <h3 className="font-semibold text-slate-800">Order Lines</h3>
+            {lines.length > 0 ? (
+              <div className="space-y-2">
+                {lines.map(line => (
+                  <Card key={line.id} className="p-3">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1 space-y-1">
+                        <div className="flex gap-2">
+                          <Badge variant="outline" className="text-xs">{line.product_category_name}</Badge>
+                          {line.diameter && <Badge variant="outline" className="text-xs">{line.diameter}mm</Badge>}
+                        </div>
+                        {line.specification && (
+                          <div className="text-sm text-slate-600">{line.specification}</div>
+                        )}
+                        <div className="text-sm font-semibold text-slate-800">
+                          {line.ordered_quantity_tons} t @ {line.unit_price_per_ton} EUR/t = {(line.ordered_quantity_tons * line.unit_price_per_ton).toFixed(0)} EUR
+                        </div>
+                        {line.target_delivery_period && (
+                          <div className="text-xs text-slate-500">Target: {line.target_delivery_period}</div>
+                        )}
+                      </div>
+                      {isDraft && (
+                        <button
+                          onClick={() => handleDeleteLine(line.id)}
+                          className="text-slate-400 hover:text-red-600 ml-2"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-slate-500">No lines added yet</p>
+            )}
+            {isDraft && <OrderLineForm orderId={orderId} onLineAdded={() => queryClient.invalidateQueries({ queryKey: ['orderLines', orderId] })} isDraft={isDraft} />}
           </div>
-        </DialogContent>
-      </Dialog>
-    </div>
-  );
-}
 
-function OrderLineForm({ order, item, products, onClose, onSaved }) {
-  const [form, setForm] = useState(item || {
-    order_id: order.id, order_number: order.order_number || `PO-${order.id?.slice(0, 6)}`,
-    product_id: "", product_name: "", hs_code: "",
-    ordered_quantity: "", delivered_quantity: 0,
-    unit_price: "", currency: "EUR"
-  });
-  const [saving, setSaving] = useState(false);
-  const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
-
-  const handleSave = async () => {
-    setSaving(true);
-    const data = {
-      ...form,
-      ordered_quantity: Number(form.ordered_quantity) || 0,
-      delivered_quantity: Number(form.delivered_quantity) || 0,
-      unit_price: Number(form.unit_price) || 0,
-    };
-    if (item?.id) await base44.entities.OrderLine.update(item.id, data);
-    else await base44.entities.OrderLine.create(data);
-    setSaving(false);
-    onSaved();
-  };
-
-  return (
-     <div className="bg-white border border-slate-200 rounded-lg p-4 mb-3 space-y-3 shadow-sm">
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <div>
-          <Label className="text-slate-700 text-xs font-medium">Product *</Label>
-          <ProductPicker
-            products={products}
-            value={form.product_id}
-            dark={false}
-            onChange={(p) => {
-              set("product_id", p.id);
-              set("product_name", `${p.category_name} ${p.diameter || ""} ${p.factory_code || ""}`.trim());
-              set("hs_code", p?.hs_code || "");
-            }}
-          />
+          {/* Summary */}
+          {lines.length > 0 && <OrderSummary lines={lines} />}
         </div>
-        <div>
-          <Label className="text-slate-700 text-xs font-medium">Ordered Qty (tons) *</Label>
-          <Input type="number" className="bg-white border-slate-200 text-slate-900" value={form.ordered_quantity} onChange={(e) => set("ordered_quantity", e.target.value)} />
-        </div>
-        <div>
-          <Label className="text-slate-700 text-xs font-medium">Unit Price</Label>
-          <Input type="number" className="bg-white border-slate-200 text-slate-900" value={form.unit_price} onChange={(e) => set("unit_price", e.target.value)} />
-        </div>
-      </div>
-      <div className="flex justify-end gap-2">
-        <Button variant="outline" size="sm" onClick={onClose} className="border-slate-200 text-slate-600">Cancel</Button>
-        <Button size="sm" onClick={handleSave} disabled={saving} className="bg-blue-600 hover:bg-blue-700 text-white"><Save className="w-3 h-3 mr-1" /> Save</Button>
-      </div>
+      </Card>
     </div>
   );
 }
