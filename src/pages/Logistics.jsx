@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 export default function Logistics() {
   const [showForm, setShowForm] = useState(false);
   const [editItem, setEditItem] = useState(null);
+  const [view, setView] = useState("list");
   const qc = useQueryClient();
 
   const { data: trucks = [], isLoading } = useQuery({
