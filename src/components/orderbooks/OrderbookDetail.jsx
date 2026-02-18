@@ -621,7 +621,7 @@ function LineRow({ line, categories, isEditing, isEditable, onUpdate, onDelete, 
       <td className="text-right py-3 px-3 font-semibold text-slate-800">{(line.line_value_eur || 0).toFixed(0)}</td>
       <td className="text-right py-3 px-3 text-blue-600 font-semibold">{(line.allocated_quantity_tons || 0).toFixed(2)}</td>
       <td className="py-3 px-3 text-slate-600 text-xs">{line.notes || '-'}</td>
-      {isDraft && (
+      {isEditable && (
         <td className="text-right py-3 px-3 space-x-1 flex justify-end">
           <button onClick={() => onEditToggle(line.id)} className="text-blue-600 hover:text-blue-800 p-1"><Edit2 className="w-4 h-4" /></button>
           <button onClick={() => onDuplicate()} className="text-slate-600 hover:text-slate-800 p-1"><Copy className="w-4 h-4" /></button>
