@@ -128,6 +128,51 @@ export default function OrderDetail({ order, onBack }) {
         )}
         <DataTable columns={columns} data={lines} isLoading={isLoading} onRowClick={(r) => { setEditLine(r); setShowLineForm(true); }} />
       </div>
+
+      {/* Delete/Archive Dialog */}
+      <Dialog open={deleteDialog.open} onOpenChange={(open) => {
+        if (!open) {
+          setDeleteDialog({ open: false, message: "", action: null });
+          setDeleteReason("");
+        }
+      }}>
+        <DialogContent className="bg-[#22272e] border-[#2d333b]">
+          <DialogHeader>
+            <DialogTitle className="text-[#e6edf3] flex items-center gap-2">
+              <AlertTriangle className="w-5 h-5 text-orange-500" />
+              {deleteDialog.action === 'ARCHIVE' ? 'Archive Order' : 'Delete Order'}
+            </DialogTitle>
+            <DialogDescription className="text-[#8b949e]">
+              {deleteDialog.message}
+            </DialogDescription>
+          </DialogHeader>
+
+          {deleteDialog.action === 'FORCE_DELETE' && (
+            <div>
+              <Label className="text-[#8b949e] text-xs">Reason (required for force delete)</Label>
+              <Input
+                className="bg-[#1a1e23] border-[#2d333b] text-[#e6edf3] mt-2"
+                placeholder="Why are you deleting this?"
+                value={deleteReason}
+                onChange={(e) => setDeleteReason(e.target.value)}
+              />
+            </div>
+          )}
+
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setDeleteDialog({ open: false, message: "", action: null })} className="border-[#2d333b] text-[#8b949e]">
+              Cancel
+            </Button>
+            <Button
+              onClick={handleDelete}
+              disabled={deleting || (deleteDialog.action === 'FORCE_DELETE' && !deleteReason)}
+              className={deleteDialog.action === 'ARCHIVE' ? 'bg-amber-600 hover:bg-amber-700' : 'bg-red-600 hover:bg-red-700'}
+            >
+              {deleting ? 'Processing...' : deleteDialog.action === 'ARCHIVE' ? 'Archive' : 'Delete'}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
