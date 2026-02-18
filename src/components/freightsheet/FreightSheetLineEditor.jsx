@@ -74,8 +74,8 @@ function LineRow({ line, defaultLoad, onSave, onDelete, onDuplicate, isHU, reado
   return (
     <tr className="border-b border-slate-100 hover:bg-slate-50">
       <DestinationFields form={form} set={set} isHU={isHU} inp={inp} readonly={readonly} />
-      <td className="px-2 py-1.5"><Input type="number" className={inp} value={form.domestic_leg || ""} onChange={e => set("domestic_leg", e.target.value)} placeholder="0" readOnly={readonly} /></td>
-      <td className="px-2 py-1.5"><Input type="number" className={inp} value={form.foreign_leg || ""} onChange={e => set("foreign_leg", e.target.value)} placeholder="0" readOnly={readonly} /></td>
+      <td className="px-2 py-1.5"><Input type="number" className={inp} value={form.domestic_leg || ""} onChange={e => set("domestic_leg", e.target.value)} placeholder="Határtól" readOnly={readonly} /></td>
+      <td className="px-2 py-1.5"><Input type="number" className={inp} value={form.foreign_leg || ""} onChange={e => set("foreign_leg", e.target.value)} placeholder="Határig" readOnly={readonly} /></td>
       <td className="px-2 py-1.5 text-xs text-slate-600 font-medium text-right">{(form.total_price || 0).toLocaleString("hu-HU")}</td>
       <td className="px-2 py-1.5"><Input type="number" className={inp} value={form.load_tons || ""} onChange={e => set("load_tons", e.target.value)} placeholder={`${defaultLoad}`} readOnly={readonly} /></td>
       <td className="px-2 py-1.5 text-xs text-orange-600 font-semibold text-right">{(form.eur_per_ton || 0).toFixed(2)}</td>
