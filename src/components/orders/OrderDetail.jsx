@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import DataTable from "@/components/ui/DataTable";
 import StatusBadge from "@/components/ui/StatusBadge";
 import { ArrowLeft, Plus, Save, X } from "lucide-react";
+import ProductPicker from "@/components/products/ProductPicker";
 
 export default function OrderDetail({ order, onBack }) {
   const [showLineForm, setShowLineForm] = useState(false);

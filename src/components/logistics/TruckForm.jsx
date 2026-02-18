@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { X, Save, Trash2 } from "lucide-react";
+import ProductPicker from "@/components/products/ProductPicker";
 
 export default function TruckForm({ item, onClose, onSaved }) {
   const [form, setForm] = useState(item || {
