@@ -1,14 +1,13 @@
-css
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  /* CARGONEX Premium Palette – warm steel, not white */
-  --cx-bg: #e8eaed;
-  --cx-surface: #f4f5f7;
-  --cx-surface2: #eceef1;
-  --cx-border: #d0d4db;
+  /* CARGONEX Premium Palette */
+  --cx-bg: #dfe3ea;
+  --cx-surface: #f2f4f7;
+  --cx-surface2: #eaecf0;
+  --cx-border: #c8cdd8;
   --cx-blue: #1d4ed8;
   --cx-blue-light: #dbeafe;
   --cx-red: #c0392b;
@@ -16,18 +15,18 @@ css
   --cx-steel: #52606d;
   --cx-text: #0d1117;
   --cx-text-muted: #52606d;
-  --cx-sidebar: #1a1f2e;
+  --cx-sidebar: #1e2435;
   --cx-sidebar-text: #c8cdd8;
   --cx-sidebar-active: #e05a2b;
 }
 
 @layer base {
   :root {
-    --background: 216 14% 89%;
+    --background: 216 14% 87%;
     --foreground: 220 30% 8%;
-    --card: 220 15% 96%;
+    --card: 0 0% 99%;
     --card-foreground: 220 30% 8%;
-    --popover: 220 15% 96%;
+    --popover: 0 0% 99%;
     --popover-foreground: 220 30% 8%;
     --primary: 20 75% 50%;
     --primary-foreground: 0 0% 100%;
@@ -39,8 +38,8 @@ css
     --accent-foreground: 220 30% 8%;
     --destructive: 0 75% 45%;
     --destructive-foreground: 0 0% 100%;
-    --border: 216 16% 78%;
-    --input: 216 16% 78%;
+    --border: 216 16% 76%;
+    --input: 216 16% 76%;
     --ring: 20 75% 50%;
     --radius: 0.625rem;
   }
@@ -50,38 +49,82 @@ css
   * {
     @apply border-border;
   }
+  html {
+    font-size: 15px;
+  }
   body {
     @apply bg-background text-foreground;
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-size: 15px;
+    line-height: 1.6;
   }
+
+  /* Global typography scale */
+  h1 { font-size: 1.6rem; font-weight: 700; line-height: 1.3; }
+  h2 { font-size: 1.35rem; font-weight: 600; line-height: 1.35; }
+  h3 { font-size: 1.15rem; font-weight: 600; line-height: 1.4; }
+
+  /* Table text */
+  table { font-size: 0.9625rem; }
+  thead th { font-size: 0.9rem; font-weight: 600; }
+
+  /* Form labels */
+  label { font-size: 0.9rem; font-weight: 600; }
+
+  /* Inputs */
+  input, select, textarea {
+    font-size: 15px !important;
+  }
+
+  /* Buttons */
+  button { font-size: 0.9625rem; }
+}
+
+/* ─── ANIMATED AMBIENT BACKGROUND ─────────────────────────── */
+@keyframes cx-bg-shift {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.cx-main-bg {
+  background:
+    /* Soft orange tint – bottom-left corner */
+    radial-gradient(ellipse at 8% 92%, rgba(211, 84, 0, 0.07) 0%, transparent 55%),
+    /* Soft blue tint – top-right corner */
+    radial-gradient(ellipse at 92% 8%, rgba(29, 78, 216, 0.07) 0%, transparent 55%),
+    /* Animated steel gradient base */
+    linear-gradient(135deg, #e2e6ed 0%, #d8dce6 35%, #dde1e8 65%, #e4e7ec 100%);
+  background-size: 300% 300%, 300% 300%, 200% 200%;
+  animation: cx-bg-shift 18s ease infinite;
 }
 
 /* Custom scrollbar */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-::-webkit-scrollbar-track {
-  background: var(--cx-bg);
-}
-::-webkit-scrollbar-thumb {
-  background: var(--cx-border);
-  border-radius: 3px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: var(--cx-steel);
-}
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--cx-bg); }
+::-webkit-scrollbar-thumb { background: var(--cx-border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--cx-steel); }
 
-/* Premium card hover */
+/* Premium card */
 .cx-card {
   transition: box-shadow 0.2s ease, transform 0.15s ease;
 }
 .cx-card:hover {
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.09);
   transform: translateY(-1px);
 }
 
-/* Button transitions */
-button {
-  transition: all 0.15s ease;
+/* Cards & surfaces stay clean white */
+.bg-white { background-color: #ffffff !important; }
+
+/* Table container as card */
+.cx-table-wrap {
+  background: #ffffff;
+  border: 1px solid var(--cx-border);
+  border-radius: 0.75rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  overflow: hidden;
 }
+
+/* Button transitions */
+button { transition: all 0.15s ease; }

@@ -30,7 +30,7 @@ export default function Layout({ children, currentPageName }) {
   const currentItem = navItems.find((n) => n.page === currentPageName);
 
   return (
-    <div className="min-h-screen flex" style={{ background: "var(--cx-bg)" }}>
+    <div className="min-h-screen flex cx-main-bg">
       {/* Mobile overlay */}
       {sidebarOpen && (
         <div
