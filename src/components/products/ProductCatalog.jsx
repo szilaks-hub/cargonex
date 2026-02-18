@@ -291,7 +291,9 @@ export default function ProductCatalog({ products, categories, isLoading, onEdit
           <div className="space-y-4">
             {groupedCategories.map(({ cat, items }) => {
               const type = getCategoryType(cat.name_en);
-              const columns = getColumnsForType(type, onEdit, handleArchive, handleDelete);
+              const { favs: sortedFavs, rest: sortedRest } = sortWithFavorites(items, favoriteProductIds);
+              const sortedItems = [...sortedFavs, ...sortedRest];
+              const columns = getColumnsForType(type, onEdit, handleArchive, handleDelete, toggleFavorite, favoriteProductIds);
               return (
                 <div key={cat.id} className="rounded-xl border border-[#D9E1E8] overflow-hidden shadow-sm">
                   {/* Category header */}
