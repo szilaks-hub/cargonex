@@ -7,7 +7,6 @@ import {
   Users,
   Truck,
   FileText,
-  MapPin,
   ShieldCheck,
   Menu,
   X,
