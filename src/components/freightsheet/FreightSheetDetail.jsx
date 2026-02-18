@@ -221,12 +221,12 @@ export default function FreightSheetDetail({ sheet, onBack, onUpdated, user }) {
         <div className="px-4 py-3 border-b border-slate-200 flex items-center justify-between">
           <h3 className="text-sm font-semibold text-slate-700">Fuvar sorok / Freight Lines</h3>
           <span className="text-xs text-slate-400">
-            {isDraft
+            {isDraft || isActive
               ? "Soronként mentés a 💾 ikonnal · Új sor az utolsó kék sorban"
-              : "Szerkesztéshez hozz létre Új verziót"}
+              : "Archivált – csak olvasható"}
           </span>
         </div>
-        <FreightSheetLineEditor sheet={currentSheet} readonly={!isDraft} />
+        <FreightSheetLineEditor sheet={currentSheet} readonly={isArchived} />
       </div>
 
       {/* Copy lines modal */}
