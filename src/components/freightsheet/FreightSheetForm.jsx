@@ -230,6 +230,10 @@ export default function FreightSheetForm({ item, onClose, onSaved, forceDraft = 
             </Select>
           </div>
           <div>
+            <Label className={lbl}>Paritás helye / Incoterms Place</Label>
+            <Input className={inp} placeholder="pl. Dabas, Budapest" value={form.incoterms_place || ""} onChange={e => set("incoterms_place", e.target.value)} />
+          </div>
+          <div>
             <Label className={lbl}>Currency / Deviza</Label>
             <Select value={form.currency} onValueChange={v => set("currency", v)}>
               <SelectTrigger className={inp}><SelectValue /></SelectTrigger>
