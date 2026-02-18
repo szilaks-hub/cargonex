@@ -14,7 +14,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 export default function OrderDetail({ order, onBack }) {
   const [showLineForm, setShowLineForm] = useState(false);
   const [editLine, setEditLine] = useState(null);
-  const [deleteDialog, setDeleteDialog] = useState({ open: false, message: "", action: null });
+  const [deleteDialog, setDeleteDialog] = useState({ open: false, message: "", action: null, cascade: false });
   const [deleteReason, setDeleteReason] = useState("");
   const [deleting, setDeleting] = useState(false);
   const qc = useQueryClient();
@@ -36,30 +36,38 @@ export default function OrderDetail({ order, onBack }) {
         entityName: 'PurchaseOrder',
         entityId: order.id,
         requestedAction: deleteDialog.action,
-        reason: deleteReason
+        reason: deleteReason || 'User deletion'
       });
 
       if (res.data.success) {
         qc.invalidateQueries({ queryKey: ["orders"] });
         onBack();
-      } else if (res.status === 409 && deleteDialog.action === 'HARD_DELETE') {
-        // 409 Conflict: has dependencies, offer archive
+      } else if (deleteDialog.action === 'HARD_DELETE' && res.data.canCascadeDelete) {
+        // Order has only lines, ask for confirmation and cascade
         setDeleteDialog({
           open: true,
-          message: `This order has dependencies (${Object.entries(res.data.dependencies).map(([k, v]) => `${k}: ${v}`).join(', ')}). Archive it instead?`,
+          message: `Rendelés ${res.data.dependencies['Order Lines']} tétellel. Törlöd a rendelést és az összes tételt?`,
+          action: 'HARD_DELETE',
+          cascade: true
+        });
+      } else if (res.status === 409 && deleteDialog.action === 'HARD_DELETE') {
+        // Has logistics/finance/receipts, offer archive only
+        setDeleteDialog({
+          open: true,
+          message: `Rendelés logisztikai, pénzügyi vagy bevételezési linkekkel kapcsolódik. Csak archiválható.`,
           action: 'ARCHIVE'
         });
       } else {
         setDeleteDialog({
           open: true,
-          message: res.data?.message || res.data?.error || 'Unknown error',
+          message: res.data?.message || res.data?.error || 'Ismeretlen hiba',
           action: null
         });
       }
     } catch (error) {
       setDeleteDialog({
         open: true,
-        message: `Error: ${error.message}`,
+        message: `Hiba: ${error.message}`,
         action: null
       });
     } finally {
@@ -151,7 +159,7 @@ export default function OrderDetail({ order, onBack }) {
       {/* Delete/Archive Dialog */}
       <Dialog open={deleteDialog.open} onOpenChange={(open) => {
         if (!open) {
-          setDeleteDialog({ open: false, message: "", action: null });
+          setDeleteDialog({ open: false, message: "", action: null, cascade: false });
           setDeleteReason("");
         }
       }}>
@@ -159,35 +167,23 @@ export default function OrderDetail({ order, onBack }) {
           <DialogHeader>
             <DialogTitle className="text-[#e6edf3] flex items-center gap-2">
               <AlertTriangle className="w-5 h-5 text-orange-500" />
-              {deleteDialog.action === 'ARCHIVE' ? 'Archive Order' : 'Delete Order'}
+              {deleteDialog.action === 'ARCHIVE' ? 'Rendelés archiválása' : deleteDialog.cascade ? 'Rendelés + tételek törlése' : 'Rendelés törlése'}
             </DialogTitle>
             <DialogDescription className="text-[#8b949e]">
               {deleteDialog.message}
             </DialogDescription>
           </DialogHeader>
 
-          {deleteDialog.action === 'FORCE_DELETE' && (
-            <div>
-              <Label className="text-[#8b949e] text-xs">Reason (required for force delete)</Label>
-              <Input
-                className="bg-[#1a1e23] border-[#2d333b] text-[#e6edf3] mt-2"
-                placeholder="Why are you deleting this?"
-                value={deleteReason}
-                onChange={(e) => setDeleteReason(e.target.value)}
-              />
-            </div>
-          )}
-
           <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={() => setDeleteDialog({ open: false, message: "", action: null })} className="border-[#2d333b] text-[#8b949e]">
-              Cancel
+            <Button variant="outline" onClick={() => setDeleteDialog({ open: false, message: "", action: null, cascade: false })} className="border-[#2d333b] text-[#8b949e]">
+              Mégsem
             </Button>
             <Button
               onClick={handleDelete}
-              disabled={deleting || (deleteDialog.action === 'FORCE_DELETE' && !deleteReason)}
+              disabled={deleting}
               className={deleteDialog.action === 'ARCHIVE' ? 'bg-amber-600 hover:bg-amber-700' : 'bg-red-600 hover:bg-red-700'}
             >
-              {deleting ? 'Processing...' : deleteDialog.action === 'ARCHIVE' ? 'Archive' : 'Delete'}
+              {deleting ? 'Feldolgozás...' : deleteDialog.action === 'ARCHIVE' ? 'Archivál' : deleteDialog.cascade ? 'Törlés tételekkel' : 'Törlés'}
             </Button>
           </div>
         </DialogContent>
