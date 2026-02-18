@@ -130,6 +130,18 @@ export default function ProductCatalog({ products, categories, isLoading, onEdit
   const [selectedCategoryId, setSelectedCategoryId] = useState("all");
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const qc = useQueryClient();
+
+  const handleArchive = async (r) => {
+    const newStatus = r.status === "archived" ? "active" : "archived";
+    await base44.entities.Product.update(r.id, { status: newStatus });
+    qc.invalidateQueries({ queryKey: ["products"] });
+  };
+
+  const handleDelete = async (r) => {
+    await base44.entities.Product.delete(r.id);
+    qc.invalidateQueries({ queryKey: ["products"] });
+  };
 
   // Build category list with counts
   const categoriesWithCounts = useMemo(() => {
