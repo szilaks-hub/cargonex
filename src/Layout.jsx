@@ -47,12 +47,12 @@ export default function Layout({ children, currentPageName }) {
         style={{ background: "var(--cx-sidebar)" }}
       >
         {/* Logo */}
-        <div className="p-5 border-b border-white/10">
+        <div className="px-5 pt-6 pb-5 border-b border-white/10">
           <div className="flex items-center justify-between">
             <img
               src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/user_695955de68183bcabeb8b12f/3e4f22a2f_CARGONEXv.png"
               alt="CARGONEX"
-              className="h-8 object-contain"
+              className="h-14 w-auto object-contain"
             />
             <button
               onClick={() => setSidebarOpen(false)}
@@ -61,7 +61,7 @@ export default function Layout({ children, currentPageName }) {
               <X className="w-4 h-4" />
             </button>
           </div>
-          <p className="text-[9px] tracking-[0.35em] text-slate-500 mt-2 uppercase">
+          <p className="text-[8px] tracking-[0.4em] text-slate-500 mt-3 uppercase font-medium">
             Cargo · Logistic · Custom · For Next Step
           </p>
         </div>
