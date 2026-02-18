@@ -331,25 +331,25 @@ function CustomsAgentFees({ partnerId, partnerName, fees, isLoading }) {
     qcFees.invalidateQueries({ queryKey: ["fees", partnerId] });
   };
 
+  const lbl = "text-slate-600 text-xs font-semibold";
+  const inp = "bg-white border-[#c6ccda] text-slate-800";
+
   return (
     <div>
-      <div className="flex items-center justify-between mb-3">
-        <h3 className="text-sm font-medium text-[#e6edf3] flex items-center gap-2">
-          <ShieldCheck className="w-4 h-4 text-purple-400" /> Customs Agent Fees / Vámügynöki díjak
-        </h3>
+      <div className="flex justify-end mb-2">
         <Button size="sm" onClick={() => openForm(null)} className="bg-blue-600 hover:bg-blue-700 text-white gap-1 text-xs">
           <Plus className="w-3 h-3" /> Add
         </Button>
       </div>
       {showForm && (
-        <div className="bg-[#22272e] border border-[#2d333b] rounded-lg p-4 mb-3 space-y-3">
+        <div className="bg-[#f5f7fa] border border-[rgba(46,58,90,0.12)] rounded-lg p-4 mb-3 space-y-3">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div><Label className="text-[#8b949e] text-xs">From *</Label><Input type="date" className="bg-[#1a1e23] border-[#2d333b] text-[#e6edf3]" value={form.period_from} onChange={(e) => setForm({ ...form, period_from: e.target.value })} /></div>
-            <div><Label className="text-[#8b949e] text-xs">To</Label><Input type="date" className="bg-[#1a1e23] border-[#2d333b] text-[#e6edf3]" value={form.period_to} onChange={(e) => setForm({ ...form, period_to: e.target.value })} /></div>
-            <div><Label className="text-[#8b949e] text-xs">Fee/Truck *</Label><Input type="number" className="bg-[#1a1e23] border-[#2d333b] text-[#e6edf3]" value={form.fee_per_truck} onChange={(e) => setForm({ ...form, fee_per_truck: e.target.value })} /></div>
+            <div><Label className={lbl}>From *</Label><Input type="date" className={inp} value={form.period_from} onChange={(e) => setForm({ ...form, period_from: e.target.value })} /></div>
+            <div><Label className={lbl}>To</Label><Input type="date" className={inp} value={form.period_to} onChange={(e) => setForm({ ...form, period_to: e.target.value })} /></div>
+            <div><Label className={lbl}>Fee/Truck *</Label><Input type="number" className={inp} value={form.fee_per_truck} onChange={(e) => setForm({ ...form, fee_per_truck: e.target.value })} /></div>
           </div>
           <div className="flex justify-end gap-2">
-            <Button variant="outline" size="sm" onClick={() => setShowForm(false)} className="border-[#2d333b] text-[#8b949e]">Cancel</Button>
+            <Button variant="outline" size="sm" onClick={() => setShowForm(false)} className="border-[#c6ccda] text-slate-600">Cancel</Button>
             <Button size="sm" onClick={handleSave} disabled={saving} className="bg-blue-600 hover:bg-blue-700 text-white"><Save className="w-3 h-3 mr-1" /> Save</Button>
           </div>
         </div>
