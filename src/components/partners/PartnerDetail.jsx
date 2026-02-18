@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import DataTable from "@/components/ui/DataTable";
 import { ArrowLeft, Plus, X, Save, Trash2, MapPin, UserCircle, ShieldCheck } from "lucide-react";
+import CountryPicker, { COUNTRIES } from "./CountryPicker";
 
 export default function PartnerDetail({ partner, onBack, onUpdated }) {
   const [showLocForm, setShowLocForm] = useState(false);
