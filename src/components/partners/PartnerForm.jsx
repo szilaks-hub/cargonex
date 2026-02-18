@@ -94,9 +94,12 @@ export default function PartnerForm({ item, onClose, onSaved }) {
           <Label className={lbl}>EU VAT</Label>
           <Input className={inp} value={form.eu_vat} onChange={(e) => set("eu_vat", e.target.value)} />
         </div>
-        <div>
-          <Label className={lbl}>Country / Ország</Label>
-          <Input className={inp} value={form.country} onChange={(e) => set("country", e.target.value)} />
+        <div className="sm:col-span-2 lg:col-span-3">
+          <CountryPicker
+            value={form.countries || []}
+            onChange={(v) => set("countries", v)}
+            required
+          />
         </div>
         <div>
           <Label className={lbl}>City / Város</Label>
