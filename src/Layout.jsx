@@ -75,7 +75,7 @@ export default function Layout({ children, currentPageName }) {
                 key={item.page}
                 to={createPageUrl(item.page)}
                 onClick={() => setSidebarOpen(false)}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all duration-150 group ${
+                className={`flex items-center gap-3 px-3 py-3 rounded-lg text-sm transition-all duration-150 group ${
                   isActive
                     ? "text-white shadow-md"
                     : "text-slate-400 hover:text-white hover:bg-white/10"
@@ -110,11 +110,11 @@ export default function Layout({ children, currentPageName }) {
             <Menu className="w-5 h-5" />
           </button>
           <div>
-            <h1 className="text-sm font-semibold text-slate-800">
+            <h1 className="text-base font-semibold text-slate-800">
               {currentItem?.name || currentPageName}
             </h1>
             {currentItem?.nameHu && (
-              <p className="text-[10px] text-slate-400 leading-none mt-0.5">{currentItem.nameHu}</p>
+              <p className="text-xs text-slate-500 leading-none mt-0.5">{currentItem.nameHu}</p>
             )}
           </div>
         </header>
