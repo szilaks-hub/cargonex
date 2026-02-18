@@ -114,8 +114,8 @@ export default function FreightSheetPrint({ sheet, lines, onClose }) {
                   {isHU && <th className="text-left py-2 pr-2 font-bold text-slate-700">Vármegye</th>}
                   <th className="text-left py-2 pr-2 font-bold text-slate-700">Város</th>
                   <th className="text-left py-2 pr-2 font-bold text-slate-700">ISZ</th>
-                  <th className="text-right py-2 pr-2 font-bold text-slate-700">Belföld (határig)</th>
-                  <th className="text-right py-2 pr-2 font-bold text-slate-700">Külföld (határtól)</th>
+                  <th className="text-right py-2 pr-2 font-bold text-slate-700">Belföld Határtól</th>
+                  <th className="text-right py-2 pr-2 font-bold text-slate-700">Külföld Határig</th>
                   <th className="text-right py-2 pr-2 font-bold text-slate-700">Összesen</th>
                   <th className="text-right py-2 pr-2 font-bold text-slate-700">Kiterh. (t)</th>
                   <th className="text-right py-2 font-bold text-slate-700">EUR/to</th>
