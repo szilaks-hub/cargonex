@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import PageHeader from "@/components/ui/PageHeader";
@@ -7,13 +7,21 @@ import StatusBadge from "@/components/ui/StatusBadge";
 import FreightSheetForm from "@/components/freightsheet/FreightSheetForm";
 import FreightSheetDetail from "@/components/freightsheet/FreightSheetDetail";
 import { Button } from "@/components/ui/button";
-import { FileText, Copy, GitBranch, Archive } from "lucide-react";
+import { FileText, Copy, Archive, CheckCircle2, Eye } from "lucide-react";
 
 export default function FreightSheets() {
   const [showForm, setShowForm] = useState(false);
   const [editItem, setEditItem] = useState(null);
   const [selectedSheet, setSelectedSheet] = useState(null);
+  const [showArchived, setShowArchived] = useState(false);
+  const [user, setUser] = useState(null);
   const qc = useQueryClient();
+
+  useEffect(() => {
+    base44.auth.me().then(u => setUser(u)).catch(() => {});
+  }, []);
+
+  const isAdmin = user?.role === "admin";
 
   const { data: sheets = [], isLoading } = useQuery({
     queryKey: ["freightSheets"],
