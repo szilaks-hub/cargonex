@@ -107,16 +107,41 @@ export default function FreightSheetDetail({ sheet, onBack, onUpdated, user }) {
         </div>
 
         <div className="flex gap-2 flex-wrap">
-          {/* Only draft can be directly edited */}
+          {/* Draft: Edit + Activate */}
           {isDraft && (
-            <Button variant="outline" onClick={() => setShowEdit(true)} className="gap-2 border-[#c6ccda] text-slate-600">
-              <Edit2 className="w-3.5 h-3.5" /> Edit
-            </Button>
+            <>
+              <Button variant="outline" onClick={() => setShowEdit(true)} className="gap-2 border-[#c6ccda] text-slate-600">
+                <Edit2 className="w-3.5 h-3.5" /> Szerkesztés
+              </Button>
+              {isAdmin && (
+                <Button
+                  onClick={handleActivate}
+                  disabled={activating || !canActivate}
+                  title={!canActivate ? "Nem teljesülnek az aktiválási feltételek" : "Aktiválás"}
+                  className="gap-2 text-white"
+                  style={{ background: canActivate ? "linear-gradient(135deg,#16a34a,#15803d)" : undefined }}
+                  variant={canActivate ? "default" : "outline"}
+                >
+                  <CheckCircle2 className="w-3.5 h-3.5" /> {activating ? "Aktiválás..." : "Aktiválás"}
+                </Button>
+              )}
+            </>
           )}
-          {/* Active sheets get "new version" instead of edit */}
-          {isActive && (
-            <Button variant="outline" onClick={() => setShowNewVersion(true)} className="gap-2 border-amber-300 text-amber-700 hover:bg-amber-50">
-              <GitBranch className="w-3.5 h-3.5" /> Új verzió
+          {/* Active: New version + Archive */}
+          {isActive && isAdmin && (
+            <>
+              <Button variant="outline" onClick={() => setShowNewVersion(true)} className="gap-2 border-amber-300 text-amber-700 hover:bg-amber-50">
+                <GitBranch className="w-3.5 h-3.5" /> Új verzió
+              </Button>
+              <Button variant="outline" onClick={handleArchive} disabled={archiving} className="gap-2 border-slate-300 text-slate-500 hover:bg-slate-50">
+                <Archive className="w-3.5 h-3.5" /> {archiving ? "..." : "Archiválás"}
+              </Button>
+            </>
+          )}
+          {/* Archived: Restore */}
+          {isArchived && isAdmin && (
+            <Button variant="outline" onClick={handleArchive} disabled={archiving} className="gap-2 border-blue-300 text-blue-600 hover:bg-blue-50">
+              <Archive className="w-3.5 h-3.5" /> {archiving ? "..." : "Visszaállítás (Draft)"}
             </Button>
           )}
           <Button variant="outline" onClick={() => setShowCopyLines(true)} className="gap-2 border-[#c6ccda] text-slate-600">
