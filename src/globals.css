@@ -4,44 +4,44 @@ css
 @tailwind utilities;
 
 :root {
-  /* Light Steel Premium Palette */
-  --cx-bg: #f0f2f5;
-  --cx-surface: #ffffff;
-  --cx-surface2: #f8f9fb;
-  --cx-border: #e2e6ec;
-  --cx-blue: #2563eb;
-  --cx-blue-light: #eff6ff;
-  --cx-red: #dc2626;
-  --cx-orange: #ea580c;
-  --cx-steel: #64748b;
-  --cx-text: #0f172a;
-  --cx-text-muted: #64748b;
-  --cx-sidebar: #1e293b;
-  --cx-sidebar-text: #cbd5e1;
-  --cx-sidebar-active: #2563eb;
+  /* CARGONEX Premium Palette – warm steel, not white */
+  --cx-bg: #e8eaed;
+  --cx-surface: #f4f5f7;
+  --cx-surface2: #eceef1;
+  --cx-border: #d0d4db;
+  --cx-blue: #1d4ed8;
+  --cx-blue-light: #dbeafe;
+  --cx-red: #c0392b;
+  --cx-orange: #d35400;
+  --cx-steel: #52606d;
+  --cx-text: #0d1117;
+  --cx-text-muted: #52606d;
+  --cx-sidebar: #1a1f2e;
+  --cx-sidebar-text: #c8cdd8;
+  --cx-sidebar-active: #e05a2b;
 }
 
 @layer base {
   :root {
-    --background: 214 20% 95%;
-    --foreground: 222 47% 7%;
-    --card: 0 0% 100%;
-    --card-foreground: 222 47% 7%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 7%;
-    --primary: 221 83% 53%;
+    --background: 216 14% 89%;
+    --foreground: 220 30% 8%;
+    --card: 220 15% 96%;
+    --card-foreground: 220 30% 8%;
+    --popover: 220 15% 96%;
+    --popover-foreground: 220 30% 8%;
+    --primary: 20 75% 50%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 214 20% 95%;
-    --secondary-foreground: 222 47% 7%;
-    --muted: 214 20% 95%;
-    --muted-foreground: 215 16% 47%;
-    --accent: 213 27% 94%;
-    --accent-foreground: 222 47% 7%;
-    --destructive: 0 84% 60%;
+    --secondary: 216 14% 89%;
+    --secondary-foreground: 220 30% 8%;
+    --muted: 216 14% 89%;
+    --muted-foreground: 215 14% 40%;
+    --accent: 216 14% 85%;
+    --accent-foreground: 220 30% 8%;
+    --destructive: 0 75% 45%;
     --destructive-foreground: 0 0% 100%;
-    --border: 214 32% 88%;
-    --input: 214 32% 88%;
-    --ring: 221 83% 53%;
+    --border: 216 16% 78%;
+    --input: 216 16% 78%;
+    --ring: 20 75% 50%;
     --radius: 0.625rem;
   }
 }
