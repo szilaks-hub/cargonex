@@ -82,7 +82,8 @@ Deno.serve(async (req) => {
     }
 
     // Get entity to check lock status
-    const entity = await base44.asServiceRole.entities[entityName].read(entityId);
+    const entities = await base44.asServiceRole.entities[entityName].filter({ id: entityId });
+    const entity = entities[0];
     if (!entity) {
       return Response.json({ error: 'Entity not found' }, { status: 404 });
     }
