@@ -19,12 +19,24 @@ const ALL_ROLES = [
 export default function PartnerForm({ item, onClose, onSaved }) {
   const [form, setForm] = useState(item || {
     name: "", roles: [], tax_number: "", eu_vat: "",
-    country: "", city: "", address: "", postal_code: "",
+    countries: [], country: "", city: "", address: "", postal_code: "",
     phone: "", email: "", website: "", notes: "", status: "active"
   });
   const [saving, setSaving] = useState(false);
 
   const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
+
+  // Auto-suggest country from VAT / tax number prefix
+  useEffect(() => {
+    const vatGuess = guessCountryFromVat(form.eu_vat) || guessCountryFromVat(form.tax_number);
+    if (vatGuess) {
+      setForm((f) => {
+        const already = (f.countries || []).includes(vatGuess.code);
+        if (already) return f;
+        return { ...f, countries: [...(f.countries || []), vatGuess.code] };
+      });
+    }
+  }, [form.eu_vat, form.tax_number]);
   const toggleRole = (role) => {
     const roles = form.roles || [];
     set("roles", roles.includes(role) ? roles.filter((r) => r !== role) : [...roles, role]);
