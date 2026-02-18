@@ -176,15 +176,14 @@ export default function FreightSheetDetail({ sheet, onBack, onUpdated, user }) {
       )}
 
       {/* Status notice for non-draft */}
-      {!isDraft && (
-        <div className={`rounded-lg px-4 py-2.5 text-xs flex items-center gap-2 ${
-          isActive
-            ? "bg-green-50 border border-green-200 text-green-700"
-            : "bg-slate-50 border border-slate-200 text-slate-500"
-        }`}>
-          {isActive
-            ? "✅ Aktív lap: közvetlen szerkesztés nem lehetséges. Módosításhoz hozz létre Új verziót (régi lap automatikusan archiválódik)."
-            : "📦 Archivált lap – csak olvasható. Admin visszaállíthatja Draft státuszba."}
+      {isActive && (
+        <div className="rounded-lg px-4 py-2.5 text-xs flex items-center gap-2 bg-green-50 border border-green-200 text-green-700">
+          ✅ Aktív lap: szerkeszthető, vagy hozz létre Új verziót (régi lap automatikusan archiválódik).
+        </div>
+      )}
+      {isArchived && (
+        <div className="rounded-lg px-4 py-2.5 text-xs flex items-center gap-2 bg-slate-50 border border-slate-200 text-slate-500">
+          📦 Archivált lap – csak olvasható. Admin visszaállíthatja Draft státuszba.
         </div>
       )}
 
