@@ -20,7 +20,7 @@ const navItems = [
   { name: "Products", nameHu: "Termékek", icon: Package, page: "Products" },
   { name: "Partners", nameHu: "Partnerek", icon: Users, page: "Partners" },
   { name: "Freight Rates", nameHu: "Fuvardíjak", icon: MapPin, page: "FreightRates" },
-  { name: "Freight Sheets", nameHu: "Fuvarozási lapok", icon: FileText, page: "FreightSheets" },
+  { name: "Freight Sheets", nameHu: "Fuvarozási lapok", icon: ClipboardList, page: "FreightSheets" },
   { name: "Orders", nameHu: "Rendelések", icon: FileText, page: "Orders" },
   { name: "Logistics", nameHu: "Logisztika", icon: Truck, page: "Logistics" },
   { name: "Finance / Customs", nameHu: "Pénzügy / Vám", icon: ShieldCheck, page: "Finance" },
