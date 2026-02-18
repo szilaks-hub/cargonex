@@ -118,7 +118,7 @@ function NewLineRow({ sheetId, defaultLoad, onSaved }) {
   );
 }
 
-export default function FreightSheetLineEditor({ sheet }) {
+export default function FreightSheetLineEditor({ sheet, readonly = false }) {
   const qc = useQueryClient();
 
   const { data: lines = [], isLoading } = useQuery({
