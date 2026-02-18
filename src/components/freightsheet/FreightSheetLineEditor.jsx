@@ -3,9 +3,8 @@ import { base44 } from "@/api/base44Client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Trash2, Save, Copy } from "lucide-react";
-import ZipAutocomplete from "@/components/freightsheet/ZipAutocomplete";
+import HuLocationSearch from "@/components/ui/HuLocationSearch";
 
 const HU_COUNTIES = [
   "Budapest", "Bács-Kiskun", "Baranya", "Békés", "Borsod-Abaúj-Zemplén",
