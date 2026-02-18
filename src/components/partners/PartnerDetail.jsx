@@ -119,6 +119,117 @@ export default function PartnerDetail({ partner, onBack, onUpdated }) {
   );
 }
 
+function ExpiryBadge({ dateStr }) {
+  if (!dateStr) return <span className="text-slate-400">-</span>;
+  const d = parseISO(dateStr);
+  const soon = isBefore(d, addDays(new Date(), 60));
+  const expired = isBefore(d, new Date());
+  return (
+    <span className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full ${
+      expired ? "bg-red-100 text-red-700" : soon ? "bg-amber-100 text-amber-700" : "bg-green-100 text-green-700"
+    }`}>
+      {(expired || soon) && <AlertTriangle className="w-3 h-3" />}
+      {dateStr}
+    </span>
+  );
+}
+
+function InfoRow({ label, value }) {
+  if (!value) return null;
+  return (
+    <div className="flex flex-col">
+      <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wide">{label}</span>
+      <span className="text-sm text-slate-700 font-medium">{value}</span>
+    </div>
+  );
+}
+
+function RoleInfoPanels({ partner, isCarrier, isCustomsAgent, isSupplier, isCustomer }) {
+  const panels = [];
+
+  if (isCarrier && (partner.carrier_license_number || partner.carrier_truck_count)) {
+    panels.push(
+      <div key="carrier" className="bg-orange-50 border border-orange-200 rounded-xl p-4">
+        <div className="flex items-center gap-2 mb-3">
+          <Truck className="w-4 h-4 text-orange-600" />
+          <span className="text-xs font-bold text-orange-700 uppercase tracking-wide">Carrier / Fuvarozói adatok</span>
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+          <InfoRow label="License No." value={partner.carrier_license_number} />
+          <div className="flex flex-col">
+            <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wide">License Expiry</span>
+            <ExpiryBadge dateStr={partner.carrier_license_expiry} />
+          </div>
+          <InfoRow label="Insurance No." value={partner.carrier_insurance_number} />
+          <div className="flex flex-col">
+            <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wide">Insurance Expiry</span>
+            <ExpiryBadge dateStr={partner.carrier_insurance_expiry} />
+          </div>
+          <InfoRow label="Trucks / Járművek" value={partner.carrier_truck_count} />
+          <InfoRow label="Capacity (t)" value={partner.carrier_capacity_tons} />
+        </div>
+      </div>
+    );
+  }
+
+  if (isCustomsAgent && (partner.customs_agent_aeo_number || partner.customs_agent_license_number)) {
+    panels.push(
+      <div key="customs" className="bg-purple-50 border border-purple-200 rounded-xl p-4">
+        <div className="flex items-center gap-2 mb-3">
+          <ShieldCheck className="w-4 h-4 text-purple-600" />
+          <span className="text-xs font-bold text-purple-700 uppercase tracking-wide">Customs Agent / Vámügynöki adatok</span>
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          <InfoRow label="AEO Number" value={partner.customs_agent_aeo_number} />
+          <div className="flex flex-col">
+            <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wide">AEO Expiry</span>
+            <ExpiryBadge dateStr={partner.customs_agent_aeo_expiry} />
+          </div>
+          <InfoRow label="License No." value={partner.customs_agent_license_number} />
+        </div>
+      </div>
+    );
+  }
+
+  if (isSupplier && (partner.supplier_bank_name || partner.supplier_payment_terms)) {
+    panels.push(
+      <div key="supplier" className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+        <div className="flex items-center gap-2 mb-3">
+          <Package className="w-4 h-4 text-blue-600" />
+          <span className="text-xs font-bold text-blue-700 uppercase tracking-wide">Supplier / Beszállítói adatok</span>
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+          <InfoRow label="Payment Terms" value={partner.supplier_payment_terms} />
+          <InfoRow label="Currency" value={partner.supplier_currency} />
+          <InfoRow label="Incoterms" value={partner.supplier_incoterms} />
+          <InfoRow label="Bank Name" value={partner.supplier_bank_name} />
+          <InfoRow label="Bank Account" value={partner.supplier_bank_account} />
+          <InfoRow label="SWIFT" value={partner.supplier_bank_swift} />
+          <InfoRow label="IBAN" value={partner.supplier_bank_iban} />
+        </div>
+      </div>
+    );
+  }
+
+  if (isCustomer && (partner.customer_payment_terms || partner.customer_credit_limit)) {
+    panels.push(
+      <div key="customer" className="bg-green-50 border border-green-200 rounded-xl p-4">
+        <div className="flex items-center gap-2 mb-3">
+          <Users className="w-4 h-4 text-green-600" />
+          <span className="text-xs font-bold text-green-700 uppercase tracking-wide">Customer / Vevői adatok</span>
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          <InfoRow label="Payment Terms" value={partner.customer_payment_terms} />
+          <InfoRow label="Credit Limit" value={partner.customer_credit_limit ? `${partner.customer_credit_limit} ${partner.customer_credit_currency || "EUR"}` : null} />
+        </div>
+      </div>
+    );
+  }
+
+  if (!panels.length) return null;
+  return <div className="space-y-3">{panels}</div>;
+}
+
 function LocationForm({ partner, item, onClose, onSaved }) {
   const [form, setForm] = useState(item || { partner_id: partner.id, partner_name: partner.name, location_name: "", country: "", region: "", city: "", address: "", postal_code: "", is_primary: false });
   const [saving, setSaving] = useState(false);
