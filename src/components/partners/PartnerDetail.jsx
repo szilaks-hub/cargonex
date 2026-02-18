@@ -396,9 +396,19 @@ function CustomsAgentFees({ partnerId, partnerName, fees, isLoading }) {
       <DataTable
         columns={[
           { header: "From", key: "period_from" },
-          { header: "To", key: "period_to", render: (r) => r.period_to || "-" },
-          { header: "Fee/Truck", render: (r) => `${r.fee_per_truck} ${r.currency || "EUR"}` },
-          { header: "Notes", key: "notes", render: (r) => r.notes || "-" },
+          { header: "To", render: (r) => r.period_to || <span className="text-slate-400">open</span> },
+          { header: "Type", render: (r) => {
+            const t = r.fee_type || "per_truck";
+            const cls = t === "per_truck" ? "bg-orange-50 text-orange-700" : t === "per_declaration" ? "bg-purple-50 text-purple-700" : "bg-slate-100 text-slate-600";
+            return <span className={`inline-flex px-2 py-0.5 rounded text-[10px] font-semibold ${cls}`}>{t.replace(/_/g," ")}</span>;
+          }},
+          { header: "Fee", render: (r) => <span className="font-semibold">{r.fee_per_truck} {r.currency || "EUR"}</span> },
+          { header: "Notes", render: (r) => r.notes || "-" },
+          { header: "", render: (r) => (
+            <button onClick={(e) => { e.stopPropagation(); openForm(r); }} className="text-slate-400 hover:text-blue-600 p-1">
+              <Pencil className="w-3.5 h-3.5" />
+            </button>
+          )},
         ]}
         data={fees}
         isLoading={isLoading}
