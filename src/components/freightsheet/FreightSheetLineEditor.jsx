@@ -6,13 +6,6 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Plus, Trash2, Save, Copy } from "lucide-react";
 import HuLocationSearch from "@/components/ui/HuLocationSearch";
 
-const HU_COUNTIES = [
-  "Budapest", "Bács-Kiskun", "Baranya", "Békés", "Borsod-Abaúj-Zemplén",
-  "Csongrád-Csanád", "Fejér", "Győr-Moson-Sopron", "Hajdú-Bihar", "Heves",
-  "Jász-Nagykun-Szolnok", "Komárom-Esztergom", "Nógrád", "Pest", "Somogy",
-  "Szabolcs-Szatmár-Bereg", "Tolna", "Vas", "Veszprém", "Zala"
-];
-
 function calcTotals(form, defaultLoad) {
   const dom = Number(form.domestic_leg) || 0;
   const fgn = Number(form.foreign_leg) || 0;
