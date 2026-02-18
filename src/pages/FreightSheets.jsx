@@ -44,6 +44,11 @@ export default function FreightSheets() {
     qc.invalidateQueries({ queryKey: ["freightSheets"] });
   };
 
+  const handleActivate = async (r) => {
+    await base44.entities.FreightSheet.update(r.id, { status: "active" });
+    qc.invalidateQueries({ queryKey: ["freightSheets"] });
+  };
+
   const handleDelete = async (r) => {
     if (r.status !== "draft") return;
     const lines = allLines.filter(l => l.sheet_id === r.id);
