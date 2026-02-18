@@ -274,7 +274,7 @@ export default function ProductCatalog({ products, categories, isLoading, onEdit
           <div className="space-y-4">
             {groupedCategories.map(({ cat, items }) => {
               const type = getCategoryType(cat.name_en);
-              const columns = getColumnsForType(type);
+              const columns = getColumnsForType(type, onEdit, handleArchive, handleDelete);
               return (
                 <div key={cat.id} className="rounded-xl border border-[#D9E1E8] overflow-hidden shadow-sm">
                   {/* Category header */}
