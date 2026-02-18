@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { X, Save, Trash2 } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
+import CountryPicker, { guessCountryFromVat } from "./CountryPicker";
 
 const ALL_ROLES = [
   { value: "supplier", label: "Supplier / Beszállító" },
