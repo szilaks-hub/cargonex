@@ -468,7 +468,7 @@ export default function OrderbookDetail({ orderId, onClose, onUpdated }) {
                         line={line}
                         categories={categories}
                         isEditing={editingLineId === line.id}
-                        isDraft={isDraft}
+                        isEditable={isEditable}
                         onUpdate={(updates) => handleUpdateLine(line.id, updates)}
                         onDelete={() => handleDeleteLine(line.id)}
                         onDuplicate={() => handleDuplicateLine(line)}
