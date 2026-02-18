@@ -225,7 +225,7 @@ export default function FreightSheets() {
         columns={columns}
         data={sortedSheets}
         isLoading={isLoading}
-        onRowClick={r => r.status !== "archived" && setSelectedSheet(r)}
+        onRowClick={r => setSelectedSheet(r)}
         emptyMessage={
           <div className="flex flex-col items-center gap-2 py-8 text-slate-400">
             <FileText className="w-8 h-8 opacity-30" />
