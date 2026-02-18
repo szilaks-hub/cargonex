@@ -11,7 +11,8 @@ import {
   ShieldCheck,
   Menu,
   X,
-  ChevronRight
+  ChevronRight,
+  ClipboardList
 } from "lucide-react";
 
 const navItems = [
