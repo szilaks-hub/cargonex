@@ -1,11 +1,10 @@
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Plus, Trash2, Save } from "lucide-react";
+import ZipAutocomplete from "@/components/freightsheet/ZipAutocomplete";
 
 function LineRow({ line, defaultLoad, onSave, onDelete }) {
   const [form, setForm] = useState({ ...line });
