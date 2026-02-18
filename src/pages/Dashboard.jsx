@@ -56,9 +56,9 @@ export default function Dashboard() {
   const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
       return (
-        <div className="bg-[#22272e] border border-[#2d333b] rounded-lg px-3 py-2 text-xs text-[#e6edf3]">
-          <p className="font-medium">{label || payload[0].name}</p>
-          <p className="text-[#8b949e]">{payload[0].value}</p>
+        <div className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-700 shadow-md">
+          <p className="font-semibold">{label || payload[0].name}</p>
+          <p className="text-slate-500">{payload[0].value}</p>
         </div>
       );
     }
@@ -90,35 +90,35 @@ export default function Dashboard() {
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Country breakdown */}
-        <div className="bg-[#1a1e23] border border-[#2d333b] rounded-xl p-5">
-          <h3 className="text-sm font-medium text-[#8b949e] uppercase tracking-wide mb-4">
+        <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+          <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-4">
             Country Breakdown / Ország bontás
           </h3>
           {countryData.length > 0 ? (
             <ResponsiveContainer width="100%" height={250}>
               <BarChart data={countryData}>
-                <XAxis dataKey="name" tick={{ fill: "#8b949e", fontSize: 11 }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fill: "#8b949e", fontSize: 11 }} axisLine={false} tickLine={false} />
+                <XAxis dataKey="name" tick={{ fill: "#94a3b8", fontSize: 11 }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fill: "#94a3b8", fontSize: 11 }} axisLine={false} tickLine={false} />
                 <Tooltip content={<CustomTooltip />} />
-                <Bar dataKey="value" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="value" fill="#2563eb" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           ) : (
-            <div className="h-[250px] flex items-center justify-center text-[#8b949e] text-sm">
+            <div className="h-[250px] flex items-center justify-center text-slate-400 text-sm">
               No data / Nincs adat
             </div>
           )}
         </div>
 
         {/* Carrier breakdown */}
-        <div className="bg-[#1a1e23] border border-[#2d333b] rounded-xl p-5">
-          <h3 className="text-sm font-medium text-[#8b949e] uppercase tracking-wide mb-4">
+        <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+          <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-4">
             Carrier Breakdown / Fuvarozó bontás
           </h3>
           {carrierData.length > 0 ? (
             <ResponsiveContainer width="100%" height={250}>
               <PieChart>
-                <Pie data={carrierData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={90} strokeWidth={0}>
+                <Pie data={carrierData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={90} strokeWidth={2} stroke="#fff">
                   {carrierData.map((_, i) => (
                     <Cell key={i} fill={COLORS[i % COLORS.length]} />
                   ))}
@@ -127,14 +127,14 @@ export default function Dashboard() {
               </PieChart>
             </ResponsiveContainer>
           ) : (
-            <div className="h-[250px] flex items-center justify-center text-[#8b949e] text-sm">
+            <div className="h-[250px] flex items-center justify-center text-slate-400 text-sm">
               No data / Nincs adat
             </div>
           )}
           {carrierData.length > 0 && (
             <div className="flex flex-wrap gap-3 mt-3">
               {carrierData.map((c, i) => (
-                <div key={c.name} className="flex items-center gap-1.5 text-xs text-[#8b949e]">
+                <div key={c.name} className="flex items-center gap-1.5 text-xs text-slate-500">
                   <div className="w-2 h-2 rounded-full" style={{ backgroundColor: COLORS[i % COLORS.length] }} />
                   {c.name}
                 </div>
