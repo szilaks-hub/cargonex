@@ -10,10 +10,16 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { X, Save, Trash2 } from "lucide-react";
 
 const INCOTERMS = ["EXW", "FCA", "CPT", "CIP", "DAP", "DPU", "DDP", "FAS", "FOB", "CFR", "CIF"];
-const COUNTRIES = ["HU", "SK", "RO", "PL", "HR", "SI", "RS", "AT", "DE", "CZ", "BG", "UA"];
+const COUNTRIES = ["HU", "SK", "RO", "PL", "HR", "SI", "RS", "AT", "DE", "CZ", "BG", "UA", "BA", "ME", "MK", "AL"];
 
-export default function FreightSheetForm({ item, onClose, onSaved }) {
-  const [form, setForm] = useState(item || {
+export default function FreightSheetForm({ item, onClose, onSaved, forceDraft = false }) {
+  const isDraft = !item?.id || item?.status === "draft" || forceDraft;
+
+  const [form, setForm] = useState(item ? {
+    ...item,
+    status: forceDraft ? "draft" : item.status,
+    sheet_number: forceDraft ? "" : item.sheet_number,
+  } : {
     sheet_number: "",
     carrier_id: "", carrier_name: "",
     supplier_id: "", supplier_name: "",
@@ -27,7 +33,7 @@ export default function FreightSheetForm({ item, onClose, onSaved }) {
     currency: "EUR",
     default_load_tons: 24,
     notes: "",
-    status: "active"
+    status: "draft"
   });
   const [saving, setSaving] = useState(false);
 
@@ -46,19 +52,19 @@ export default function FreightSheetForm({ item, onClose, onSaved }) {
       if (site) {
         set("origin_country", site.country || "");
         set("origin_city", site.city || "");
-        set("supplier_site_name", `${site.partner_name} - ${site.location_name}`);
+        set("supplier_site_name", site.location_name);
       }
     }
   }, [form.supplier_site_id]);
 
   const handleSave = async () => {
     setSaving(true);
-    const data = {
-      ...form,
-      default_load_tons: Number(form.default_load_tons) || 24,
-    };
-    if (item?.id) await base44.entities.FreightSheet.update(item.id, data);
-    else await base44.entities.FreightSheet.create(data);
+    const data = { ...form, default_load_tons: Number(form.default_load_tons) || 24 };
+    if (item?.id && !forceDraft) {
+      await base44.entities.FreightSheet.update(item.id, data);
+    } else {
+      await base44.entities.FreightSheet.create(data);
+    }
     setSaving(false);
     onSaved();
   };
@@ -69,13 +75,19 @@ export default function FreightSheetForm({ item, onClose, onSaved }) {
 
   const lbl = "text-slate-600 text-xs font-semibold";
   const inp = "bg-white border-[#c6ccda] text-slate-800";
+  const inpRO = "bg-slate-100 border-[#c6ccda] text-slate-500";
 
   return (
     <div className="bg-[#f5f7fa] border border-[rgba(46,58,90,0.12)] rounded-xl p-5 space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-slate-800">
-          {item ? "Edit Freight Sheet" : "New Freight Sheet / Új fuvarozási lap"}
-        </h3>
+        <div>
+          <h3 className="text-sm font-semibold text-slate-800">
+            {forceDraft ? "Új verzió / New Version" : item ? "Edit Freight Sheet" : "Új fuvarozási lap / New Freight Sheet"}
+          </h3>
+          {forceDraft && (
+            <p className="text-xs text-amber-600 mt-0.5">A régi lap archiválva lesz. Az új lap Draft státuszban jön létre.</p>
+          )}
+        </div>
         <button onClick={onClose} className="text-slate-400 hover:text-slate-700"><X className="w-4 h-4" /></button>
       </div>
 
@@ -109,17 +121,17 @@ export default function FreightSheetForm({ item, onClose, onSaved }) {
           </Select>
         </div>
         <div>
-          <Label className={lbl}>Supplier Site / Telephely *</Label>
+          <Label className={lbl}>Supplier Site / Telephely</Label>
           <Select value={form.supplier_site_id} onValueChange={v => set("supplier_site_id", v)} disabled={!form.supplier_id}>
             <SelectTrigger className={inp}><SelectValue placeholder="Select site..." /></SelectTrigger>
             <SelectContent className="bg-white border-[#c6ccda]">
-              {supplierSites.map(l => <SelectItem key={l.id} value={l.id}>{l.location_name} {l.city ? `– ${l.city}` : ""}</SelectItem>)}
+              {supplierSites.map(l => <SelectItem key={l.id} value={l.id}>{l.location_name}{l.city ? ` – ${l.city}` : ""}</SelectItem>)}
             </SelectContent>
           </Select>
         </div>
         <div>
           <Label className={lbl}>Origin Country / Feladó ország</Label>
-          <Input className={`${inp} bg-slate-100`} value={form.origin_country} readOnly placeholder="Auto from site" />
+          <Input className={inpRO} value={form.origin_country} readOnly placeholder="Auto from site" />
         </div>
         <div>
           <Label className={lbl}>Origin City / Feladó város</Label>
@@ -127,7 +139,7 @@ export default function FreightSheetForm({ item, onClose, onSaved }) {
         </div>
         <div>
           <Label className={lbl}>Origin Address / Feladó cím</Label>
-          <Input className={inp} value={form.origin_address} onChange={e => set("origin_address", e.target.value)} placeholder="e.g. Rumski put 27." />
+          <Input className={inp} value={form.origin_address} onChange={e => set("origin_address", e.target.value)} placeholder="pl. Rumski put 27." />
         </div>
         <div>
           <Label className={lbl}>Destination Country / Célország *</Label>
@@ -155,7 +167,7 @@ export default function FreightSheetForm({ item, onClose, onSaved }) {
           <Label className={lbl}>Valid To / Érvényes eddig</Label>
           <Input type="date" className={inp} value={form.valid_to} onChange={e => set("valid_to", e.target.value)} disabled={form.valid_until_revoked} />
           <label className="flex items-center gap-2 mt-1.5 cursor-pointer">
-            <Checkbox checked={form.valid_until_revoked} onCheckedChange={v => set("valid_until_revoked", v)} />
+            <Checkbox checked={!!form.valid_until_revoked} onCheckedChange={v => set("valid_until_revoked", v)} />
             <span className="text-xs text-slate-500">Visszavonásig érvényes</span>
           </label>
         </div>
@@ -179,8 +191,8 @@ export default function FreightSheetForm({ item, onClose, onSaved }) {
           <Select value={form.status} onValueChange={v => set("status", v)}>
             <SelectTrigger className={inp}><SelectValue /></SelectTrigger>
             <SelectContent className="bg-white border-[#c6ccda]">
+              <SelectItem value="draft">Draft / Tervezet</SelectItem>
               <SelectItem value="active">Active / Aktív</SelectItem>
-              <SelectItem value="inactive">Inactive / Inaktív</SelectItem>
               <SelectItem value="archived">Archived / Archivált</SelectItem>
             </SelectContent>
           </Select>
@@ -192,11 +204,17 @@ export default function FreightSheetForm({ item, onClose, onSaved }) {
       </div>
 
       <div className="flex justify-between pt-2">
-        <div>{item?.id && <Button variant="ghost" onClick={handleDelete} className="text-red-500 hover:text-red-600 hover:bg-red-50 gap-2"><Trash2 className="w-4 h-4" /> Delete</Button>}</div>
+        <div>
+          {item?.id && !forceDraft && item.status === "draft" && (
+            <Button variant="ghost" onClick={handleDelete} className="text-red-500 hover:text-red-600 hover:bg-red-50 gap-2">
+              <Trash2 className="w-4 h-4" /> Delete
+            </Button>
+          )}
+        </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={onClose} className="border-[#c6ccda] text-slate-600">Cancel</Button>
-          <Button onClick={handleSave} disabled={saving} className="gap-2" style={{background: "linear-gradient(135deg,#e05a2b,#c0392b)", color: "#fff"}}>
-            <Save className="w-4 h-4" /> Save
+          <Button onClick={handleSave} disabled={saving} className="gap-2" style={{ background: "linear-gradient(135deg,#e05a2b,#c0392b)", color: "#fff" }}>
+            <Save className="w-4 h-4" /> {forceDraft ? "Verzió létrehozása" : "Save"}
           </Button>
         </div>
       </div>
