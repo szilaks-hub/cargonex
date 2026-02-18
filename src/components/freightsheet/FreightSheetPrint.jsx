@@ -54,22 +54,22 @@ export default function FreightSheetPrint({ sheet, lines, onClose }) {
           <div className="print-page p-10 text-[13px] text-slate-900 font-sans">
 
             {/* ── HEADER ───────────────────────────────────────────── */}
-            <div className="flex items-start justify-between mb-8 pb-6 border-b-2 border-slate-200">
-              <div>
-                <img
-                  src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/user_695955de68183bcabeb8b12f/3e4f22a2f_CARGONEXv.png"
-                  alt="CARGONEX"
-                  className="h-12 object-contain mb-3"
-                />
-                <h1 className="text-xl font-bold text-slate-800 tracking-tight">Fuvarköltség nyilatkozat</h1>
-                <p className="text-xs text-slate-500 font-medium uppercase tracking-widest mt-0.5">Freight Cost Declaration</p>
-              </div>
-              <div className="text-right text-xs text-slate-500 space-y-1">
-                {sheet.sheet_number && <p className="font-bold text-slate-700 text-sm">#{sheet.sheet_number}</p>}
-                <p>Kelt: {today}</p>
-                <p className="mt-2 font-semibold text-slate-600">{sheet.currency}</p>
-              </div>
-            </div>
+             <div className="flex items-start justify-between mb-8 pb-6 border-b-2 border-slate-200">
+               <div>
+                 <img
+                   src={sheet.sheet_logo_url || "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/user_695955de68183bcabeb8b12f/3e4f22a2f_CARGONEXv.png"}
+                   alt="Logo"
+                   className="h-12 object-contain mb-3"
+                 />
+                 <h1 className="text-xl font-bold text-slate-800 tracking-tight">Fuvarköltség nyilatkozat</h1>
+                 <p className="text-xs text-slate-500 font-medium uppercase tracking-widest mt-0.5">Freight Cost Declaration</p>
+               </div>
+               <div className="text-right text-xs text-slate-500 space-y-1">
+                 {sheet.sheet_number && <p className="font-bold text-slate-700 text-sm">#{sheet.sheet_number}</p>}
+                 <p>Kelt: {today}</p>
+                 <p className="mt-2 font-semibold text-slate-600">{sheet.currency}</p>
+               </div>
+             </div>
 
             {/* ── META INFO GRID ────────────────────────────────────── */}
             <div className="grid grid-cols-2 gap-x-10 gap-y-3 mb-8 text-sm">
