@@ -368,8 +368,8 @@ export default function OrderbookDetail({ orderId, onClose, onUpdated }) {
                   placeholder="e.g., Net 30"
                   value={form.payment_terms || ""}
                   onChange={(e) => handleFormChange({ payment_terms: e.target.value })}
-                  disabled={!isDraft}
-                  className={!isDraft ? 'bg-slate-100 text-slate-600' : 'bg-white'}
+                  disabled={!isEditable}
+                  className={!isEditable ? 'bg-slate-100 text-slate-600' : 'bg-white'}
                 />
               </div>
             </div>
