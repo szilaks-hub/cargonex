@@ -2,20 +2,25 @@ import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Printer, Edit2, GitBranch, Copy } from "lucide-react";
+import { ArrowLeft, Printer, Edit2, GitBranch, Copy, CheckCircle2, Archive, AlertCircle } from "lucide-react";
 import StatusBadge from "@/components/ui/StatusBadge";
 import FreightSheetLineEditor from "./FreightSheetLineEditor";
 import FreightSheetPrint from "./FreightSheetPrint";
 import FreightSheetForm from "./FreightSheetForm";
 import CopyLinesModal from "./CopyLinesModal";
 
-export default function FreightSheetDetail({ sheet, onBack, onUpdated }) {
+export default function FreightSheetDetail({ sheet, onBack, onUpdated, user }) {
   const qc = useQueryClient();
   const [showPrint, setShowPrint] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
   const [showNewVersion, setShowNewVersion] = useState(false);
   const [showCopyLines, setShowCopyLines] = useState(false);
+  const [activating, setActivating] = useState(false);
+  const [archiving, setArchiving] = useState(false);
   const [currentSheet, setCurrentSheet] = useState(sheet);
+  const [activateError, setActivateError] = useState("");
+
+  const isAdmin = user?.role === "admin";
 
   const { data: lines = [] } = useQuery({
     queryKey: ["sheetLines", currentSheet.id],
@@ -25,15 +30,45 @@ export default function FreightSheetDetail({ sheet, onBack, onUpdated }) {
   const activeCount = lines.filter(l => l.is_active !== false).length;
   const isDraft = currentSheet.status === "draft";
   const isActive = currentSheet.status === "active";
+  const isArchived = currentSheet.status === "archived";
+
+  // Activation pre-checks
+  const activationChecks = [
+    { ok: !!currentSheet.carrier_id, label: "Fuvarozó megadva" },
+    { ok: !!currentSheet.origin_city, label: "Rakodóhely fixálva" },
+    { ok: !!currentSheet.destination_country, label: "Célország megadva" },
+    { ok: !!currentSheet.valid_from, label: "Érvényesség kezdete megadva" },
+    { ok: activeCount > 0, label: `Legalább 1 aktív sor (jelenleg: ${activeCount})` },
+    { ok: lines.length === 0 || lines.every(l => (Number(l.domestic_leg) || 0) + (Number(l.foreign_leg) || 0) > 0), label: "Minden sor ára kitöltve" },
+  ];
+  const canActivate = activationChecks.every(c => c.ok);
+
+  const handleActivate = async () => {
+    if (!canActivate) {
+      setActivateError("Nem teljesülnek az aktiválási feltételek.");
+      return;
+    }
+    setActivating(true);
+    setActivateError("");
+    const updated = await base44.entities.FreightSheet.update(currentSheet.id, { status: "active" });
+    setCurrentSheet(prev => ({ ...prev, status: "active" }));
+    qc.invalidateQueries({ queryKey: ["freightSheets"] });
+    setActivating(false);
+  };
+
+  const handleArchive = async () => {
+    setArchiving(true);
+    const newStatus = isArchived ? "draft" : "archived";
+    await base44.entities.FreightSheet.update(currentSheet.id, { status: newStatus });
+    setCurrentSheet(prev => ({ ...prev, status: newStatus }));
+    qc.invalidateQueries({ queryKey: ["freightSheets"] });
+    setArchiving(false);
+  };
 
   // Create new version: archive old → create new draft with same data
-  const handleNewVersion = async (newData) => {
-    // Archive the old active sheet
+  const handleNewVersion = async () => {
     await base44.entities.FreightSheet.update(currentSheet.id, { status: "archived" });
-    // Copy lines from old sheet to new
     const newLines = lines.map(({ id, created_date, updated_date, created_by, sheet_id, ...rest }) => rest);
-    // The new sheet was already created by the form (forceDraft creates it)
-    // We need to fetch the newest sheet to get its id, then copy lines
     const allSheets = await base44.entities.FreightSheet.list("-created_date", 1);
     const newest = allSheets[0];
     if (newest && newLines.length > 0) {
