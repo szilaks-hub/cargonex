@@ -34,6 +34,9 @@ export default function PartnerDetail({ partner, onBack, onUpdated }) {
   });
 
   const isCustomsAgent = (partner.roles || []).includes("customs_agent");
+  const isCarrier = (partner.roles || []).includes("carrier");
+  const isSupplier = (partner.roles || []).includes("supplier");
+  const isCustomer = (partner.roles || []).includes("customer");
 
   const partnerCountries = partner.countries || (partner.country ? [partner.country] : []);
 
