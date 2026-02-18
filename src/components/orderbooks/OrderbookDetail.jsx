@@ -588,7 +588,7 @@ export default function OrderbookDetail({ orderId, onClose, onUpdated }) {
   );
 }
 
-function LineRow({ line, categories, isEditing, isDraft, onUpdate, onDelete, onDuplicate, onEditToggle }) {
+function LineRow({ line, categories, isEditing, isEditable, onUpdate, onDelete, onDuplicate, onEditToggle }) {
   const [form, setForm] = useState(line);
   const category = categories.find(c => c.id === line.category_id);
 
