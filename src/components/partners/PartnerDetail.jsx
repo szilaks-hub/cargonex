@@ -105,6 +105,10 @@ export default function PartnerDetail({ partner, onBack, onUpdated }) {
             { header: "Position", key: "position", render: (r) => r.position || "-" },
             { header: "Phone", key: "phone", render: (r) => r.phone || "-" },
             { header: "Email", key: "email", render: (r) => r.email || "-" },
+            { header: "Lang", render: (r) => r.preferred_language
+              ? <span className="inline-flex items-center bg-slate-100 text-slate-600 rounded px-1.5 py-0.5 text-[10px] font-bold">{r.preferred_language}</span>
+              : "-"
+            },
           ]}
           data={contacts}
           isLoading={loadContact}
