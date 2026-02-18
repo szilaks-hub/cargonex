@@ -6,6 +6,12 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { X, Save, Trash2 } from "lucide-react";
 
+const fieldClass =
+  "bg-white border border-[#D9E1E8] rounded-lg text-slate-800 text-sm placeholder:text-[#9AA6B2] " +
+  "focus:border-[#3A7BFF] focus:ring-2 focus:ring-[#3A7BFF]/20 hover:border-[#3A7BFF]/60 transition-colors h-9";
+
+const labelClass = "text-[#2E3A46] text-xs font-semibold mb-1 block";
+
 export default function ProductForm({ item, categories, onClose, onSaved }) {
   const [form, setForm] = useState(item || {
     category_id: "", category_name: "", diameter: "", length: "",
@@ -44,108 +50,163 @@ export default function ProductForm({ item, categories, onClose, onSaved }) {
   };
 
   return (
-    <div className="bg-[#1a1e23] border border-[#2d333b] rounded-xl p-5 space-y-4">
-      <div className="flex items-center justify-between">
-        <h3 className="text-sm font-medium text-[#e6edf3]">
+    <div className="rounded-xl shadow-md border border-[#D9E1E8] overflow-hidden" style={{ background: "#F4F6F8" }}>
+      {/* Form header */}
+      <div className="flex items-center justify-between px-5 py-3 border-b border-[#D9E1E8] bg-white">
+        <h3 className="text-sm font-semibold text-[#2E3A46]">
           {item ? "Edit Product / Szerkesztés" : "New Product / Új termék"}
         </h3>
-        <button onClick={onClose} className="text-[#8b949e] hover:text-white"><X className="w-4 h-4" /></button>
+        <button onClick={onClose} className="text-slate-400 hover:text-slate-600 transition-colors">
+          <X className="w-4 h-4" />
+        </button>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        <div>
-          <Label className="text-[#8b949e] text-xs">Category / Kategória *</Label>
-          <Select value={form.category_id} onValueChange={(v) => {
-            const cat = categories.find((c) => c.id === v);
-            set("category_id", v);
-            set("category_name", cat ? `${cat.name_en} / ${cat.name_hu}` : "");
-          }}>
-            <SelectTrigger className="bg-[#22272e] border-[#2d333b] text-[#e6edf3]">
-              <SelectValue placeholder="Select..." />
-            </SelectTrigger>
-            <SelectContent className="bg-[#22272e] border-[#2d333b]">
-              {categories.map((c) => (
-                <SelectItem key={c.id} value={c.id}>{c.name_en} / {c.name_hu}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div>
-          <Label className="text-[#8b949e] text-xs">Factory Code / Gyári kód</Label>
-          <Input className="bg-[#22272e] border-[#2d333b] text-[#e6edf3]" value={form.factory_code} onChange={(e) => set("factory_code", e.target.value)} />
-        </div>
-        <div>
-          <Label className="text-[#8b949e] text-xs">HS Code / VTSZ *</Label>
-          <Input className="bg-[#22272e] border-[#2d333b] text-[#e6edf3]" value={form.hs_code} onChange={(e) => set("hs_code", e.target.value)} />
-        </div>
-        <div>
-          <Label className="text-[#8b949e] text-xs">Diameter (mm)</Label>
-          <Input type="number" className="bg-[#22272e] border-[#2d333b] text-[#e6edf3]" value={form.diameter} onChange={(e) => set("diameter", e.target.value)} />
-        </div>
-        <div>
-          <Label className="text-[#8b949e] text-xs">Length (mm)</Label>
-          <Input type="number" className="bg-[#22272e] border-[#2d333b] text-[#e6edf3]" value={form.length} onChange={(e) => set("length", e.target.value)} />
-        </div>
-        <div>
-          <Label className="text-[#8b949e] text-xs">Additional Dimension</Label>
-          <Input className="bg-[#22272e] border-[#2d333b] text-[#e6edf3]" value={form.additional_dimension} onChange={(e) => set("additional_dimension", e.target.value)} />
-        </div>
-        <div>
-          <Label className="text-[#8b949e] text-xs">Mesh Name</Label>
-          <Input className="bg-[#22272e] border-[#2d333b] text-[#e6edf3]" value={form.mesh_name} onChange={(e) => set("mesh_name", e.target.value)} />
-        </div>
-        <div>
-          <Label className="text-[#8b949e] text-xs">Unit / Egység</Label>
-          <Select value={form.unit_of_measure} onValueChange={(v) => set("unit_of_measure", v)}>
-            <SelectTrigger className="bg-[#22272e] border-[#2d333b] text-[#e6edf3]"><SelectValue /></SelectTrigger>
-            <SelectContent className="bg-[#22272e] border-[#2d333b]">
-              <SelectItem value="ton">Ton / Tonna</SelectItem>
-              <SelectItem value="piece">Piece / Darab</SelectItem>
-              <SelectItem value="meter">Meter / Méter</SelectItem>
-              <SelectItem value="kg">Kg</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <div>
-          <Label className="text-[#8b949e] text-xs">Conversion Factor</Label>
-          <Input type="number" className="bg-[#22272e] border-[#2d333b] text-[#e6edf3]" value={form.conversion_factor} onChange={(e) => set("conversion_factor", e.target.value)} />
-        </div>
-        {form.unit_of_measure === "piece" && (
+      {/* Form body */}
+      <div className="p-5 space-y-5">
+        {/* Row 1: Category, Factory Code, HS Code (mandatory – emphasized) */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-5 gap-y-4">
           <div>
-            <Label className="text-[#8b949e] text-xs">Piece Weight (kg) *</Label>
-            <Input type="number" className="bg-[#22272e] border-[#2d333b] text-[#e6edf3]" value={form.piece_weight} onChange={(e) => set("piece_weight", e.target.value)} />
+            <label className={labelClass}>Category / Kategória <span className="text-red-500">*</span></label>
+            <Select value={form.category_id} onValueChange={(v) => {
+              const cat = categories.find((c) => c.id === v);
+              set("category_id", v);
+              set("category_name", cat ? `${cat.name_en} / ${cat.name_hu}` : "");
+            }}>
+              <SelectTrigger className={fieldClass + " w-full"}>
+                <SelectValue placeholder="Select..." />
+              </SelectTrigger>
+              <SelectContent>
+                {categories.map((c) => (
+                  <SelectItem key={c.id} value={c.id}>{c.name_en} / {c.name_hu}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
-        )}
-        <div>
-          <Label className="text-[#8b949e] text-xs">Bundle Weight (kg)</Label>
-          <Input type="number" className="bg-[#22272e] border-[#2d333b] text-[#e6edf3]" value={form.bundle_weight} onChange={(e) => set("bundle_weight", e.target.value)} />
+
+          <div>
+            <label className={labelClass}>Factory Code / Gyári kód</label>
+            <Input className={fieldClass + " w-full"} value={form.factory_code} onChange={(e) => set("factory_code", e.target.value)} placeholder="e.g. RA812" />
+          </div>
+
+          {/* HS Code – visually emphasized (mandatory) */}
+          <div>
+            <label className={labelClass + " text-[#1d4ed8]"}>
+              HS Code / VTSZ <span className="text-red-500">*</span>
+            </label>
+            <Input
+              className={
+                "bg-white border-2 border-[#3A7BFF]/50 rounded-lg text-slate-800 text-sm font-medium " +
+                "placeholder:text-[#9AA6B2] focus:border-[#3A7BFF] focus:ring-2 focus:ring-[#3A7BFF]/20 " +
+                "hover:border-[#3A7BFF]/80 transition-colors h-9 w-full"
+              }
+              value={form.hs_code}
+              onChange={(e) => set("hs_code", e.target.value)}
+              placeholder="e.g. 7214201000"
+            />
+          </div>
         </div>
-        <div>
-          <Label className="text-[#8b949e] text-xs">Status</Label>
-          <Select value={form.status} onValueChange={(v) => set("status", v)}>
-            <SelectTrigger className="bg-[#22272e] border-[#2d333b] text-[#e6edf3]"><SelectValue /></SelectTrigger>
-            <SelectContent className="bg-[#22272e] border-[#2d333b]">
-              <SelectItem value="active">Active / Aktív</SelectItem>
-              <SelectItem value="inactive">Inactive / Inaktív</SelectItem>
-            </SelectContent>
-          </Select>
+
+        {/* Row 2: Diameter, Length, Additional Dimension */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-5 gap-y-4">
+          <div>
+            <label className={labelClass}>Diameter (mm)</label>
+            <Input type="number" className={fieldClass + " w-full"} value={form.diameter} onChange={(e) => set("diameter", e.target.value)} placeholder="e.g. 8" />
+          </div>
+          <div>
+            <label className={labelClass}>Length (mm)</label>
+            <Input type="number" className={fieldClass + " w-full"} value={form.length} onChange={(e) => set("length", e.target.value)} placeholder="e.g. 6000" />
+          </div>
+          <div>
+            <label className={labelClass}>Additional Dimension</label>
+            <Input className={fieldClass + " w-full"} value={form.additional_dimension} onChange={(e) => set("additional_dimension", e.target.value)} placeholder="e.g. 150x150" />
+          </div>
+        </div>
+
+        {/* Row 3: Mesh Name, Unit, Piece Weight (conditional) */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-5 gap-y-4">
+          <div>
+            <label className={labelClass}>Mesh Name</label>
+            <Input className={fieldClass + " w-full"} value={form.mesh_name} onChange={(e) => set("mesh_name", e.target.value)} placeholder="e.g. 4K15/15" />
+          </div>
+          <div>
+            <label className={labelClass}>Unit / Egység</label>
+            <Select value={form.unit_of_measure} onValueChange={(v) => set("unit_of_measure", v)}>
+              <SelectTrigger className={fieldClass + " w-full"}><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ton">Ton / Tonna</SelectItem>
+                <SelectItem value="piece">Piece / Darab</SelectItem>
+                <SelectItem value="meter">Meter / Méter</SelectItem>
+                <SelectItem value="kg">Kg</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          {form.unit_of_measure === "piece" && (
+            <div>
+              <label className={labelClass}>Piece Weight (kg) <span className="text-red-500">*</span></label>
+              <Input type="number" className={fieldClass + " w-full"} value={form.piece_weight} onChange={(e) => set("piece_weight", e.target.value)} placeholder="kg / db" />
+            </div>
+          )}
+        </div>
+
+        {/* Row 4: Bundle Weight + Conversion Factor (same row) + Status */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-5 gap-y-4">
+          <div>
+            <label className={labelClass}>Bundle Weight (kg)</label>
+            <Input type="number" className={fieldClass + " w-full"} value={form.bundle_weight} onChange={(e) => set("bundle_weight", e.target.value)} placeholder="kg / csomag" />
+          </div>
+          <div>
+            <label className={labelClass}>Conversion Factor</label>
+            <Input type="number" className={fieldClass + " w-full"} value={form.conversion_factor} onChange={(e) => set("conversion_factor", e.target.value)} placeholder="e.g. 1.0" />
+          </div>
+          <div>
+            <label className={labelClass}>Status</label>
+            <Select value={form.status} onValueChange={(v) => set("status", v)}>
+              <SelectTrigger className={fieldClass + " w-full"}><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="active">
+                  <span className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block" />
+                    Active / Aktív
+                  </span>
+                </SelectItem>
+                <SelectItem value="inactive">
+                  <span className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-slate-400 inline-block" />
+                    Inactive / Inaktív
+                  </span>
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
       </div>
 
-      <div className="flex justify-between pt-2">
+      {/* Footer */}
+      <div className="flex justify-between items-center px-5 py-3 border-t border-[#D9E1E8] bg-white">
         <div>
           {item?.id && (
-            <Button variant="ghost" onClick={handleDelete} className="text-red-400 hover:text-red-300 hover:bg-red-500/10 gap-2">
-              <Trash2 className="w-4 h-4" /> Delete / Törlés
+            <Button variant="ghost" onClick={handleDelete} className="text-red-500 hover:text-red-600 hover:bg-red-50 gap-2 text-xs h-8">
+              <Trash2 className="w-3.5 h-3.5" /> Delete / Törlés
             </Button>
           )}
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={onClose} className="border-[#2d333b] text-[#8b949e] hover:bg-[#22272e]">
+          <Button
+            variant="outline"
+            onClick={onClose}
+            className="bg-[#F4F6F8] border-[#D9E1E8] text-[#2E3A46] hover:bg-[#e8edf3] text-xs h-8 px-4"
+          >
             Cancel / Mégse
           </Button>
-          <Button onClick={handleSave} disabled={saving} className="bg-blue-600 hover:bg-blue-700 text-white gap-2">
-            <Save className="w-4 h-4" /> {saving ? "Saving..." : "Save / Mentés"}
+          <Button
+            onClick={handleSave}
+            disabled={saving}
+            className="gap-2 text-xs h-8 px-4 text-white border-0"
+            style={{ background: "#2563eb" }}
+            onMouseEnter={e => e.currentTarget.style.boxShadow = "0 0 0 2px #e05a2b55"}
+            onMouseLeave={e => e.currentTarget.style.boxShadow = "none"}
+          >
+            <Save className="w-3.5 h-3.5" /> {saving ? "Saving..." : "Save / Mentés"}
           </Button>
         </div>
       </div>
