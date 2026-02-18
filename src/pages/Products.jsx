@@ -42,11 +42,17 @@ export default function Products() {
   return (
     <div className="space-y-4">
       <Tabs defaultValue="products">
-        <TabsList className="bg-[#22272e] border border-[#2d333b]">
-          <TabsTrigger value="products" className="data-[state=active]:bg-blue-600/20 data-[state=active]:text-blue-400">
+        <TabsList className="bg-[#e4e7ec] border border-[#D9E1E8] p-1 rounded-lg">
+          <TabsTrigger
+            value="products"
+            className="text-slate-600 font-medium text-xs rounded-md data-[state=active]:bg-[#2563eb] data-[state=active]:text-white data-[state=active]:shadow-sm"
+          >
             Products / Cikkek
           </TabsTrigger>
-          <TabsTrigger value="categories" className="data-[state=active]:bg-blue-600/20 data-[state=active]:text-blue-400">
+          <TabsTrigger
+            value="categories"
+            className="text-slate-600 font-medium text-xs rounded-md data-[state=active]:bg-[#2563eb] data-[state=active]:text-white data-[state=active]:shadow-sm"
+          >
             Categories / Termékkörök
           </TabsTrigger>
         </TabsList>
