@@ -320,7 +320,7 @@ export default function OrderbookDetail({ orderId, onClose, onUpdated }) {
               {/* Currency */}
               <div>
                 <label className="text-xs font-medium text-slate-600 mb-1 block">Currency</label>
-                {isDraft ? (
+                {isEditable ? (
                   <Select value={form.currency || "EUR"} onValueChange={(v) => handleFormChange({ currency: v })}>
                     <SelectTrigger className="bg-white"><SelectValue /></SelectTrigger>
                     <SelectContent>
