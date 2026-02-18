@@ -87,23 +87,23 @@ export default function TruckForm({ item, onClose, onSaved }) {
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         <div>
-          <Label className="text-[#8b949e] text-xs">Truck Number</Label>
-          <Input className="bg-[#22272e] border-[#2d333b] text-[#e6edf3]" value={form.truck_number} onChange={(e) => set("truck_number", e.target.value)} />
+          <Label className={lbl}>Truck Number</Label>
+          <Input className={inp} value={form.truck_number} onChange={(e) => set("truck_number", e.target.value)} />
         </div>
         <div>
-          <Label className="text-[#8b949e] text-xs">Expected Loading Date *</Label>
-          <Input type="date" className="bg-[#22272e] border-[#2d333b] text-[#e6edf3]" value={form.expected_loading_date} onChange={(e) => set("expected_loading_date", e.target.value)} />
+          <Label className={lbl}>Expected Loading Date *</Label>
+          <Input type="date" className={inp} value={form.expected_loading_date} onChange={(e) => set("expected_loading_date", e.target.value)} />
         </div>
         <div>
-          <Label className="text-[#8b949e] text-xs">Actual Loading Date</Label>
-          <Input type="date" className="bg-[#22272e] border-[#2d333b] text-[#e6edf3]" value={form.actual_loading_date} onChange={(e) => set("actual_loading_date", e.target.value)} />
+          <Label className={lbl}>Actual Loading Date</Label>
+          <Input type="date" className={inp} value={form.actual_loading_date} onChange={(e) => set("actual_loading_date", e.target.value)} />
         </div>
         <div>
-          <Label className="text-[#8b949e] text-xs">Product / Termék *</Label>
+          <Label className={lbl}>Product / Termék *</Label>
           <ProductPicker
             products={products}
             value={form.product_id}
-            dark={true}
+            dark={false}
             onChange={(p) => {
               set("product_id", p.id);
               set("product_name", `${p.category_name || ""} Ø${p.diameter || ""} ${p.factory_code || ""}`.trim());
@@ -112,90 +112,90 @@ export default function TruckForm({ item, onClose, onSaved }) {
           />
         </div>
         <div>
-          <Label className="text-[#8b949e] text-xs">Planned Qty (t) *</Label>
-          <Input type="number" className="bg-[#22272e] border-[#2d333b] text-[#e6edf3]" value={form.planned_quantity_tons} onChange={(e) => set("planned_quantity_tons", e.target.value)} />
+          <Label className={lbl}>Planned Qty (t) *</Label>
+          <Input type="number" className={inp} value={form.planned_quantity_tons} onChange={(e) => set("planned_quantity_tons", e.target.value)} />
         </div>
         <div>
-          <Label className="text-[#8b949e] text-xs">Actual Weight (t)</Label>
-          <Input type="number" className="bg-[#22272e] border-[#2d333b] text-[#e6edf3]" value={form.actual_weight_tons} onChange={(e) => set("actual_weight_tons", e.target.value)} />
+          <Label className={lbl}>Actual Weight (t)</Label>
+          <Input type="number" className={inp} value={form.actual_weight_tons} onChange={(e) => set("actual_weight_tons", e.target.value)} />
         </div>
         <div>
-          <Label className="text-[#8b949e] text-xs">Loading Location</Label>
+          <Label className={lbl}>Loading Location</Label>
           <Select value={form.loading_location_id} onValueChange={(v) => {
             const l = locations.find((l) => l.id === v);
             set("loading_location_id", v); set("loading_location_name", l ? `${l.partner_name} - ${l.location_name}` : "");
           }}>
-            <SelectTrigger className="bg-[#22272e] border-[#2d333b] text-[#e6edf3]"><SelectValue placeholder="Select..." /></SelectTrigger>
-            <SelectContent className="bg-[#22272e] border-[#2d333b]">
+            <SelectTrigger className={inp}><SelectValue placeholder="Select..." /></SelectTrigger>
+            <SelectContent className="bg-white border-[#c6ccda]">
               {locations.map((l) => <SelectItem key={l.id} value={l.id}>{l.partner_name} - {l.location_name}</SelectItem>)}
             </SelectContent>
           </Select>
         </div>
         <div>
-          <Label className="text-[#8b949e] text-xs">Dest. Country</Label>
-          <Input className="bg-[#22272e] border-[#2d333b] text-[#e6edf3]" value={form.destination_country} onChange={(e) => set("destination_country", e.target.value)} />
+          <Label className={lbl}>Dest. Country</Label>
+          <Input className={inp} value={form.destination_country} onChange={(e) => set("destination_country", e.target.value)} />
         </div>
         <div>
-          <Label className="text-[#8b949e] text-xs">Dest. City</Label>
-          <Input className="bg-[#22272e] border-[#2d333b] text-[#e6edf3]" value={form.destination_city} onChange={(e) => set("destination_city", e.target.value)} />
+          <Label className={lbl}>Dest. City</Label>
+          <Input className={inp} value={form.destination_city} onChange={(e) => set("destination_city", e.target.value)} />
         </div>
         <div>
-          <Label className="text-[#8b949e] text-xs">Carrier / Fuvarozó</Label>
+          <Label className={lbl}>Carrier / Fuvarozó</Label>
           <Select value={form.carrier_id} onValueChange={(v) => {
             const c = carriers.find((c) => c.id === v);
             set("carrier_id", v); set("carrier_name", c?.name || "");
           }}>
-            <SelectTrigger className="bg-[#22272e] border-[#2d333b] text-[#e6edf3]"><SelectValue placeholder="Select..." /></SelectTrigger>
-            <SelectContent className="bg-[#22272e] border-[#2d333b]">
+            <SelectTrigger className={inp}><SelectValue placeholder="Select..." /></SelectTrigger>
+            <SelectContent className="bg-white border-[#c6ccda]">
               {carriers.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
             </SelectContent>
           </Select>
         </div>
         <div>
-          <Label className="text-[#8b949e] text-xs">Foreign Freight</Label>
-          <Input type="number" className="bg-[#22272e] border-[#2d333b] text-[#e6edf3]" value={form.foreign_freight} onChange={(e) => set("foreign_freight", e.target.value)} />
+          <Label className={lbl}>Foreign Freight</Label>
+          <Input type="number" className={inp} value={form.foreign_freight} onChange={(e) => set("foreign_freight", e.target.value)} />
         </div>
         <div>
-          <Label className="text-[#8b949e] text-xs">Domestic Freight</Label>
-          <Input type="number" className="bg-[#22272e] border-[#2d333b] text-[#e6edf3]" value={form.domestic_freight} onChange={(e) => set("domestic_freight", e.target.value)} />
+          <Label className={lbl}>Domestic Freight</Label>
+          <Input type="number" className={inp} value={form.domestic_freight} onChange={(e) => set("domestic_freight", e.target.value)} />
         </div>
         <div>
-          <Label className="text-[#8b949e] text-xs">Purchase Order</Label>
+          <Label className={lbl}>Purchase Order</Label>
           <Select value={form.order_id} onValueChange={(v) => {
             const o = orders.find((o) => o.id === v);
             set("order_id", v); set("order_number", o?.order_number || `PO-${v?.slice(0, 6)}`);
           }}>
-            <SelectTrigger className="bg-[#22272e] border-[#2d333b] text-[#e6edf3]"><SelectValue placeholder="Select..." /></SelectTrigger>
-            <SelectContent className="bg-[#22272e] border-[#2d333b]">
+            <SelectTrigger className={inp}><SelectValue placeholder="Select..." /></SelectTrigger>
+            <SelectContent className="bg-white border-[#c6ccda]">
               {orders.map((o) => <SelectItem key={o.id} value={o.id}>{o.order_number || `PO-${o.id?.slice(0, 6)}`} - {o.supplier_name}</SelectItem>)}
             </SelectContent>
           </Select>
         </div>
         <div>
-          <Label className="text-[#8b949e] text-xs">Customs Agent / Vámügynök</Label>
+          <Label className={lbl}>Customs Agent / Vámügynök</Label>
           <Select value={form.customs_agent_id} onValueChange={(v) => {
             const a = customsAgents.find((a) => a.id === v);
             set("customs_agent_id", v); set("customs_agent_name", a?.name || "");
           }}>
-            <SelectTrigger className="bg-[#22272e] border-[#2d333b] text-[#e6edf3]"><SelectValue placeholder="Select..." /></SelectTrigger>
-            <SelectContent className="bg-[#22272e] border-[#2d333b]">
+            <SelectTrigger className={inp}><SelectValue placeholder="Select..." /></SelectTrigger>
+            <SelectContent className="bg-white border-[#c6ccda]">
               {customsAgents.map((a) => <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>)}
             </SelectContent>
           </Select>
         </div>
         <div>
-          <Label className="text-[#8b949e] text-xs">Customs Agent Fee</Label>
-          <Input type="number" className="bg-[#22272e] border-[#2d333b] text-[#e6edf3]" value={form.customs_agent_fee} onChange={(e) => set("customs_agent_fee", e.target.value)} />
+          <Label className={lbl}>Customs Agent Fee</Label>
+          <Input type="number" className={inp} value={form.customs_agent_fee} onChange={(e) => set("customs_agent_fee", e.target.value)} />
         </div>
         <div>
-          <Label className="text-[#8b949e] text-xs">Purchase Price / ton</Label>
-          <Input type="number" className="bg-[#22272e] border-[#2d333b] text-[#e6edf3]" value={form.purchase_price} onChange={(e) => set("purchase_price", e.target.value)} />
+          <Label className={lbl}>Purchase Price / ton</Label>
+          <Input type="number" className={inp} value={form.purchase_price} onChange={(e) => set("purchase_price", e.target.value)} />
         </div>
         <div>
-          <Label className="text-[#8b949e] text-xs">Status</Label>
+          <Label className={lbl}>Status</Label>
           <Select value={form.status} onValueChange={(v) => set("status", v)}>
-            <SelectTrigger className="bg-[#22272e] border-[#2d333b] text-[#e6edf3]"><SelectValue /></SelectTrigger>
-            <SelectContent className="bg-[#22272e] border-[#2d333b]">
+            <SelectTrigger className={inp}><SelectValue /></SelectTrigger>
+            <SelectContent className="bg-white border-[#c6ccda]">
               <SelectItem value="scheduled">Scheduled / Tervezett</SelectItem>
               <SelectItem value="loaded">Loaded / Rakodott</SelectItem>
               <SelectItem value="in_transit">In Transit / Úton</SelectItem>
@@ -207,9 +207,9 @@ export default function TruckForm({ item, onClose, onSaved }) {
         </div>
       </div>
       <div className="flex justify-between pt-2">
-        <div>{item?.id && <Button variant="ghost" onClick={handleDelete} className="text-red-400 hover:text-red-300 hover:bg-red-500/10 gap-2"><Trash2 className="w-4 h-4" /> Delete</Button>}</div>
+        <div>{item?.id && <Button variant="ghost" onClick={handleDelete} className="text-red-500 hover:text-red-600 hover:bg-red-50 gap-2"><Trash2 className="w-4 h-4" /> Delete</Button>}</div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={onClose} className="border-[#2d333b] text-[#8b949e]">Cancel</Button>
+          <Button variant="outline" onClick={onClose} className="border-[#c6ccda] text-slate-600">Cancel</Button>
           <Button onClick={handleSave} disabled={saving} className="bg-blue-600 hover:bg-blue-700 text-white gap-2"><Save className="w-4 h-4" /> Save</Button>
         </div>
       </div>
