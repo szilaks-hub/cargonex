@@ -101,6 +101,7 @@ export default function OrderbookDetail({ orderId, onClose, onUpdated }) {
   const isDraft = form.status === 'draft';
   const isOpen = form.status === 'open';
   const isClosed = form.status === 'closed';
+  const isEditable = isDraft || isOpen; // Draft és Open orderek szerkeszthetőek
 
   const filteredSites = sites.filter(s => s.partner_id === form.supplier_id);
   const selectedSupplier = suppliers.find(s => s.id === form.supplier_id);
