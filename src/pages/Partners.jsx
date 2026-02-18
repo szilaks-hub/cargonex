@@ -92,6 +92,13 @@ export default function Partners() {
     );
   }
 
+  const visiblePartners = filterCountry
+    ? partners.filter((p) => {
+        const codes = p.countries?.length ? p.countries : (p.country ? [p.country] : []);
+        return codes.includes(filterCountry);
+      })
+    : partners;
+
   return (
     <div className="space-y-4">
       <PageHeader
@@ -100,6 +107,27 @@ export default function Partners() {
         onAdd={() => { setEditItem(null); setShowForm(true); }}
         addLabel="New Partner / Új partner"
       />
+
+      {/* Country filter chips */}
+      <div className="flex flex-wrap gap-1.5 items-center">
+        <span className="text-xs text-slate-500 font-medium mr-1">Filter:</span>
+        <button
+          onClick={() => setFilterCountry("")}
+          className={`px-2.5 py-1 rounded-full text-xs font-medium border transition-all ${!filterCountry ? "bg-blue-600 text-white border-blue-600" : "bg-white text-slate-600 border-slate-300 hover:border-blue-400 hover:text-blue-600"}`}
+        >
+          All
+        </button>
+        {COUNTRIES.map((c) => (
+          <button
+            key={c.code}
+            onClick={() => setFilterCountry(filterCountry === c.code ? "" : c.code)}
+            className={`px-2.5 py-1 rounded-full text-xs font-medium border transition-all ${filterCountry === c.code ? "bg-blue-600 text-white border-blue-600" : "bg-white text-slate-600 border-slate-300 hover:border-blue-400 hover:text-blue-600"}`}
+          >
+            <span className="text-[10px] font-bold opacity-70 mr-1">{c.code}</span>{c.en}
+          </button>
+        ))}
+      </div>
+
       {showForm && (
         <PartnerForm
           item={editItem}
