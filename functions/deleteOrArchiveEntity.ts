@@ -82,8 +82,15 @@ Deno.serve(async (req) => {
     }
 
     // Get entity to check lock status
-    const entities = await base44.asServiceRole.entities[entityName].filter({ id: entityId });
-    const entity = entities[0];
+    let entity;
+    try {
+      const entities = await base44.asServiceRole.entities[entityName].filter({ id: entityId });
+      entity = Array.isArray(entities) ? entities[0] : entities;
+    } catch (e) {
+      // Fallback: direct query
+      return Response.json({ error: `Cannot fetch entity: ${e.message}` }, { status: 500 });
+    }
+    
     if (!entity) {
       return Response.json({ error: 'Entity not found' }, { status: 404 });
     }
