@@ -139,12 +139,12 @@ function ProductTable({ items, columns, onRowClick, favoriteProductIds }) {
         </thead>
         <tbody>
           {items.map((row, i) => (
-            <tr
-              key={row.id || i}
-              onClick={() => onRowClick(row)}
-              className="border-b border-[#eef0f3] hover:bg-blue-50/50 cursor-pointer transition-colors"
-              style={{ background: i % 2 === 0 ? "#ffffff" : "#fafbfc" }}
-            >
+              <tr
+                key={row.id || i}
+                onClick={() => onRowClick(row)}
+                className={`border-b border-[#eef0f3] hover:bg-blue-50/50 cursor-pointer transition-colors ${favoriteProductIds?.has(row.id) ? "bg-rose-50/40" : ""}`}
+                style={!favoriteProductIds?.has(row.id) ? { background: i % 2 === 0 ? "#ffffff" : "#fafbfc" } : {}}
+              >
               {columns.map((col, j) => (
                 <td key={j} className="px-4 py-2.5 text-slate-700 whitespace-nowrap">
                   {col.render ? col.render(row) : row[col.key]}
