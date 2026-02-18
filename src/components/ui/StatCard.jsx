@@ -13,7 +13,7 @@ export default function StatCard({ title, value, subtitle, icon: Icon, color = "
   const c = colors[color] || colors.blue;
 
   return (
-    <div className={`bg-white rounded-xl border ${c.border} p-5 shadow-sm cx-card`}>
+    <div className={`rounded-xl border ${c.border} p-5 shadow-sm cx-card`} style={{ background: "#f0f2f5" }}>
       <div className="flex items-start justify-between">
         <div className="flex-1 min-w-0">
           <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">{title}</p>
