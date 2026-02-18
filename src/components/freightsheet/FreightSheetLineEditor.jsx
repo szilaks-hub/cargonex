@@ -129,8 +129,8 @@ function NewLineRow({ sheetId, defaultLoad, isHU, onSaved }) {
   return (
     <tr className="border-b border-blue-100 bg-blue-50/30">
       <DestinationFields form={form} set={set} isHU={isHU} inp={inp} />
-      <td className="px-2 py-1.5"><Input type="number" className={inp} value={form.domestic_leg} onChange={e => set("domestic_leg", e.target.value)} placeholder="0" /></td>
-      <td className="px-2 py-1.5"><Input type="number" className={inp} value={form.foreign_leg} onChange={e => set("foreign_leg", e.target.value)} placeholder="0" /></td>
+      <td className="px-2 py-1.5"><Input type="number" className={inp} value={form.domestic_leg} onChange={e => set("domestic_leg", e.target.value)} placeholder="Határtól" /></td>
+      <td className="px-2 py-1.5"><Input type="number" className={inp} value={form.foreign_leg} onChange={e => set("foreign_leg", e.target.value)} placeholder="Határig" /></td>
       <td className="px-2 py-1.5 text-xs text-slate-500 font-medium text-right">{total.toLocaleString()}</td>
       <td className="px-2 py-1.5"><Input type="number" className={inp} value={form.load_tons} onChange={e => set("load_tons", e.target.value)} placeholder={`${defaultLoad}`} /></td>
       <td className="px-2 py-1.5 text-xs text-orange-600 font-semibold text-right">{load > 0 ? (total / load).toFixed(2) : "0.00"}</td>
