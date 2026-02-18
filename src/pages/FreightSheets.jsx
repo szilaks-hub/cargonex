@@ -80,7 +80,8 @@ export default function FreightSheets() {
   };
 
   const statusOrder = { active: 0, draft: 1, archived: 2 };
-  const sortedSheets = [...sheets].sort((a, b) => (statusOrder[a.status] ?? 3) - (statusOrder[b.status] ?? 3));
+  const filteredSheets = showArchived ? sheets : sheets.filter(s => s.status !== "archived");
+  const sortedSheets = [...filteredSheets].sort((a, b) => (statusOrder[a.status] ?? 3) - (statusOrder[b.status] ?? 3));
 
   const columns = [
     { header: "Carrier / Fuvarozó", render: r => (
