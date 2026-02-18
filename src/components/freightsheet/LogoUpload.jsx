@@ -29,7 +29,7 @@ export default function LogoUpload({ sheetId, currentLogoUrl, isDraft, onLogoUpd
     setError("");
     try {
       const res = await base44.integrations.Core.UploadFile({ file });
-      const logoUrl = res.data.file_url;
+      const logoUrl = res.data?.file_url || res.file_url;
 
       // Update sheet with new logo
       await base44.entities.FreightSheet.update(sheetId, { sheet_logo_url: logoUrl });
