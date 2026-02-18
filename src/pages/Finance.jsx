@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import PageHeader from "@/components/ui/PageHeader";
 import DataTable from "@/components/ui/DataTable";
 import StatusBadge from "@/components/ui/StatusBadge";
-import TruckCustomsDetail from "@/components/finance/TruckCustomsDetail";
+import TruckCustomsDetail from "../components/finance/TruckCustomsDetail";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 
