@@ -404,7 +404,7 @@ export default function OrderbookDetail({ orderId, onClose, onUpdated }) {
                   type="checkbox"
                   checked={form.customs_required || false}
                   onChange={(e) => handleFormChange({ customs_required: e.target.checked })}
-                  disabled={!isDraft}
+                  disabled={!isEditable}
                 />
                 <span className="text-sm font-medium text-slate-800">Customs required?</span>
               </label>
@@ -413,7 +413,7 @@ export default function OrderbookDetail({ orderId, onClose, onUpdated }) {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pl-6">
                   <div>
                     <label className="text-xs font-medium text-slate-600 mb-1 block">Customs Agent</label>
-                    {isDraft ? (
+                    {isEditable ? (
                       <Select value={form.customs_agent_id || ""} onValueChange={(v) => {
                         const agent = customsAgents.find(a => a.id === v);
                         handleFormChange({ customs_agent_id: v, customs_agent_name: agent?.name || "" });
@@ -434,8 +434,8 @@ export default function OrderbookDetail({ orderId, onClose, onUpdated }) {
                       step="0.01"
                       value={form.customs_fee_eur_per_ton || ""}
                       onChange={(e) => handleFormChange({ customs_fee_eur_per_ton: e.target.value ? parseFloat(e.target.value) : 0 })}
-                      disabled={!isDraft}
-                      className={!isDraft ? 'bg-slate-100 text-slate-600' : 'bg-white'}
+                      disabled={!isEditable}
+                      className={!isEditable ? 'bg-slate-100 text-slate-600' : 'bg-white'}
                     />
                   </div>
                 </div>
