@@ -75,11 +75,15 @@ export default function TruckForm({ item, onClose, onSaved }) {
     if (item?.id) { await base44.entities.Truck.delete(item.id); onSaved(); }
   };
 
+  const lbl = "text-slate-600 text-xs font-semibold";
+  const inp = "bg-white border-[#c6ccda] text-slate-800";
+  const inpDark = "bg-[#22272e] border-[#2d333b] text-[#e6edf3]"; // keep for ProductPicker compatibility
+
   return (
-    <div className="bg-[#1a1e23] border border-[#2d333b] rounded-xl p-5 space-y-4">
+    <div className="bg-[#f5f7fa] border border-[rgba(46,58,90,0.12)] rounded-xl p-5 space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-medium text-[#e6edf3]">{item ? "Edit Truck" : "New Truck / Új kamion"}</h3>
-        <button onClick={onClose} className="text-[#8b949e] hover:text-white"><X className="w-4 h-4" /></button>
+        <h3 className="text-sm font-semibold text-slate-800">{item ? "Edit Truck" : "New Truck / Új kamion"}</h3>
+        <button onClick={onClose} className="text-slate-400 hover:text-slate-700"><X className="w-4 h-4" /></button>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         <div>
