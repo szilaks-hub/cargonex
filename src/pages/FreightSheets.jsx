@@ -172,6 +172,7 @@ export default function FreightSheets() {
     return (
       <FreightSheetDetail
         sheet={selectedSheet}
+        user={user}
         onBack={() => setSelectedSheet(null)}
         onUpdated={() => {
           qc.invalidateQueries({ queryKey: ["freightSheets"] });
