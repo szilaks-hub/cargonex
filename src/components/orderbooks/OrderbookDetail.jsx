@@ -356,8 +356,8 @@ export default function OrderbookDetail({ orderId, onClose, onUpdated }) {
                   placeholder="e.g., Budapest"
                   value={form.incoterms_place || ""}
                   onChange={(e) => handleFormChange({ incoterms_place: e.target.value })}
-                  disabled={!isDraft}
-                  className={!isDraft ? 'bg-slate-100 text-slate-600' : 'bg-white'}
+                  disabled={!isEditable}
+                  className={!isEditable ? 'bg-slate-100 text-slate-600' : 'bg-white'}
                 />
               </div>
 
