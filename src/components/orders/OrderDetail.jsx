@@ -29,6 +29,37 @@ export default function OrderDetail({ order, onBack }) {
     queryFn: () => base44.entities.Product.list(),
   });
 
+  const handleDelete = async () => {
+    setDeleting(true);
+    try {
+      const res = await base44.functions.invoke('deleteOrArchiveEntity', {
+        entityName: 'PurchaseOrder',
+        entityId: order.id,
+        requestedAction: deleteDialog.action,
+        reason: deleteReason
+      });
+
+      if (res.data.success) {
+        qc.invalidateQueries({ queryKey: ["orders"] });
+        onBack();
+      } else if (res.data.canArchive && deleteDialog.action === 'HARD_DELETE') {
+        setDeleteDialog({
+          open: true,
+          message: `This order has dependencies. Would you like to archive it instead? (${Object.entries(res.data.dependencies).map(([k, v]) => `${k}: ${v}`).join(', ')})`,
+          action: 'ARCHIVE'
+        });
+      }
+    } catch (error) {
+      setDeleteDialog({
+        open: true,
+        message: `Error: ${error.message}`,
+        action: null
+      });
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   const columns = [
     { header: "Product / Termék", key: "product_name" },
     { header: "HS Code / VTSZ", key: "hs_code" },
