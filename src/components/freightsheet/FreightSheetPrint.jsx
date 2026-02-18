@@ -105,6 +105,11 @@ export default function FreightSheetPrint({ sheet, lines, onClose }) {
               </div>
             </div>
 
+            {/* ── MANDATORY DECLARATION TEXT ────────────────────── */}
+            <div className="bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 mb-8 text-xs leading-relaxed text-slate-700 whitespace-pre-wrap">
+              {getDeclarationText(sheet)}
+            </div>
+
             {/* ── TABLE ────────────────────────────────────────────── */}
             <h2 className="text-sm font-bold text-slate-700 mb-3 border-b border-slate-200 pb-1">
               Fuvardíj táblázat ({activeLines.length} lerakó)
