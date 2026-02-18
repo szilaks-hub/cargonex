@@ -34,18 +34,26 @@ export default function PartnerDetail({ partner, onBack, onUpdated }) {
 
   const isCustomsAgent = (partner.roles || []).includes("customs_agent");
 
+  const partnerCountries = partner.countries || (partner.country ? [partner.country] : []);
+
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3">
-        <Button variant="ghost" onClick={onBack} className="text-[#8b949e] hover:text-white p-2">
+        <Button variant="ghost" onClick={onBack} className="text-slate-500 hover:text-slate-800 p-2">
           <ArrowLeft className="w-4 h-4" />
         </Button>
         <div>
-          <h2 className="text-xl font-bold text-[#e6edf3]">{partner.name}</h2>
-          <div className="flex gap-1 mt-1">
+          <h2 className="text-xl font-bold text-slate-800">{partner.name}</h2>
+          <div className="flex flex-wrap gap-1 mt-1">
             {(partner.roles || []).map((r) => (
-              <Badge key={r} variant="outline" className="border-[#2d333b] text-[#8b949e] text-[10px]">{r.replace(/_/g, " ")}</Badge>
+              <Badge key={r} variant="outline" className="border-slate-300 text-slate-500 text-[10px]">{r.replace(/_/g, " ")}</Badge>
             ))}
+            {partnerCountries.map((code) => {
+              const c = COUNTRIES.find((x) => x.code === code);
+              return c ? (
+                <Badge key={code} className="bg-blue-50 text-blue-700 border border-blue-200 text-[10px]">{c.en}</Badge>
+              ) : null;
+            })}
           </div>
         </div>
       </div>
