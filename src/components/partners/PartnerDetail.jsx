@@ -278,7 +278,7 @@ function LocationForm({ partner, item, onClose, onSaved }) {
 }
 
 function ContactForm({ partner, item, onClose, onSaved }) {
-  const [form, setForm] = useState(item || { partner_id: partner.id, partner_name: partner.name, full_name: "", position: "", phone: "", email: "", notes: "" });
+  const [form, setForm] = useState(item || { partner_id: partner.id, partner_name: partner.name, full_name: "", position: "", phone: "", email: "", preferred_language: "HU", notes: "" });
   const [saving, setSaving] = useState(false);
   const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
   const lbl = "text-slate-600 text-xs font-semibold";
@@ -299,6 +299,17 @@ function ContactForm({ partner, item, onClose, onSaved }) {
         <div><Label className={lbl}>Position</Label><Input className={inp} value={form.position} onChange={(e) => set("position", e.target.value)} /></div>
         <div><Label className={lbl}>Phone</Label><Input className={inp} value={form.phone} onChange={(e) => set("phone", e.target.value)} /></div>
         <div><Label className={lbl}>Email</Label><Input className={inp} value={form.email} onChange={(e) => set("email", e.target.value)} /></div>
+        <div>
+          <Label className={lbl}>Language / Nyelv</Label>
+          <Select value={form.preferred_language || "HU"} onValueChange={(v) => set("preferred_language", v)}>
+            <SelectTrigger className={inp}><SelectValue /></SelectTrigger>
+            <SelectContent className="bg-white border-[#c6ccda]">
+              <SelectItem value="HU">HU – Magyar</SelectItem>
+              <SelectItem value="EN">EN – English</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div><Label className={lbl}>Notes</Label><Input className={inp} value={form.notes} onChange={(e) => set("notes", e.target.value)} /></div>
       </div>
       <div className="flex justify-end gap-2">
         <Button variant="outline" size="sm" onClick={onClose} className="border-[#c6ccda] text-slate-600">Cancel</Button>
