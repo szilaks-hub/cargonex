@@ -381,8 +381,8 @@ export default function OrderbookDetail({ orderId, onClose, onUpdated }) {
                 placeholder="Order notes..."
                 value={form.notes || ""}
                 onChange={(e) => handleFormChange({ notes: e.target.value })}
-                disabled={!isDraft}
-                className={!isDraft ? 'bg-slate-100 text-slate-600' : 'bg-white'}
+                disabled={!isEditable}
+                className={!isEditable ? 'bg-slate-100 text-slate-600' : 'bg-white'}
               />
             </div>
 
