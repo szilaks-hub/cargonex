@@ -102,7 +102,7 @@ export default function Layout({ children, currentPageName }) {
       {/* Main content */}
       <div className="flex-1 flex flex-col min-h-screen overflow-hidden">
         {/* Top bar */}
-        <header className="h-14 border-b flex items-center px-4 lg:px-6 sticky top-0 z-30 shadow-sm" style={{ background: "#dde0e6", borderColor: "#c5c9d2" }}>
+        <header className="h-14 border-b flex items-center px-4 lg:px-6 sticky top-0 z-30 shadow-sm" style={{ background: "rgba(220,225,234,0.82)", backdropFilter: "blur(10px)", borderColor: "#c0c6d3" }}>
           <button
             onClick={() => setSidebarOpen(true)}
             className="lg:hidden text-slate-500 hover:text-slate-800 mr-3"
@@ -120,7 +120,7 @@ export default function Layout({ children, currentPageName }) {
         </header>
 
         {/* Page content */}
-        <main className="flex-1 overflow-auto p-4 lg:p-6" style={{ background: "var(--cx-bg)" }}>
+        <main className="flex-1 overflow-auto p-4 lg:p-6" style={{ background: "transparent" }}>
           {children}
         </main>
       </div>
