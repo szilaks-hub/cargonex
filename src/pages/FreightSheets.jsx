@@ -155,10 +155,10 @@ export default function FreightSheets() {
             ↩
           </button>
         )}
-        {r.status === "draft" && (
+        {isAdmin && (r.status === "draft" || r.status === "archived") && (
           <button
             onClick={() => handleDelete(r)}
-            title="Törlés (csak Draft)"
+            title={r.status === "draft" ? "Törlés (Draft)" : "Törlés (Archivált)"}
             className="text-slate-400 hover:text-red-500 p-1 rounded hover:bg-red-50 transition-colors"
           >
             <span className="text-xs font-bold">×</span>
