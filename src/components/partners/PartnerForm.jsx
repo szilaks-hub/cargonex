@@ -119,6 +119,10 @@ export default function PartnerForm({ item, onClose, onSaved }) {
           <Input className={inp} value={form.name} onChange={(e) => set("name", e.target.value)} />
         </div>
         <div>
+          <Label className={lbl}>Short Name / Rövid név</Label>
+          <Input className={inp} placeholder="Optional" value={form.short_name} onChange={(e) => set("short_name", e.target.value)} />
+        </div>
+        <div>
           <Label className={lbl}>Tax Number / Adószám</Label>
           <Input className={inp} value={form.tax_number} onChange={(e) => set("tax_number", e.target.value)} />
         </div>
