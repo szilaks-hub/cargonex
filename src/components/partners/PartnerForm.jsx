@@ -30,21 +30,18 @@ function SectionTitle({ icon: Icon, label, color }) {
 
 export default function PartnerForm({ item, onClose, onSaved }) {
   const [form, setForm] = useState(item || {
-    name: "", roles: [], tax_number: "", eu_vat: "",
+    name: "", short_name: "", roles: [], tax_number: "", eu_vat: "",
     countries: [], country: "", city: "", address: "", postal_code: "",
     phone: "", email: "", website: "", notes: "", status: "active",
-    // carrier
-    carrier_license_number: "", carrier_license_expiry: "",
+    carrier_type: "truck", carrier_license_number: "", carrier_license_expiry: "",
     carrier_insurance_number: "", carrier_insurance_expiry: "",
-    carrier_truck_count: "", carrier_capacity_tons: "",
-    // customs
+    carrier_truck_count: "", carrier_capacity_tons: "", carrier_notes: "",
     customs_agent_aeo_number: "", customs_agent_aeo_expiry: "",
     customs_agent_license_number: "",
-    // supplier
     supplier_payment_terms: "", supplier_currency: "EUR", supplier_incoterms: "EXW",
     supplier_bank_name: "", supplier_bank_account: "", supplier_bank_swift: "", supplier_bank_iban: "",
-    // customer
     customer_credit_limit: "", customer_credit_currency: "EUR", customer_payment_terms: "",
+    customer_delivery_preferences: "",
   });
   const [saving, setSaving] = useState(false);
 
