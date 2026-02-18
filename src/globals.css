@@ -1,41 +1,47 @@
+css
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --cargonex-bg: #131619;
-  --cargonex-surface: #1a1e23;
-  --cargonex-surface2: #22272e;
-  --cargonex-border: #2d333b;
-  --cargonex-blue: #3b82f6;
-  --cargonex-red: #ef4444;
-  --cargonex-orange: #f97316;
-  --cargonex-steel: #8b949e;
-  --cargonex-text: #e6edf3;
-  --cargonex-text-muted: #8b949e;
+  /* Light Steel Premium Palette */
+  --cx-bg: #f0f2f5;
+  --cx-surface: #ffffff;
+  --cx-surface2: #f8f9fb;
+  --cx-border: #e2e6ec;
+  --cx-blue: #2563eb;
+  --cx-blue-light: #eff6ff;
+  --cx-red: #dc2626;
+  --cx-orange: #ea580c;
+  --cx-steel: #64748b;
+  --cx-text: #0f172a;
+  --cx-text-muted: #64748b;
+  --cx-sidebar: #1e293b;
+  --cx-sidebar-text: #cbd5e1;
+  --cx-sidebar-active: #2563eb;
 }
 
 @layer base {
   :root {
-    --background: 220 16% 8%;
-    --foreground: 210 20% 92%;
-    --card: 220 14% 11%;
-    --card-foreground: 210 20% 92%;
-    --popover: 220 14% 11%;
-    --popover-foreground: 210 20% 92%;
-    --primary: 217 91% 60%;
+    --background: 214 20% 95%;
+    --foreground: 222 47% 7%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 7%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 7%;
+    --primary: 221 83% 53%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 215 14% 16%;
-    --secondary-foreground: 210 20% 92%;
-    --muted: 215 14% 16%;
-    --muted-foreground: 215 14% 55%;
-    --accent: 215 14% 18%;
-    --accent-foreground: 210 20% 92%;
+    --secondary: 214 20% 95%;
+    --secondary-foreground: 222 47% 7%;
+    --muted: 214 20% 95%;
+    --muted-foreground: 215 16% 47%;
+    --accent: 213 27% 94%;
+    --accent-foreground: 222 47% 7%;
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
-    --border: 215 14% 20%;
-    --input: 215 14% 20%;
-    --ring: 217 91% 60%;
+    --border: 214 32% 88%;
+    --input: 214 32% 88%;
+    --ring: 221 83% 53%;
     --radius: 0.625rem;
   }
 }
@@ -56,49 +62,26 @@
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: var(--cargonex-bg);
+  background: var(--cx-bg);
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--cargonex-border);
+  background: var(--cx-border);
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--cargonex-steel);
+  background: var(--cx-steel);
 }
 
-/* Steel glow animation */
-@keyframes steelGlow {
-  0%, 100% { box-shadow: 0 0 5px rgba(59, 130, 246, 0.1); }
-  50% { box-shadow: 0 0 15px rgba(59, 130, 246, 0.3), 0 0 5px rgba(249, 115, 22, 0.15); }
+/* Premium card hover */
+.cx-card {
+  transition: box-shadow 0.2s ease, transform 0.15s ease;
+}
+.cx-card:hover {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  transform: translateY(-1px);
 }
 
-.steel-glow:hover {
-  animation: steelGlow 2s ease-in-out infinite;
-}
-
-/* Subtle pulse for active elements */
-@keyframes subtlePulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.85; }
-}
-
-.glow-border {
-  position: relative;
-}
-.glow-border::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  padding: 1px;
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.4), rgba(249, 115, 22, 0.2));
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-.glow-border:hover::after {
-  opacity: 1;
+/* Button transitions */
+button {
+  transition: all 0.15s ease;
 }
