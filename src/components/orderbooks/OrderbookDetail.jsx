@@ -481,7 +481,7 @@ export default function OrderbookDetail({ orderId, onClose, onUpdated }) {
             )}
 
             {/* Add Line Row */}
-            {isDraft && (
+            {isEditable && (
               <div className="p-3 bg-blue-50 rounded border border-blue-200 space-y-2">
                 <div className="font-medium text-blue-900 text-sm">Add Category Line</div>
                 <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
