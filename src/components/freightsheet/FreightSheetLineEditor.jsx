@@ -169,12 +169,12 @@ export default function FreightSheetLineEditor({ sheet, readonly = false }) {
         </thead>
         <tbody>
           {lines.map(line => (
-            <LineRow key={line.id} line={line} defaultLoad={sheet.default_load_tons} onSave={handleSave} onDelete={handleDelete} />
+            <LineRow key={line.id} line={line} defaultLoad={sheet.default_load_tons} onSave={handleSave} onDelete={handleDelete} readonly={readonly} />
           ))}
           {isLoading && (
             <tr><td colSpan={11} className="text-center py-4 text-slate-400 text-xs">Loading...</td></tr>
           )}
-          <NewLineRow sheetId={sheet.id} defaultLoad={sheet.default_load_tons} onSaved={onSaved} />
+          {!readonly && <NewLineRow sheetId={sheet.id} defaultLoad={sheet.default_load_tons} onSaved={onSaved} />}
         </tbody>
       </table>
     </div>
