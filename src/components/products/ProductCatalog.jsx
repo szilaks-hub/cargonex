@@ -19,6 +19,15 @@ function getCategoryType(name = "") {
 }
 
 function getColumnsForType(type, onEdit, onArchive, onDelete) {
+  const favCol = (toggleFav, favoriteIds) => ({
+    header: "★",
+    render: (r) => (
+      <button onClick={(e) => { e.stopPropagation(); toggleFav(r.id); }} title="Toggle favorite">
+        <Heart className={`w-4 h-4 ${favoriteIds.has(r.id) ? "fill-rose-500 text-rose-500" : "text-slate-300 hover:text-rose-400"}`} />
+      </button>
+    ),
+  });
+
   const actionsCol = (onEdit, onArchive, onDelete) => ({
     header: "",
     render: (r) => (
