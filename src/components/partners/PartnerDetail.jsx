@@ -148,6 +148,8 @@ function ContactForm({ partner, item, onClose, onSaved }) {
   const [form, setForm] = useState(item || { partner_id: partner.id, partner_name: partner.name, full_name: "", position: "", phone: "", email: "", notes: "" });
   const [saving, setSaving] = useState(false);
   const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
+  const lbl = "text-slate-600 text-xs font-semibold";
+  const inp = "bg-white border-[#c6ccda] text-slate-800";
 
   const handleSave = async () => {
     setSaving(true);
@@ -158,15 +160,15 @@ function ContactForm({ partner, item, onClose, onSaved }) {
   };
 
   return (
-    <div className="bg-[#22272e] border border-[#2d333b] rounded-lg p-4 mb-3 space-y-3">
+    <div className="bg-[#f5f7fa] border border-[rgba(46,58,90,0.12)] rounded-lg p-4 mb-3 space-y-3">
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <div><Label className="text-[#8b949e] text-xs">Name *</Label><Input className="bg-[#1a1e23] border-[#2d333b] text-[#e6edf3]" value={form.full_name} onChange={(e) => set("full_name", e.target.value)} /></div>
-        <div><Label className="text-[#8b949e] text-xs">Position</Label><Input className="bg-[#1a1e23] border-[#2d333b] text-[#e6edf3]" value={form.position} onChange={(e) => set("position", e.target.value)} /></div>
-        <div><Label className="text-[#8b949e] text-xs">Phone</Label><Input className="bg-[#1a1e23] border-[#2d333b] text-[#e6edf3]" value={form.phone} onChange={(e) => set("phone", e.target.value)} /></div>
-        <div><Label className="text-[#8b949e] text-xs">Email</Label><Input className="bg-[#1a1e23] border-[#2d333b] text-[#e6edf3]" value={form.email} onChange={(e) => set("email", e.target.value)} /></div>
+        <div><Label className={lbl}>Name *</Label><Input className={inp} value={form.full_name} onChange={(e) => set("full_name", e.target.value)} /></div>
+        <div><Label className={lbl}>Position</Label><Input className={inp} value={form.position} onChange={(e) => set("position", e.target.value)} /></div>
+        <div><Label className={lbl}>Phone</Label><Input className={inp} value={form.phone} onChange={(e) => set("phone", e.target.value)} /></div>
+        <div><Label className={lbl}>Email</Label><Input className={inp} value={form.email} onChange={(e) => set("email", e.target.value)} /></div>
       </div>
       <div className="flex justify-end gap-2">
-        <Button variant="outline" size="sm" onClick={onClose} className="border-[#2d333b] text-[#8b949e]">Cancel</Button>
+        <Button variant="outline" size="sm" onClick={onClose} className="border-[#c6ccda] text-slate-600">Cancel</Button>
         <Button size="sm" onClick={handleSave} disabled={saving} className="bg-blue-600 hover:bg-blue-700 text-white"><Save className="w-3 h-3 mr-1" /> Save</Button>
       </div>
     </div>
