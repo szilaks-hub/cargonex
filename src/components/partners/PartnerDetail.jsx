@@ -62,10 +62,13 @@ export default function PartnerDetail({ partner, onBack, onUpdated }) {
         </div>
       </div>
 
+      {/* Role-specific info panels */}
+      <RoleInfoPanels partner={partner} isCarrier={isCarrier} isCustomsAgent={isCustomsAgent} isSupplier={isSupplier} isCustomer={isCustomer} />
+
       {/* Locations */}
       <div>
         <div className="flex items-center justify-between mb-3">
-          <h3 className="text-sm font-medium text-[#e6edf3] flex items-center gap-2"><MapPin className="w-4 h-4 text-blue-400" /> Locations / Telephelyek</h3>
+          <h3 className="text-sm font-semibold text-slate-700 flex items-center gap-2"><MapPin className="w-4 h-4 text-blue-500" /> Locations / Telephelyek</h3>
           <Button size="sm" onClick={() => { setEditLoc(null); setShowLocForm(true); }} className="bg-blue-600 hover:bg-blue-700 text-white gap-1 text-xs">
             <Plus className="w-3 h-3" /> Add
           </Button>
