@@ -77,17 +77,17 @@ export default function Layout({ children, currentPageName }) {
                 onClick={() => setSidebarOpen(false)}
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all duration-150 group ${
                   isActive
-                    ? "bg-blue-600 text-white shadow-md"
-                    : "text-slate-400 hover:text-white hover:bg-white/8"
+                    ? "text-white shadow-md"
+                    : "text-slate-400 hover:text-white hover:bg-white/10"
                 }`}
-                style={!isActive ? { ':hover': { background: 'rgba(255,255,255,0.08)' } } : {}}
+                style={isActive ? { background: "linear-gradient(135deg, #e05a2b, #c0392b)" } : {}}
               >
                 <item.icon className={`w-4 h-4 flex-shrink-0 ${isActive ? "text-white" : "text-slate-500 group-hover:text-slate-300"}`} />
                 <div className="flex-1 min-w-0">
                   <div className="font-medium truncate">{item.name}</div>
-                  <div className={`text-[10px] truncate ${isActive ? "text-blue-200" : "text-slate-600 group-hover:text-slate-500"}`}>{item.nameHu}</div>
+                  <div className={`text-[10px] truncate ${isActive ? "text-orange-100" : "text-slate-600 group-hover:text-slate-500"}`}>{item.nameHu}</div>
                 </div>
-                {isActive && <ChevronRight className="w-3 h-3 text-blue-200 flex-shrink-0" />}
+                {isActive && <ChevronRight className="w-3 h-3 text-orange-200 flex-shrink-0" />}
               </Link>
             );
           })}
