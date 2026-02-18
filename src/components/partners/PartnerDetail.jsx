@@ -108,6 +108,8 @@ function LocationForm({ partner, item, onClose, onSaved }) {
   const [form, setForm] = useState(item || { partner_id: partner.id, partner_name: partner.name, location_name: "", country: "", region: "", city: "", address: "", postal_code: "", is_primary: false });
   const [saving, setSaving] = useState(false);
   const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
+  const lbl = "text-slate-600 text-xs font-semibold";
+  const inp = "bg-white border-[#c6ccda] text-slate-800";
 
   const handleSave = async () => {
     setSaving(true);
@@ -118,16 +120,24 @@ function LocationForm({ partner, item, onClose, onSaved }) {
   };
 
   return (
-    <div className="bg-[#22272e] border border-[#2d333b] rounded-lg p-4 mb-3 space-y-3">
+    <div className="bg-[#f5f7fa] border border-[rgba(46,58,90,0.12)] rounded-lg p-4 mb-3 space-y-3">
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <div><Label className="text-[#8b949e] text-xs">Name *</Label><Input className="bg-[#1a1e23] border-[#2d333b] text-[#e6edf3]" value={form.location_name} onChange={(e) => set("location_name", e.target.value)} /></div>
-        <div><Label className="text-[#8b949e] text-xs">Country</Label><Input className="bg-[#1a1e23] border-[#2d333b] text-[#e6edf3]" value={form.country} onChange={(e) => set("country", e.target.value)} /></div>
-        <div><Label className="text-[#8b949e] text-xs">Region</Label><Input className="bg-[#1a1e23] border-[#2d333b] text-[#e6edf3]" value={form.region} onChange={(e) => set("region", e.target.value)} /></div>
-        <div><Label className="text-[#8b949e] text-xs">City</Label><Input className="bg-[#1a1e23] border-[#2d333b] text-[#e6edf3]" value={form.city} onChange={(e) => set("city", e.target.value)} /></div>
-        <div><Label className="text-[#8b949e] text-xs">Address</Label><Input className="bg-[#1a1e23] border-[#2d333b] text-[#e6edf3]" value={form.address} onChange={(e) => set("address", e.target.value)} /></div>
+        <div><Label className={lbl}>Name *</Label><Input className={inp} value={form.location_name} onChange={(e) => set("location_name", e.target.value)} /></div>
+        <div className="sm:col-span-2">
+          <CountryPicker
+            value={form.country ? [form.country] : []}
+            onChange={(v) => set("country", v[0] || "")}
+            single
+            label="Country / Ország"
+            required
+          />
+        </div>
+        <div><Label className={lbl}>Region</Label><Input className={inp} value={form.region} onChange={(e) => set("region", e.target.value)} /></div>
+        <div><Label className={lbl}>City</Label><Input className={inp} value={form.city} onChange={(e) => set("city", e.target.value)} /></div>
+        <div><Label className={lbl}>Address</Label><Input className={inp} value={form.address} onChange={(e) => set("address", e.target.value)} /></div>
       </div>
       <div className="flex justify-end gap-2">
-        <Button variant="outline" size="sm" onClick={onClose} className="border-[#2d333b] text-[#8b949e]">Cancel</Button>
+        <Button variant="outline" size="sm" onClick={onClose} className="border-[#c6ccda] text-slate-600">Cancel</Button>
         <Button size="sm" onClick={handleSave} disabled={saving} className="bg-blue-600 hover:bg-blue-700 text-white"><Save className="w-3 h-3 mr-1" /> Save</Button>
       </div>
     </div>
