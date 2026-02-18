@@ -89,7 +89,19 @@ function NewLineRow({ sheetId, defaultLoad, onSaved }) {
 
   return (
     <tr className="border-b border-blue-100 bg-blue-50/30">
-      <td className="px-2 py-1.5"><Input className={inp} value={form.destination_zip} onChange={e => set("destination_zip", e.target.value)} placeholder="ISZ" /></td>
+      <td className="px-2 py-1.5">
+        <ZipAutocomplete
+          value={form.destination_zip}
+          inputClassName={inp}
+          onZipChange={v => set("destination_zip", v)}
+          onSelect={(zip, city, county) => setForm(f => ({
+            ...f,
+            destination_zip: zip,
+            destination_city: city,
+            destination_county: county || f.destination_county
+          }))}
+        />
+      </td>
       <td className="px-2 py-1.5"><Input className={inp} value={form.destination_city} onChange={e => set("destination_city", e.target.value)} placeholder="Város *" /></td>
       <td className="px-2 py-1.5"><Input className={inp} value={form.destination_county} onChange={e => set("destination_county", e.target.value)} placeholder="Vármegye" /></td>
       <td className="px-2 py-1.5"><Input className={inp} value={form.destination_region} onChange={e => set("destination_region", e.target.value)} placeholder="Régió" /></td>
