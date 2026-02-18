@@ -290,7 +290,7 @@ export default function OrderbookDetail({ orderId, onClose, onUpdated }) {
               {/* Site */}
               <div>
                 <label className="text-xs font-medium text-slate-600 mb-1 block">Supplier Site *</label>
-                {isDraft ? (
+                {isEditable ? (
                   <Select value={form.supplier_site_id || ""} onValueChange={(v) => {
                     const site = filteredSites.find(s => s.id === v);
                     handleFormChange({ supplier_site_id: v, supplier_site_name: site?.location_name || "" });
