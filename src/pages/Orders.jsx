@@ -61,16 +61,22 @@ export default function Orders() {
   }, { count: 0, totalOrdered: 0, totalReceived: 0, suppliers: new Set() });
 
   const handleCreateOrder = async () => {
-    const order = await base44.entities.PurchaseOrder.create({
-      supplier_id: "",
-      supplier_site_id: "",
-      order_date: new Date().toISOString().split('T')[0],
-      currency: "EUR",
-      incoterms_type: "FCA",
-      status: "draft"
-    });
-    setSelectedOrderId(order.id);
-    queryClient.invalidateQueries({ queryKey: ['orders'] });
+    try {
+      const order = await base44.entities.PurchaseOrder.create({
+        supplier_id: "temp",
+        supplier_site_id: "temp",
+        order_date: new Date().toISOString().split('T')[0],
+        currency: "EUR",
+        incoterms_type: "FCA",
+        status: "draft"
+      });
+      if (order?.id) {
+        setSelectedOrderId(order.id);
+        queryClient.invalidateQueries({ queryKey: ['orders'] });
+      }
+    } catch (error) {
+      alert('Error creating order: ' + error.message);
+    }
   };
 
   const handleDeleteOrder = async (orderId) => {
