@@ -3,9 +3,11 @@ import { base44 } from "@/api/base44Client";
 import { useQueryClient } from "@tanstack/react-query";
 import StatusBadge from "@/components/ui/StatusBadge";
 import RowActions from "@/components/ui/RowActions";
+import { useFavorites } from "./useFavorites";
+import { sortWithFavorites } from "./sortProducts";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, Package, Hash, Layers } from "lucide-react";
+import { Search, Package, Hash, Layers, Heart } from "lucide-react";
 
 // Detect category type from name (EN or HU)
 function getCategoryType(name = "") {
