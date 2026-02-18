@@ -114,17 +114,16 @@ function OrderLineForm({ order, item, products, onClose, onSaved }) {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <div>
           <Label className="text-[#8b949e] text-xs">Product *</Label>
-          <Select value={form.product_id} onValueChange={(v) => {
-            const p = products.find((p) => p.id === v);
-            set("product_id", v);
-            set("product_name", p ? `${p.category_name} ${p.diameter || ""} ${p.factory_code || ""}` : "");
-            set("hs_code", p?.hs_code || "");
-          }}>
-            <SelectTrigger className="bg-[#1a1e23] border-[#2d333b] text-[#e6edf3]"><SelectValue placeholder="Select..." /></SelectTrigger>
-            <SelectContent className="bg-[#22272e] border-[#2d333b]">
-              {products.map((p) => <SelectItem key={p.id} value={p.id}>{p.category_name} {p.diameter ? `Ø${p.diameter}` : ""} {p.factory_code || ""}</SelectItem>)}
-            </SelectContent>
-          </Select>
+          <ProductPicker
+            products={products}
+            value={form.product_id}
+            dark={true}
+            onChange={(p) => {
+              set("product_id", p.id);
+              set("product_name", `${p.category_name} ${p.diameter || ""} ${p.factory_code || ""}`.trim());
+              set("hs_code", p?.hs_code || "");
+            }}
+          />
         </div>
         <div>
           <Label className="text-[#8b949e] text-xs">Ordered Qty (tons) *</Label>
