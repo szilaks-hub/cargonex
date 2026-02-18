@@ -2,25 +2,25 @@ import React from "react";
 import { Badge } from "@/components/ui/badge";
 
 const statusStyles = {
-  active: "bg-green-500/10 text-green-400 border-green-500/20",
-  inactive: "bg-gray-500/10 text-gray-400 border-gray-500/20",
-  draft: "bg-yellow-500/10 text-yellow-400 border-yellow-500/20",
-  confirmed: "bg-blue-500/10 text-blue-400 border-blue-500/20",
-  partial: "bg-orange-500/10 text-orange-400 border-orange-500/20",
-  completed: "bg-green-500/10 text-green-400 border-green-500/20",
-  cancelled: "bg-red-500/10 text-red-400 border-red-500/20",
-  expired: "bg-red-500/10 text-red-400 border-red-500/20",
-  scheduled: "bg-blue-500/10 text-blue-400 border-blue-500/20",
-  loaded: "bg-orange-500/10 text-orange-400 border-orange-500/20",
-  in_transit: "bg-purple-500/10 text-purple-400 border-purple-500/20",
-  customs: "bg-yellow-500/10 text-yellow-400 border-yellow-500/20",
-  closed: "bg-green-500/10 text-green-400 border-green-500/20",
+  active:     "bg-emerald-50 text-emerald-700 border-emerald-200",
+  inactive:   "bg-slate-100 text-slate-500 border-slate-200",
+  draft:      "bg-amber-50 text-amber-700 border-amber-200",
+  confirmed:  "bg-blue-50 text-blue-700 border-blue-200",
+  partial:    "bg-orange-50 text-orange-700 border-orange-200",
+  completed:  "bg-emerald-50 text-emerald-700 border-emerald-200",
+  cancelled:  "bg-red-50 text-red-700 border-red-200",
+  expired:    "bg-red-50 text-red-700 border-red-200",
+  scheduled:  "bg-blue-50 text-blue-700 border-blue-200",
+  loaded:     "bg-orange-50 text-orange-700 border-orange-200",
+  in_transit: "bg-violet-50 text-violet-700 border-violet-200",
+  customs:    "bg-amber-50 text-amber-700 border-amber-200",
+  closed:     "bg-emerald-50 text-emerald-700 border-emerald-200",
 };
 
 export default function StatusBadge({ status }) {
   const style = statusStyles[status] || statusStyles.active;
   return (
-    <Badge variant="outline" className={`${style} border text-xs capitalize`}>
+    <Badge variant="outline" className={`${style} border text-xs capitalize font-medium`}>
       {status?.replace(/_/g, " ")}
     </Badge>
   );

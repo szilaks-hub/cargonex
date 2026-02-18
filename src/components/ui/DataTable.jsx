@@ -12,12 +12,12 @@ import { Skeleton } from "@/components/ui/skeleton";
 export default function DataTable({ columns, data, isLoading, onRowClick, emptyMessage = "No data / Nincs adat" }) {
   if (isLoading) {
     return (
-      <div className="rounded-xl border border-[#2d333b] bg-[#1a1e23] overflow-hidden">
+      <div className="rounded-xl border border-slate-200 bg-white overflow-hidden shadow-sm">
         <Table>
           <TableHeader>
-            <TableRow className="border-[#2d333b] hover:bg-transparent">
+            <TableRow className="border-slate-200 hover:bg-transparent bg-slate-50">
               {columns.map((col, i) => (
-                <TableHead key={i} className="text-[#8b949e] text-xs uppercase tracking-wide font-medium">
+                <TableHead key={i} className="text-slate-500 text-xs uppercase tracking-wide font-semibold">
                   {col.header}
                 </TableHead>
               ))}
@@ -25,9 +25,9 @@ export default function DataTable({ columns, data, isLoading, onRowClick, emptyM
           </TableHeader>
           <TableBody>
             {Array(5).fill(0).map((_, i) => (
-              <TableRow key={i} className="border-[#2d333b]">
+              <TableRow key={i} className="border-slate-100">
                 {columns.map((_, j) => (
-                  <TableCell key={j}><Skeleton className="h-4 w-24 bg-[#22272e]" /></TableCell>
+                  <TableCell key={j}><Skeleton className="h-4 w-24 bg-slate-100" /></TableCell>
                 ))}
               </TableRow>
             ))}
@@ -38,12 +38,12 @@ export default function DataTable({ columns, data, isLoading, onRowClick, emptyM
   }
 
   return (
-    <div className="rounded-xl border border-[#2d333b] bg-[#1a1e23] overflow-hidden">
+    <div className="rounded-xl border border-slate-200 bg-white overflow-hidden shadow-sm">
       <Table>
         <TableHeader>
-          <TableRow className="border-[#2d333b] hover:bg-transparent">
+          <TableRow className="border-slate-200 hover:bg-transparent">
             {columns.map((col, i) => (
-              <TableHead key={i} className="text-[#8b949e] text-xs uppercase tracking-wide font-medium bg-[#22272e]/50">
+              <TableHead key={i} className="text-slate-500 text-xs uppercase tracking-wide font-semibold bg-slate-50">
                 {col.header}
               </TableHead>
             ))}
@@ -51,8 +51,8 @@ export default function DataTable({ columns, data, isLoading, onRowClick, emptyM
         </TableHeader>
         <TableBody>
           {data.length === 0 ? (
-            <TableRow className="border-[#2d333b]">
-              <TableCell colSpan={columns.length} className="text-center text-[#8b949e] py-12">
+            <TableRow className="border-slate-100">
+              <TableCell colSpan={columns.length} className="text-center text-slate-400 py-14 text-sm">
                 {emptyMessage}
               </TableCell>
             </TableRow>
@@ -60,13 +60,13 @@ export default function DataTable({ columns, data, isLoading, onRowClick, emptyM
             data.map((row, i) => (
               <TableRow
                 key={row.id || i}
-                className={`border-[#2d333b] transition-colors ${
-                  onRowClick ? "cursor-pointer hover:bg-[#22272e]" : ""
+                className={`border-slate-100 transition-colors ${
+                  onRowClick ? "cursor-pointer hover:bg-blue-50/60" : "hover:bg-slate-50"
                 }`}
                 onClick={() => onRowClick?.(row)}
               >
                 {columns.map((col, j) => (
-                  <TableCell key={j} className="text-[#e6edf3] text-sm">
+                  <TableCell key={j} className="text-slate-700 text-sm">
                     {col.render ? col.render(row) : row[col.key]}
                   </TableCell>
                 ))}
