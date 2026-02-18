@@ -14,6 +14,9 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 export default function OrderDetail({ order, onBack }) {
   const [showLineForm, setShowLineForm] = useState(false);
   const [editLine, setEditLine] = useState(null);
+  const [deleteDialog, setDeleteDialog] = useState({ open: false, message: "", action: null });
+  const [deleteReason, setDeleteReason] = useState("");
+  const [deleting, setDeleting] = useState(false);
   const qc = useQueryClient();
 
   const { data: lines = [], isLoading } = useQuery({
