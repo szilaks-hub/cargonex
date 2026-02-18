@@ -47,8 +47,10 @@ function LineRow({ line, defaultLoad, onSave, onDelete, readonly = false }) {
         <Checkbox checked={form.is_active !== false} onCheckedChange={v => set("is_active", v)} />
       </td>
       <td className="px-2 py-1.5 flex gap-1">
-        <button onClick={() => onSave(form)} className="text-blue-500 hover:text-blue-700"><Save className="w-3.5 h-3.5" /></button>
-        <button onClick={() => onDelete(line.id)} className="text-red-400 hover:text-red-600"><Trash2 className="w-3.5 h-3.5" /></button>
+        {!readonly && <>
+          <button onClick={() => onSave(form)} className="text-blue-500 hover:text-blue-700"><Save className="w-3.5 h-3.5" /></button>
+          <button onClick={() => onDelete(line.id)} className="text-red-400 hover:text-red-600"><Trash2 className="w-3.5 h-3.5" /></button>
+        </>}
       </td>
     </tr>
   );
