@@ -1,11 +1,9 @@
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import PageHeader from "@/components/ui/PageHeader";
-import DataTable from "@/components/ui/DataTable";
-import StatusBadge from "@/components/ui/StatusBadge";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import ProductForm from "@/components/products/ProductForm";
 import CategoryManager from "@/components/products/CategoryManager";
+import ProductCatalog from "@/components/products/ProductCatalog";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 export default function Products() {
@@ -23,21 +21,9 @@ export default function Products() {
     queryFn: () => base44.entities.ProductCategory.list(),
   });
 
-  const deleteMut = useMutation({
-    mutationFn: (id) => base44.entities.Product.delete(id),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["products"] }),
-  });
-
-  const columns = [
-    { header: "Category / Kategória", key: "category_name" },
-    { header: "Factory Code / Gyári kód", key: "factory_code" },
-    { header: "Diameter", render: (r) => r.diameter ? `${r.diameter} mm` : "-" },
-    { header: "Length", render: (r) => r.length ? `${r.length} mm` : "-" },
-    { header: "Mesh Name", key: "mesh_name", render: (r) => r.mesh_name || "-" },
-    { header: "Unit / Egység", key: "unit_of_measure" },
-    { header: "HS Code / VTSZ", key: "hs_code" },
-    { header: "Status", render: (r) => <StatusBadge status={r.status} /> },
-  ];
+  const handleAdd = () => { setEditItem(null); setShowForm(true); };
+  const handleEdit = (r) => { setEditItem(r); setShowForm(true); };
+  const handleSaved = () => { qc.invalidateQueries({ queryKey: ["products"] }); setShowForm(false); setEditItem(null); };
 
   return (
     <div className="space-y-4">
@@ -57,26 +43,23 @@ export default function Products() {
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="products" className="space-y-4 mt-4">
-          <PageHeader
-            title="Products / Termékek"
-            subtitle="Product master database / Terméktörzs"
-            onAdd={() => { setEditItem(null); setShowForm(true); }}
-            addLabel="New Product / Új termék"
-          />
+        <TabsContent value="products" className="mt-4">
           {showForm && (
-            <ProductForm
-              item={editItem}
-              categories={categories}
-              onClose={() => { setShowForm(false); setEditItem(null); }}
-              onSaved={() => { qc.invalidateQueries({ queryKey: ["products"] }); setShowForm(false); setEditItem(null); }}
-            />
+            <div className="mb-4">
+              <ProductForm
+                item={editItem}
+                categories={categories}
+                onClose={() => { setShowForm(false); setEditItem(null); }}
+                onSaved={handleSaved}
+              />
+            </div>
           )}
-          <DataTable
-            columns={columns}
-            data={products}
+          <ProductCatalog
+            products={products}
+            categories={categories}
             isLoading={isLoading}
-            onRowClick={(r) => { setEditItem(r); setShowForm(true); }}
+            onEdit={handleEdit}
+            onAdd={handleAdd}
           />
         </TabsContent>
 
