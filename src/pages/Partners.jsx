@@ -6,6 +6,7 @@ import DataTable from "@/components/ui/DataTable";
 import StatusBadge from "@/components/ui/StatusBadge";
 import PartnerForm from "@/components/partners/PartnerForm";
 import PartnerDetail from "@/components/partners/PartnerDetail";
+import RowActions from "@/components/ui/RowActions";
 import { Badge } from "@/components/ui/badge";
 
 const roleColors = {

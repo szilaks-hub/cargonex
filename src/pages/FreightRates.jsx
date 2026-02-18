@@ -5,6 +5,7 @@ import PageHeader from "@/components/ui/PageHeader";
 import DataTable from "@/components/ui/DataTable";
 import StatusBadge from "@/components/ui/StatusBadge";
 import FreightRateForm from "@/components/freight/FreightRateForm";
+import RowActions from "@/components/ui/RowActions";
 
 export default function FreightRates() {
   const [showForm, setShowForm] = useState(false);

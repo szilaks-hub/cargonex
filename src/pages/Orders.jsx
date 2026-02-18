@@ -6,6 +6,7 @@ import DataTable from "@/components/ui/DataTable";
 import StatusBadge from "@/components/ui/StatusBadge";
 import OrderForm from "@/components/orders/OrderForm";
 import OrderDetail from "@/components/orders/OrderDetail";
+import RowActions from "@/components/ui/RowActions";
 
 export default function Orders() {
   const [showForm, setShowForm] = useState(false);
