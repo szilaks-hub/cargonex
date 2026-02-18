@@ -92,7 +92,7 @@ export default function PartnerDetail({ partner, onBack, onUpdated }) {
       {/* Contacts */}
       <div>
         <div className="flex items-center justify-between mb-3">
-          <h3 className="text-sm font-medium text-[#e6edf3] flex items-center gap-2"><UserCircle className="w-4 h-4 text-green-400" /> Contacts / Kapcsolattartók</h3>
+          <h3 className="text-sm font-semibold text-slate-700 flex items-center gap-2"><UserCircle className="w-4 h-4 text-green-500" /> Contacts / Kapcsolattartók</h3>
           <Button size="sm" onClick={() => { setEditContact(null); setShowContactForm(true); }} className="bg-blue-600 hover:bg-blue-700 text-white gap-1 text-xs">
             <Plus className="w-3 h-3" /> Add
           </Button>
