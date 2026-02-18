@@ -272,8 +272,13 @@ export default function FreightSheetForm({ item, onClose, onSaved, forceDraft = 
             </Select>
           </div>
           <div className="lg:col-span-2">
+            <Label className={lbl}>Áru eredete leírás / Goods Origin Description</Label>
+            <Textarea className={`${inp} h-12`} placeholder="pl. francia kovácsolt acél, beszállítói nyomtatvány alapján" value={form.goods_origin_description || ""} onChange={e => set("goods_origin_description", e.target.value)} />
+            <p className="text-[10px] text-slate-400 mt-1">Ezen információ bekerül a nyomtatási deklarációba</p>
+          </div>
+          <div className="lg:col-span-2">
             <Label className={lbl}>Notes / Megjegyzés</Label>
-            <Textarea className={`${inp} h-14`} value={form.notes} onChange={e => set("notes", e.target.value)} />
+            <Textarea className={`${inp} h-12`} value={form.notes} onChange={e => set("notes", e.target.value)} />
           </div>
         </div>
       </div>
