@@ -113,7 +113,14 @@ export default function PartnerDetail({ partner, onBack, onUpdated }) {
 
       {/* Customs Agent Fees */}
       {isCustomsAgent && (
-        <CustomsAgentFees partnerId={partner.id} partnerName={partner.name} fees={fees} isLoading={loadFees} />
+        <div>
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-sm font-semibold text-slate-700 flex items-center gap-2">
+              <ShieldCheck className="w-4 h-4 text-purple-500" /> Customs Agent Fees / Vámügynöki díjak
+            </h3>
+          </div>
+          <CustomsAgentFees partnerId={partner.id} partnerName={partner.name} fees={fees} isLoading={loadFees} />
+        </div>
       )}
     </div>
   );
