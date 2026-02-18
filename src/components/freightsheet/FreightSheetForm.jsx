@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -7,24 +7,25 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import { X, Save } from "lucide-react";
+import { X, Save, Trash2 } from "lucide-react";
 
 const INCOTERMS = ["EXW", "FCA", "CPT", "CIP", "DAP", "DPU", "DDP", "FAS", "FOB", "CFR", "CIF"];
-const COUNTRIES = ["Hungary", "Slovakia", "Romania", "Poland", "Croatia", "Slovenia", "Austria", "Serbia", "Italy", "Germany", "Czech Republic"];
+const COUNTRIES = ["HU", "SK", "RO", "PL", "HR", "SI", "RS", "AT", "DE", "CZ", "BG", "UA"];
 
 export default function FreightSheetForm({ item, onClose, onSaved }) {
   const [form, setForm] = useState(item || {
+    sheet_number: "",
     carrier_id: "", carrier_name: "",
     supplier_id: "", supplier_name: "",
-    supplier_location_id: "", supplier_location_name: "",
-    origin_country: "",
+    supplier_site_id: "", supplier_site_name: "",
+    origin_country: "", origin_city: "", origin_address: "",
     destination_country: "",
+    incoterms: "FCA",
     valid_from: new Date().toISOString().split("T")[0],
     valid_to: "",
-    open_ended: true,
+    valid_until_revoked: true,
     currency: "EUR",
     default_load_tons: 24,
-    incoterms: "FCA",
     notes: "",
     status: "active"
   });
@@ -35,17 +36,35 @@ export default function FreightSheetForm({ item, onClose, onSaved }) {
 
   const carriers = partners.filter(p => (p.roles || []).includes("carrier"));
   const suppliers = partners.filter(p => (p.roles || []).includes("supplier"));
-  const supplierLocations = locations.filter(l => l.partner_id === form.supplier_id);
+  const supplierSites = locations.filter(l => l.partner_id === form.supplier_id);
 
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
 
+  useEffect(() => {
+    if (form.supplier_site_id) {
+      const site = locations.find(l => l.id === form.supplier_site_id);
+      if (site) {
+        set("origin_country", site.country || "");
+        set("origin_city", site.city || "");
+        set("supplier_site_name", `${site.partner_name} - ${site.location_name}`);
+      }
+    }
+  }, [form.supplier_site_id]);
+
   const handleSave = async () => {
     setSaving(true);
-    const data = { ...form, default_load_tons: Number(form.default_load_tons) || 24 };
+    const data = {
+      ...form,
+      default_load_tons: Number(form.default_load_tons) || 24,
+    };
     if (item?.id) await base44.entities.FreightSheet.update(item.id, data);
     else await base44.entities.FreightSheet.create(data);
     setSaving(false);
     onSaved();
+  };
+
+  const handleDelete = async () => {
+    if (item?.id) { await base44.entities.FreightSheet.delete(item.id); onSaved(); }
   };
 
   const lbl = "text-slate-600 text-xs font-semibold";
@@ -54,13 +73,20 @@ export default function FreightSheetForm({ item, onClose, onSaved }) {
   return (
     <div className="bg-[#f5f7fa] border border-[rgba(46,58,90,0.12)] rounded-xl p-5 space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-slate-800">{item ? "Edit Freight Sheet" : "New Freight Sheet / Új Fuvarozási Lap"}</h3>
+        <h3 className="text-sm font-semibold text-slate-800">
+          {item ? "Edit Freight Sheet" : "New Freight Sheet / Új fuvarozási lap"}
+        </h3>
         <button onClick={onClose} className="text-slate-400 hover:text-slate-700"><X className="w-4 h-4" /></button>
       </div>
+
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <div>
+          <Label className={lbl}>Sheet No. / Lap sorszám</Label>
+          <Input className={inp} value={form.sheet_number} onChange={e => set("sheet_number", e.target.value)} placeholder="Auto if empty" />
+        </div>
+        <div>
           <Label className={lbl}>Carrier / Fuvarozó *</Label>
-          <Select value={form.carrier_id} onValueChange={(v) => {
+          <Select value={form.carrier_id} onValueChange={v => {
             const c = carriers.find(c => c.id === v);
             set("carrier_id", v); set("carrier_name", c?.name || "");
           }}>
@@ -72,10 +98,9 @@ export default function FreightSheetForm({ item, onClose, onSaved }) {
         </div>
         <div>
           <Label className={lbl}>Supplier / Beszállító</Label>
-          <Select value={form.supplier_id} onValueChange={(v) => {
+          <Select value={form.supplier_id} onValueChange={v => {
             const s = suppliers.find(s => s.id === v);
-            set("supplier_id", v); set("supplier_name", s?.name || "");
-            set("supplier_location_id", ""); set("supplier_location_name", ""); set("origin_country", "");
+            set("supplier_id", v); set("supplier_name", s?.name || ""); set("supplier_site_id", "");
           }}>
             <SelectTrigger className={inp}><SelectValue placeholder="Select..." /></SelectTrigger>
             <SelectContent className="bg-white border-[#c6ccda]">
@@ -85,25 +110,28 @@ export default function FreightSheetForm({ item, onClose, onSaved }) {
         </div>
         <div>
           <Label className={lbl}>Supplier Site / Telephely *</Label>
-          <Select value={form.supplier_location_id} onValueChange={(v) => {
-            const l = supplierLocations.find(l => l.id === v);
-            set("supplier_location_id", v);
-            set("supplier_location_name", l?.location_name || "");
-            set("origin_country", l?.country || "");
-          }}>
-            <SelectTrigger className={inp}><SelectValue placeholder="Select..." /></SelectTrigger>
+          <Select value={form.supplier_site_id} onValueChange={v => set("supplier_site_id", v)} disabled={!form.supplier_id}>
+            <SelectTrigger className={inp}><SelectValue placeholder="Select site..." /></SelectTrigger>
             <SelectContent className="bg-white border-[#c6ccda]">
-              {supplierLocations.map(l => <SelectItem key={l.id} value={l.id}>{l.location_name} {l.city ? `– ${l.city}` : ""}</SelectItem>)}
+              {supplierSites.map(l => <SelectItem key={l.id} value={l.id}>{l.location_name} {l.city ? `– ${l.city}` : ""}</SelectItem>)}
             </SelectContent>
           </Select>
         </div>
         <div>
           <Label className={lbl}>Origin Country / Feladó ország</Label>
-          <Input className="bg-slate-100 border-[#c6ccda] text-slate-500" value={form.origin_country} readOnly />
+          <Input className={`${inp} bg-slate-100`} value={form.origin_country} readOnly placeholder="Auto from site" />
+        </div>
+        <div>
+          <Label className={lbl}>Origin City / Feladó város</Label>
+          <Input className={inp} value={form.origin_city} onChange={e => set("origin_city", e.target.value)} />
+        </div>
+        <div>
+          <Label className={lbl}>Origin Address / Feladó cím</Label>
+          <Input className={inp} value={form.origin_address} onChange={e => set("origin_address", e.target.value)} placeholder="e.g. Rumski put 27." />
         </div>
         <div>
           <Label className={lbl}>Destination Country / Célország *</Label>
-          <Select value={form.destination_country} onValueChange={(v) => set("destination_country", v)}>
+          <Select value={form.destination_country} onValueChange={v => set("destination_country", v)}>
             <SelectTrigger className={inp}><SelectValue placeholder="Select..." /></SelectTrigger>
             <SelectContent className="bg-white border-[#c6ccda]">
               {COUNTRIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
@@ -112,7 +140,7 @@ export default function FreightSheetForm({ item, onClose, onSaved }) {
         </div>
         <div>
           <Label className={lbl}>Incoterms</Label>
-          <Select value={form.incoterms} onValueChange={(v) => set("incoterms", v)}>
+          <Select value={form.incoterms} onValueChange={v => set("incoterms", v)}>
             <SelectTrigger className={inp}><SelectValue /></SelectTrigger>
             <SelectContent className="bg-white border-[#c6ccda]">
               {INCOTERMS.map(i => <SelectItem key={i} value={i}>{i}</SelectItem>)}
@@ -121,23 +149,23 @@ export default function FreightSheetForm({ item, onClose, onSaved }) {
         </div>
         <div>
           <Label className={lbl}>Valid From / Érvényes ettől *</Label>
-          <Input type="date" className={inp} value={form.valid_from} onChange={(e) => set("valid_from", e.target.value)} />
+          <Input type="date" className={inp} value={form.valid_from} onChange={e => set("valid_from", e.target.value)} />
         </div>
         <div>
           <Label className={lbl}>Valid To / Érvényes eddig</Label>
-          <Input type="date" className={inp} value={form.valid_to} disabled={form.open_ended} onChange={(e) => set("valid_to", e.target.value)} />
+          <Input type="date" className={inp} value={form.valid_to} onChange={e => set("valid_to", e.target.value)} disabled={form.valid_until_revoked} />
           <label className="flex items-center gap-2 mt-1.5 cursor-pointer">
-            <Checkbox checked={form.open_ended} onCheckedChange={(v) => { set("open_ended", v); if (v) set("valid_to", ""); }} />
+            <Checkbox checked={form.valid_until_revoked} onCheckedChange={v => set("valid_until_revoked", v)} />
             <span className="text-xs text-slate-500">Visszavonásig érvényes</span>
           </label>
         </div>
         <div>
-          <Label className={lbl}>Default Load / Alap kiterheltség (t)</Label>
-          <Input type="number" className={inp} value={form.default_load_tons} onChange={(e) => set("default_load_tons", e.target.value)} />
+          <Label className={lbl}>Default Load / Alap kiterh. (t)</Label>
+          <Input type="number" className={inp} value={form.default_load_tons} onChange={e => set("default_load_tons", e.target.value)} />
         </div>
         <div>
           <Label className={lbl}>Currency / Deviza</Label>
-          <Select value={form.currency} onValueChange={(v) => set("currency", v)}>
+          <Select value={form.currency} onValueChange={v => set("currency", v)}>
             <SelectTrigger className={inp}><SelectValue /></SelectTrigger>
             <SelectContent className="bg-white border-[#c6ccda]">
               <SelectItem value="EUR">EUR</SelectItem>
@@ -148,25 +176,29 @@ export default function FreightSheetForm({ item, onClose, onSaved }) {
         </div>
         <div>
           <Label className={lbl}>Status</Label>
-          <Select value={form.status} onValueChange={(v) => set("status", v)}>
+          <Select value={form.status} onValueChange={v => set("status", v)}>
             <SelectTrigger className={inp}><SelectValue /></SelectTrigger>
             <SelectContent className="bg-white border-[#c6ccda]">
-              <SelectItem value="active">Active</SelectItem>
-              <SelectItem value="inactive">Inactive</SelectItem>
-              <SelectItem value="archived">Archived</SelectItem>
+              <SelectItem value="active">Active / Aktív</SelectItem>
+              <SelectItem value="inactive">Inactive / Inaktív</SelectItem>
+              <SelectItem value="archived">Archived / Archivált</SelectItem>
             </SelectContent>
           </Select>
         </div>
-        <div className="sm:col-span-2 lg:col-span-3">
+        <div className="lg:col-span-3">
           <Label className={lbl}>Notes / Megjegyzés</Label>
-          <Textarea className={`${inp} h-14`} value={form.notes} onChange={(e) => set("notes", e.target.value)} />
+          <Textarea className={`${inp} h-14`} value={form.notes} onChange={e => set("notes", e.target.value)} />
         </div>
       </div>
-      <div className="flex justify-end gap-2 pt-2">
-        <Button variant="outline" onClick={onClose} className="border-[#c6ccda] text-slate-600">Cancel</Button>
-        <Button onClick={handleSave} disabled={saving} className="bg-blue-600 hover:bg-blue-700 text-white gap-2">
-          <Save className="w-4 h-4" /> Save
-        </Button>
+
+      <div className="flex justify-between pt-2">
+        <div>{item?.id && <Button variant="ghost" onClick={handleDelete} className="text-red-500 hover:text-red-600 hover:bg-red-50 gap-2"><Trash2 className="w-4 h-4" /> Delete</Button>}</div>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={onClose} className="border-[#c6ccda] text-slate-600">Cancel</Button>
+          <Button onClick={handleSave} disabled={saving} className="gap-2" style={{background: "linear-gradient(135deg,#e05a2b,#c0392b)", color: "#fff"}}>
+            <Save className="w-4 h-4" /> Save
+          </Button>
+        </div>
       </div>
     </div>
   );

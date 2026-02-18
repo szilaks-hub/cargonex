@@ -1,151 +1,115 @@
-import React, { useRef } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { base44 } from "@/api/base44Client";
+import React from "react";
 import { Button } from "@/components/ui/button";
 import { Printer, X } from "lucide-react";
 
-export default function FreightSheetPrint({ sheet, onClose }) {
-  const printRef = useRef();
+const COUNTRY_NAMES = {
+  HU: "Magyarország", SK: "Szlovákia", RO: "Románia", PL: "Lengyelország",
+  HR: "Horvátország", SI: "Szlovénia", RS: "Szerbia", AT: "Ausztria",
+  DE: "Németország", CZ: "Csehország", BG: "Bulgária"
+};
 
-  const { data: lines = [] } = useQuery({
-    queryKey: ["sheetLines", sheet.id],
-    queryFn: () => base44.entities.FreightSheetLine.filter({ sheet_id: sheet.id }, "sort_order"),
-  });
-
+export default function FreightSheetPrint({ sheet, lines, onClose }) {
   const activeLines = lines.filter(l => l.is_active !== false);
+  const today = new Date().toLocaleDateString("hu-HU", { year: "numeric", month: "2-digit", day: "2-digit" });
 
-  const handlePrint = () => {
-    const content = printRef.current.innerHTML;
-    const w = window.open("", "_blank");
-    w.document.write(`
-      <html><head><title>Fuvardíj nyilatkozat</title>
-      <style>
-        body { font-family: Arial, sans-serif; font-size: 12px; color: #000; padding: 20mm; margin: 0; }
-        h1 { font-size: 16px; text-align: center; margin-bottom: 4px; }
-        h2 { font-size: 13px; text-align: center; color: #444; margin-bottom: 16px; }
-        .header-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px; font-size: 11px; }
-        .header-grid div { padding: 4px 6px; border: 1px solid #ccc; }
-        .header-grid label { font-weight: bold; display: block; font-size: 10px; color: #666; }
-        table { width: 100%; border-collapse: collapse; margin-top: 12px; }
-        th { background: #f0f0f0; border: 1px solid #ccc; padding: 5px 6px; font-size: 10px; text-align: center; }
-        td { border: 1px solid #ccc; padding: 5px 6px; font-size: 11px; }
-        td.num { text-align: right; }
-        .footer { margin-top: 24px; display: grid; grid-template-columns: 1fr 1fr; gap: 40px; font-size: 11px; }
-        .sig-line { border-top: 1px solid #000; margin-top: 32px; padding-top: 4px; text-align: center; font-size: 10px; color: #555; }
-        .validity { margin-top: 14px; font-size: 11px; font-style: italic; color: #555; text-align: center; }
-        @media print { body { padding: 15mm; } }
-      </style></head><body>${content}</body></html>
-    `);
-    w.document.close();
-    w.print();
-  };
+  const validityText = sheet.valid_until_revoked
+    ? "Jelen nyilatkozat visszavonásig érvényes."
+    : `Jelen nyilatkozat ${sheet.valid_from} – ${sheet.valid_to} között érvényes.`;
 
-  const validityText = sheet.open_ended
-    ? "Visszavonásig érvényes / Valid until revoked"
-    : `${sheet.valid_from} – ${sheet.valid_to}`;
+  const destCountryName = COUNTRY_NAMES[sheet.destination_country] || sheet.destination_country;
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h3 className="text-base font-semibold text-slate-800">Print Preview – Fuvardíj Nyilatkozat</h3>
-        <div className="flex gap-2">
-          <Button onClick={handlePrint} className="bg-slate-800 hover:bg-slate-900 text-white gap-2 text-sm">
-            <Printer className="w-4 h-4" /> Nyomtatás
-          </Button>
-          <Button variant="outline" onClick={onClose} className="border-slate-300 gap-2 text-sm">
-            <X className="w-4 h-4" /> Vissza
-          </Button>
-        </div>
-      </div>
-
-      {/* Print content */}
-      <div ref={printRef} className="bg-white border border-slate-200 rounded-xl p-8 shadow-sm text-sm text-slate-800 space-y-4">
-        <h1 className="text-xl font-bold text-center tracking-wide uppercase">Fuvardíj Nyilatkozat</h1>
-        <h2 className="text-center text-slate-500 font-normal text-sm">Freight Rate Declaration</h2>
-
-        <div className="grid grid-cols-2 gap-3 text-xs border border-slate-200 rounded-lg p-4 bg-slate-50">
-          <div>
-            <label className="font-bold text-slate-500 uppercase text-[10px]">Fuvarozó / Carrier</label>
-            <p className="font-semibold mt-0.5">{sheet.carrier_name || "–"}</p>
+    <div className="fixed inset-0 z-50 bg-black/50 flex items-start justify-center overflow-auto py-8">
+      <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl mx-4">
+        {/* Controls (hidden in print) */}
+        <div className="flex items-center justify-between px-6 py-3 border-b border-slate-200 print:hidden">
+          <div className="flex items-center gap-2">
+            <Button onClick={() => window.print()} className="gap-2 bg-blue-600 hover:bg-blue-700 text-white">
+              <Printer className="w-4 h-4" /> Nyomtatás
+            </Button>
           </div>
-          <div>
-            <label className="font-bold text-slate-500 uppercase text-[10px]">Beszállító / Supplier</label>
-            <p className="font-semibold mt-0.5">{sheet.supplier_name || "–"}</p>
-          </div>
-          <div>
-            <label className="font-bold text-slate-500 uppercase text-[10px]">Feladóhely / Loading Site</label>
-            <p className="font-semibold mt-0.5">{sheet.supplier_location_name || "–"} {sheet.origin_country ? `(${sheet.origin_country})` : ""}</p>
-          </div>
-          <div>
-            <label className="font-bold text-slate-500 uppercase text-[10px]">Célország / Destination Country</label>
-            <p className="font-semibold mt-0.5">{sheet.destination_country || "–"}</p>
-          </div>
-          <div>
-            <label className="font-bold text-slate-500 uppercase text-[10px]">Paritás / Incoterms</label>
-            <p className="font-semibold mt-0.5">{sheet.incoterms || "–"}</p>
-          </div>
-          <div>
-            <label className="font-bold text-slate-500 uppercase text-[10px]">Deviza / Currency</label>
-            <p className="font-semibold mt-0.5">{sheet.currency}</p>
-          </div>
-          <div className="col-span-2">
-            <label className="font-bold text-slate-500 uppercase text-[10px]">Érvényesség / Validity</label>
-            <p className="font-semibold mt-0.5">{validityText}</p>
-          </div>
+          <button onClick={onClose} className="text-slate-400 hover:text-slate-700"><X className="w-5 h-5" /></button>
         </div>
 
-        {sheet.notes && (
-          <div className="text-xs text-slate-500 italic border-l-2 border-slate-300 pl-3">{sheet.notes}</div>
-        )}
+        {/* Print content */}
+        <div id="print-area" className="p-10 text-[13px] text-slate-900 print:p-8">
+          {/* Header */}
+          <div className="flex items-start justify-between mb-6">
+            <div>
+              <img
+                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/user_695955de68183bcabeb8b12f/3e4f22a2f_CARGONEXv.png"
+                alt="CARGONEX"
+                className="h-14 object-contain mb-2"
+              />
+              <p className="text-xs text-slate-500 font-medium uppercase tracking-wider">NYILATKOZAT</p>
+            </div>
+            <div className="text-right text-xs text-slate-500">
+              {sheet.sheet_number && <p className="font-semibold text-slate-700">Lap: {sheet.sheet_number}</p>}
+              <p>Dátum: {today}</p>
+            </div>
+          </div>
 
-        <table className="w-full border-collapse text-xs">
-          <thead>
-            <tr className="bg-slate-100">
-              <th className="border border-slate-300 p-2 text-left">Város / City</th>
-              <th className="border border-slate-300 p-2 text-left">Vármegye / Régió</th>
-              <th className="border border-slate-300 p-2 text-right">ISZ</th>
-              <th className="border border-slate-300 p-2 text-right">Határig ({sheet.currency})</th>
-              <th className="border border-slate-300 p-2 text-right">Határtól ({sheet.currency})</th>
-              <th className="border border-slate-300 p-2 text-right font-bold">Összesen</th>
-              <th className="border border-slate-300 p-2 text-right">Kit. (t)</th>
-              <th className="border border-slate-300 p-2 text-right">EUR/to</th>
-            </tr>
-          </thead>
-          <tbody>
-            {activeLines.map((line, idx) => {
-              const load = line.load_tons || sheet.default_load_tons || 24;
-              const total = line.total_price ?? ((line.foreign_leg_price || 0) + (line.domestic_leg_price || 0));
-              const ept = line.eur_per_ton ?? (load > 0 ? (total / load).toFixed(2) : "-");
-              return (
-                <tr key={line.id} className={idx % 2 === 0 ? "bg-white" : "bg-slate-50"}>
-                  <td className="border border-slate-200 p-2 font-medium">{line.destination_city}</td>
-                  <td className="border border-slate-200 p-2 text-slate-500">{line.destination_county || line.destination_region || "–"}</td>
-                  <td className="border border-slate-200 p-2 text-right text-slate-500">{line.destination_zip || "–"}</td>
-                  <td className="border border-slate-200 p-2 text-right">{(line.foreign_leg_price || 0).toLocaleString()}</td>
-                  <td className="border border-slate-200 p-2 text-right">{(line.domestic_leg_price || 0).toLocaleString()}</td>
-                  <td className="border border-slate-200 p-2 text-right font-bold text-blue-700">{total.toLocaleString()}</td>
-                  <td className="border border-slate-200 p-2 text-right">{load}</td>
-                  <td className="border border-slate-200 p-2 text-right font-semibold text-orange-600">{Number(ept).toFixed(2)}</td>
+          {/* Intro paragraph */}
+          <div className="mb-6 text-sm leading-relaxed text-slate-700">
+            <p>
+              A Steel-Transz Kft. (Címe: 2371 Dabas, Kandó Kálmán u. 6.), ezen nyilatkozatával kijelenti, hogy a{" "}
+              <strong>{sheet.supplier_name || "—"}</strong>
+              {sheet.origin_address ? ` (${sheet.origin_address})` : ""} - től vásárolt árú, mely Szerbiából jön és{" "}
+              <strong>{sheet.incoterms}</strong>{sheet.origin_city ? ` ${sheet.origin_city}` : ""} paritással van ellátva, és a listán szereplő{" "}
+              <strong>{destCountryName}</strong> helyszínekre megy, azoknál a következő fuvardíjakkal kell számolni:
+            </p>
+          </div>
+
+          {/* Table */}
+          <div className="mb-6">
+            <h3 className="text-center font-semibold text-sm mb-3">Fuvardíj nyilatkozat.</h3>
+            <table className="w-full border-collapse text-sm">
+              <thead>
+                <tr className="border-b-2 border-slate-300">
+                  {sheet.destination_country === "HU" && <th className="text-left py-2 pr-3 font-semibold text-slate-700">Megye</th>}
+                  <th className="text-left py-2 pr-3 font-semibold text-slate-700">Város</th>
+                  <th className="text-right py-2 pr-3 font-semibold text-slate-700">Ár:</th>
+                  <th className="text-right py-2 pr-3 font-semibold text-slate-700">Szerb határig:</th>
+                  <th className="text-right py-2 pr-3 font-semibold text-slate-700">Szerb határtól:</th>
+                  <th className="text-right py-2 pr-3 font-semibold text-slate-700">Kiterh:</th>
+                  <th className="text-right py-2 font-semibold text-slate-700">Eur/To.</th>
                 </tr>
-              );
-            })}
-          </tbody>
-        </table>
-
-        <p className="text-center text-xs text-slate-400 italic mt-2">{validityText}</p>
-
-        <div className="grid grid-cols-2 gap-16 mt-8 pt-4">
-          <div>
-            <div className="border-t border-slate-400 pt-2 text-center text-xs text-slate-500">Fuvarozó aláírása / Carrier Signature</div>
-            <div className="text-center text-xs text-slate-400 mt-1">{sheet.carrier_name}</div>
+              </thead>
+              <tbody>
+                {activeLines.map((line, i) => {
+                  const load = line.load_tons || sheet.default_load_tons || 24;
+                  const total = (line.domestic_leg || 0) + (line.foreign_leg || 0);
+                  const eurPerTon = load > 0 ? total / load : 0;
+                  return (
+                    <tr key={line.id || i} className={`border-b border-slate-100 ${i % 2 === 0 ? "" : "bg-slate-50"}`}>
+                      {sheet.destination_country === "HU" && (
+                        <td className="py-1.5 pr-3 font-semibold">{line.destination_county || ""}</td>
+                      )}
+                      <td className="py-1.5 pr-3">{line.destination_city}</td>
+                      <td className="py-1.5 pr-3 text-right">{total.toLocaleString("hu-HU", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €</td>
+                      <td className="py-1.5 pr-3 text-right">{(line.domestic_leg || 0).toLocaleString("hu-HU", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €</td>
+                      <td className="py-1.5 pr-3 text-right">{(line.foreign_leg || 0).toLocaleString("hu-HU", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €</td>
+                      <td className="py-1.5 pr-3 text-right">{load}</td>
+                      <td className="py-1.5 text-right">{eurPerTon.toLocaleString("hu-HU", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
-          <div>
-            <div className="border-t border-slate-400 pt-2 text-center text-xs text-slate-500">Megrendelő aláírása / Client Signature</div>
-            <div className="text-center text-xs text-slate-400 mt-1">{sheet.supplier_name || "Steel-Transz"}</div>
+
+          {/* Footer */}
+          <div className="mt-8">
+            <p className="text-sm text-slate-700 mb-8">{validityText}</p>
+            <div className="flex items-end justify-between">
+              <p className="font-semibold text-slate-800">{sheet.valid_from || today}</p>
+              <div className="text-center">
+                <div className="border-t border-slate-400 pt-2 w-48 mx-auto">
+                  <p className="text-xs text-slate-500">Szilák Sándor</p>
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
-        <div className="text-center text-xs text-slate-400 mt-4">
-          Dátum / Date: {new Date().toLocaleDateString("hu-HU")} &nbsp;|&nbsp; Lap: {sheet.sheet_number || "–"}
         </div>
       </div>
     </div>
