@@ -18,7 +18,7 @@ function getCategoryType(name = "") {
   return "rebar"; // default: rebar / betonacél
 }
 
-function getColumnsForType(type, onEdit, onArchive, onDelete) {
+function getColumnsForType(type, onEdit, onArchive, onDelete, toggleFavorite, favoriteProductIds) {
   const favCol = (toggleFav, favoriteIds) => ({
     header: "★",
     render: (r) => (
