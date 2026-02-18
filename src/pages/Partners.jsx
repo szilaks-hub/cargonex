@@ -94,7 +94,7 @@ export default function Partners() {
         columns={columns}
         data={partners}
         isLoading={isLoading}
-        onRowClick={(r) => setSelectedPartner(r)}
+        onRowClick={(r) => r.status !== "archived" && setSelectedPartner(r)}
       />
     </div>
   );
