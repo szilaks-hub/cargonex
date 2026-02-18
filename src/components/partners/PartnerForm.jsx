@@ -313,6 +313,10 @@ export default function PartnerForm({ item, onClose, onSaved }) {
                 </SelectContent>
               </Select>
             </div>
+            <div className="sm:col-span-2 lg:col-span-3">
+              <Label className={lbl}>Delivery Preferences / Szállítási igények</Label>
+              <Input className={inp} value={form.customer_delivery_preferences} onChange={(e) => set("customer_delivery_preferences", e.target.value)} />
+            </div>
           </div>
         </div>
       )}
