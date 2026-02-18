@@ -82,7 +82,7 @@ export default function Layout({ children, currentPageName }) {
                 }`}
                 style={isActive ? { background: "linear-gradient(135deg, #e05a2b, #c0392b)" } : {}}
               >
-                <item.icon className={`w-4 h-4 flex-shrink-0 ${isActive ? "text-white" : "text-slate-500 group-hover:text-slate-300"}`} />
+                <item.icon className={`w-5 h-5 flex-shrink-0 ${isActive ? "text-white" : "text-slate-500 group-hover:text-slate-300"}`} />
                 <div className="flex-1 min-w-0">
                   <div className="font-medium truncate">{item.name}</div>
                   <div className={`text-[10px] truncate ${isActive ? "text-orange-100" : "text-slate-600 group-hover:text-slate-500"}`}>{item.nameHu}</div>
