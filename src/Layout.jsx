@@ -52,7 +52,7 @@ export default function Layout({ children, currentPageName }) {
             <img
               src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/user_695955de68183bcabeb8b12f/3e4f22a2f_CARGONEXv.png"
               alt="CARGONEX"
-              className="h-14 w-auto object-contain"
+              className="h-28 w-auto object-contain"
             />
             <button
               onClick={() => setSidebarOpen(false)}
