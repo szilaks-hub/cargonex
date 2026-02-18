@@ -5,6 +5,9 @@ import PageHeader from "@/components/ui/PageHeader";
 import DataTable from "@/components/ui/DataTable";
 import StatusBadge from "@/components/ui/StatusBadge";
 import TruckForm from "@/components/logistics/TruckForm";
+import ShipmentMap from "@/components/logistics/ShipmentMap";
+import { Map, List } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export default function Logistics() {
   const [showForm, setShowForm] = useState(false);
