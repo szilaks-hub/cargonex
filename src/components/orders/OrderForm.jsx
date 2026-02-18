@@ -36,47 +36,50 @@ export default function OrderForm({ item, onClose, onSaved }) {
     onSaved();
   };
 
+  const lbl = "text-slate-600 text-xs font-semibold";
+  const inp = "bg-white border-[#c6ccda] text-slate-800";
+
   return (
-    <div className="bg-[#1a1e23] border border-[#2d333b] rounded-xl p-5 space-y-4">
+    <div className="bg-[#f5f7fa] border border-[rgba(46,58,90,0.12)] rounded-xl p-5 space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-medium text-[#e6edf3]">{item ? "Edit Order" : "New Order / Új rendelés"}</h3>
-        <button onClick={onClose} className="text-[#8b949e] hover:text-white"><X className="w-4 h-4" /></button>
+        <h3 className="text-sm font-semibold text-slate-800">{item ? "Edit Order" : "New Order / Új rendelés"}</h3>
+        <button onClick={onClose} className="text-slate-400 hover:text-slate-700"><X className="w-4 h-4" /></button>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <div>
-          <Label className="text-[#8b949e] text-xs">Order Number</Label>
-          <Input className="bg-[#22272e] border-[#2d333b] text-[#e6edf3]" value={form.order_number} onChange={(e) => set("order_number", e.target.value)} placeholder="Auto-generated if empty" />
+          <Label className={lbl}>Order Number</Label>
+          <Input className={inp} value={form.order_number} onChange={(e) => set("order_number", e.target.value)} placeholder="Auto-generated if empty" />
         </div>
         <div>
-          <Label className="text-[#8b949e] text-xs">Supplier / Beszállító *</Label>
+          <Label className={lbl}>Supplier / Beszállító *</Label>
           <Select value={form.supplier_id} onValueChange={(v) => {
             const s = suppliers.find((s) => s.id === v);
             set("supplier_id", v); set("supplier_name", s?.name || "");
           }}>
-            <SelectTrigger className="bg-[#22272e] border-[#2d333b] text-[#e6edf3]"><SelectValue placeholder="Select..." /></SelectTrigger>
-            <SelectContent className="bg-[#22272e] border-[#2d333b]">
+            <SelectTrigger className={inp}><SelectValue placeholder="Select..." /></SelectTrigger>
+            <SelectContent className="bg-white border-[#c6ccda]">
               {suppliers.map((s) => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
             </SelectContent>
           </Select>
         </div>
         <div>
-          <Label className="text-[#8b949e] text-xs">Incoterms</Label>
+          <Label className={lbl}>Incoterms</Label>
           <Select value={form.incoterms} onValueChange={(v) => set("incoterms", v)}>
-            <SelectTrigger className="bg-[#22272e] border-[#2d333b] text-[#e6edf3]"><SelectValue /></SelectTrigger>
-            <SelectContent className="bg-[#22272e] border-[#2d333b]">
+            <SelectTrigger className={inp}><SelectValue /></SelectTrigger>
+            <SelectContent className="bg-white border-[#c6ccda]">
               {INCOTERMS.map((i) => <SelectItem key={i} value={i}>{i}</SelectItem>)}
             </SelectContent>
           </Select>
         </div>
         <div>
-          <Label className="text-[#8b949e] text-xs">Order Date *</Label>
-          <Input type="date" className="bg-[#22272e] border-[#2d333b] text-[#e6edf3]" value={form.order_date} onChange={(e) => set("order_date", e.target.value)} />
+          <Label className={lbl}>Order Date *</Label>
+          <Input type="date" className={inp} value={form.order_date} onChange={(e) => set("order_date", e.target.value)} />
         </div>
         <div>
-          <Label className="text-[#8b949e] text-xs">Status</Label>
+          <Label className={lbl}>Status</Label>
           <Select value={form.status} onValueChange={(v) => set("status", v)}>
-            <SelectTrigger className="bg-[#22272e] border-[#2d333b] text-[#e6edf3]"><SelectValue /></SelectTrigger>
-            <SelectContent className="bg-[#22272e] border-[#2d333b]">
+            <SelectTrigger className={inp}><SelectValue /></SelectTrigger>
+            <SelectContent className="bg-white border-[#c6ccda]">
               <SelectItem value="draft">Draft / Tervezet</SelectItem>
               <SelectItem value="confirmed">Confirmed / Visszaigazolt</SelectItem>
               <SelectItem value="partial">Partial / Részleges</SelectItem>
@@ -86,12 +89,12 @@ export default function OrderForm({ item, onClose, onSaved }) {
           </Select>
         </div>
         <div className="sm:col-span-2 lg:col-span-3">
-          <Label className="text-[#8b949e] text-xs">Notes</Label>
-          <Textarea className="bg-[#22272e] border-[#2d333b] text-[#e6edf3] h-16" value={form.notes} onChange={(e) => set("notes", e.target.value)} />
+          <Label className={lbl}>Notes</Label>
+          <Textarea className={`${inp} h-16`} value={form.notes} onChange={(e) => set("notes", e.target.value)} />
         </div>
       </div>
       <div className="flex justify-end gap-2 pt-2">
-        <Button variant="outline" onClick={onClose} className="border-[#2d333b] text-[#8b949e]">Cancel</Button>
+        <Button variant="outline" onClick={onClose} className="border-[#c6ccda] text-slate-600">Cancel</Button>
         <Button onClick={handleSave} disabled={saving} className="bg-blue-600 hover:bg-blue-700 text-white gap-2"><Save className="w-4 h-4" /> Save</Button>
       </div>
     </div>
