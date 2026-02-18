@@ -117,7 +117,7 @@ function CategorySummary({ items }) {
   );
 }
 
-function ProductTable({ items, columns, onRowClick }) {
+function ProductTable({ items, columns, onRowClick, favoriteProductIds }) {
   if (items.length === 0) {
     return (
       <div className="py-10 text-center text-sm text-slate-400">
