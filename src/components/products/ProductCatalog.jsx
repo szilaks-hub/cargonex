@@ -310,7 +310,7 @@ export default function ProductCatalog({ products, categories, isLoading, onEdit
                   {/* Summary row */}
                   <CategorySummary items={items} />
                   {/* Table */}
-                  <ProductTable items={items} columns={columns} onRowClick={onEdit} />
+                  <ProductTable items={sortedItems} columns={columns} onRowClick={onEdit} favoriteProductIds={favoriteProductIds} />
                 </div>
               );
             })}
