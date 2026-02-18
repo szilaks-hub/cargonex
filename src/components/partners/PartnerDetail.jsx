@@ -354,7 +354,7 @@ function CustomsAgentFees({ partnerId, partnerName, fees, isLoading }) {
     <div>
       <div className="flex justify-end mb-2">
         <Button size="sm" onClick={() => openForm(null)} className="bg-blue-600 hover:bg-blue-700 text-white gap-1 text-xs">
-          <Plus className="w-3 h-3" /> Add
+          <Plus className="w-3 h-3" /> Add Fee Period
         </Button>
       </div>
       {showForm && (
@@ -362,7 +362,30 @@ function CustomsAgentFees({ partnerId, partnerName, fees, isLoading }) {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div><Label className={lbl}>From *</Label><Input type="date" className={inp} value={form.period_from} onChange={(e) => setForm({ ...form, period_from: e.target.value })} /></div>
             <div><Label className={lbl}>To</Label><Input type="date" className={inp} value={form.period_to} onChange={(e) => setForm({ ...form, period_to: e.target.value })} /></div>
-            <div><Label className={lbl}>Fee/Truck *</Label><Input type="number" className={inp} value={form.fee_per_truck} onChange={(e) => setForm({ ...form, fee_per_truck: e.target.value })} /></div>
+            <div>
+              <Label className={lbl}>Fee Type / Díj típusa</Label>
+              <Select value={form.fee_type || "per_truck"} onValueChange={(v) => setForm({ ...form, fee_type: v })}>
+                <SelectTrigger className={inp}><SelectValue /></SelectTrigger>
+                <SelectContent className="bg-white border-[#c6ccda]">
+                  <SelectItem value="per_truck">Per Truck / Kamionként</SelectItem>
+                  <SelectItem value="per_declaration">Per Declaration / Bevallásként</SelectItem>
+                  <SelectItem value="fixed">Fixed / Fix</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div><Label className={lbl}>Fee Amount *</Label><Input type="number" className={inp} value={form.fee_per_truck} onChange={(e) => setForm({ ...form, fee_per_truck: e.target.value })} /></div>
+            <div>
+              <Label className={lbl}>Currency</Label>
+              <Select value={form.currency || "EUR"} onValueChange={(v) => setForm({ ...form, currency: v })}>
+                <SelectTrigger className={inp}><SelectValue /></SelectTrigger>
+                <SelectContent className="bg-white border-[#c6ccda]">
+                  <SelectItem value="EUR">EUR</SelectItem>
+                  <SelectItem value="HUF">HUF</SelectItem>
+                  <SelectItem value="USD">USD</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div><Label className={lbl}>Notes</Label><Input className={inp} value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} /></div>
           </div>
           <div className="flex justify-end gap-2">
             <Button variant="outline" size="sm" onClick={() => setShowForm(false)} className="border-[#c6ccda] text-slate-600">Cancel</Button>
