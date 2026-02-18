@@ -1,0 +1,104 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --cargonex-bg: #131619;
+  --cargonex-surface: #1a1e23;
+  --cargonex-surface2: #22272e;
+  --cargonex-border: #2d333b;
+  --cargonex-blue: #3b82f6;
+  --cargonex-red: #ef4444;
+  --cargonex-orange: #f97316;
+  --cargonex-steel: #8b949e;
+  --cargonex-text: #e6edf3;
+  --cargonex-text-muted: #8b949e;
+}
+
+@layer base {
+  :root {
+    --background: 220 16% 8%;
+    --foreground: 210 20% 92%;
+    --card: 220 14% 11%;
+    --card-foreground: 210 20% 92%;
+    --popover: 220 14% 11%;
+    --popover-foreground: 210 20% 92%;
+    --primary: 217 91% 60%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 215 14% 16%;
+    --secondary-foreground: 210 20% 92%;
+    --muted: 215 14% 16%;
+    --muted-foreground: 215 14% 55%;
+    --accent: 215 14% 18%;
+    --accent-foreground: 210 20% 92%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 215 14% 20%;
+    --input: 215 14% 20%;
+    --ring: 217 91% 60%;
+    --radius: 0.625rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--cargonex-bg);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--cargonex-border);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--cargonex-steel);
+}
+
+/* Steel glow animation */
+@keyframes steelGlow {
+  0%, 100% { box-shadow: 0 0 5px rgba(59, 130, 246, 0.1); }
+  50% { box-shadow: 0 0 15px rgba(59, 130, 246, 0.3), 0 0 5px rgba(249, 115, 22, 0.15); }
+}
+
+.steel-glow:hover {
+  animation: steelGlow 2s ease-in-out infinite;
+}
+
+/* Subtle pulse for active elements */
+@keyframes subtlePulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.85; }
+}
+
+.glow-border {
+  position: relative;
+}
+.glow-border::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.4), rgba(249, 115, 22, 0.2));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+.glow-border:hover::after {
+  opacity: 1;
+}
