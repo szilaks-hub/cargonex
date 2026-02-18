@@ -6,7 +6,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Plus, Trash2, Save } from "lucide-react";
 import ZipAutocomplete from "@/components/freightsheet/ZipAutocomplete";
 
-function LineRow({ line, defaultLoad, onSave, onDelete }) {
+function LineRow({ line, defaultLoad, onSave, onDelete, readonly = false }) {
   const [form, setForm] = useState({ ...line });
   const set = (k, v) => {
     setForm(f => {
