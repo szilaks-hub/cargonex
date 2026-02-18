@@ -4,127 +4,148 @@
 
 :root {
   /* CARGONEX Premium Palette */
-  --cx-bg: #dfe3ea;
-  --cx-surface: #f2f4f7;
-  --cx-surface2: #eaecf0;
-  --cx-border: #c8cdd8;
-  --cx-blue: #1d4ed8;
+  --cx-bg-from:    #EFF2F6;
+  --cx-bg-mid:     #E4EBF3;
+  --cx-bg-to:      #D8E3EE;
+  --cx-surface:    rgba(255,255,255,0.84);
+  --cx-surface2:   rgba(255,255,255,0.65);
+  --cx-border:     rgba(46,58,90,0.10);
+  --cx-border-solid: #c6ccda;
+  --cx-blue:       #1d4ed8;
   --cx-blue-light: #dbeafe;
-  --cx-red: #c0392b;
-  --cx-orange: #d35400;
-  --cx-steel: #52606d;
-  --cx-text: #0d1117;
-  --cx-text-muted: #52606d;
-  --cx-sidebar: #1e2435;
-  --cx-sidebar-text: #c8cdd8;
+  --cx-red:        #c0392b;
+  --cx-orange:     #d35400;
+  --cx-steel:      #4a5568;
+  --cx-text:       #0d1420;
+  --cx-text-muted: #526070;
+  --cx-sidebar:    rgba(255,255,255,0.72);
+  --cx-sidebar-border: rgba(46,58,90,0.10);
   --cx-sidebar-active: #e05a2b;
+  --cx-shadow:     0 4px 24px rgba(20,40,80,0.09);
+  --cx-shadow-lg:  0 8px 40px rgba(20,40,80,0.13);
 }
 
-@layer base {
-  :root {
-    --background: 216 14% 87%;
-    --foreground: 220 30% 8%;
-    --card: 0 0% 99%;
-    --card-foreground: 220 30% 8%;
-    --popover: 0 0% 99%;
-    --popover-foreground: 220 30% 8%;
-    --primary: 20 75% 50%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 216 14% 89%;
-    --secondary-foreground: 220 30% 8%;
-    --muted: 216 14% 89%;
-    --muted-foreground: 215 14% 40%;
-    --accent: 216 14% 85%;
-    --accent-foreground: 220 30% 8%;
-    --destructive: 0 75% 45%;
-    --destructive-foreground: 0 0% 100%;
-    --border: 216 16% 76%;
-    --input: 216 16% 76%;
-    --ring: 20 75% 50%;
-    --radius: 0.625rem;
-  }
-}
-
-@layer base {
-  * {
-    @apply border-border;
-  }
-  html {
-    font-size: 15px;
-  }
-  body {
-    @apply bg-background text-foreground;
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
-    font-size: 15px;
-    line-height: 1.6;
-  }
-
-  /* Global typography scale */
-  h1 { font-size: 1.6rem; font-weight: 700; line-height: 1.3; }
-  h2 { font-size: 1.35rem; font-weight: 600; line-height: 1.35; }
-  h3 { font-size: 1.15rem; font-weight: 600; line-height: 1.4; }
-
-  /* Table text */
-  table { font-size: 0.9625rem; }
-  thead th { font-size: 0.9rem; font-weight: 600; }
-
-  /* Form labels */
-  label { font-size: 0.9rem; font-weight: 600; }
-
-  /* Inputs */
-  input, select, textarea {
-    font-size: 15px !important;
-  }
-
-  /* Buttons */
-  button { font-size: 0.9625rem; }
-}
-
-/* ─── ANIMATED AMBIENT BACKGROUND ─────────────────────────── */
-@keyframes cx-bg-shift {
+/* ── ANIMATED CANVAS BACKGROUND ─────────────────────────── */
+@keyframes cx-shift {
   0%   { background-position: 0% 50%; }
   50%  { background-position: 100% 50%; }
   100% { background-position: 0% 50%; }
 }
 
-.cx-main-bg {
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-size: 15.5px;
+  line-height: 1.6;
+  color: var(--cx-text);
+
+  /* Full-canvas gradient with brand tints */
   background:
-    /* Soft orange tint – bottom-left corner */
-    radial-gradient(ellipse at 8% 92%, rgba(211, 84, 0, 0.07) 0%, transparent 55%),
-    /* Soft blue tint – top-right corner */
-    radial-gradient(ellipse at 92% 8%, rgba(29, 78, 216, 0.07) 0%, transparent 55%),
-    /* Animated steel gradient base */
-    linear-gradient(135deg, #e2e6ed 0%, #d8dce6 35%, #dde1e8 65%, #e4e7ec 100%);
-  background-size: 300% 300%, 300% 300%, 200% 200%;
-  animation: cx-bg-shift 18s ease infinite;
+    radial-gradient(ellipse at 4% 6%,   rgba(192,57,43,0.06)  0%, transparent 45%),
+    radial-gradient(ellipse at 96% 4%,  rgba(29,78,216,0.07)  0%, transparent 45%),
+    radial-gradient(ellipse at 6% 96%,  rgba(211,84,0,0.07)   0%, transparent 45%),
+    radial-gradient(ellipse at 94% 94%, rgba(29,78,216,0.05)  0%, transparent 45%),
+    linear-gradient(135deg, #EFF2F6 0%, #E2EAF3 40%, #D9E4EF 70%, #E3EBF4 100%);
+  background-size: 100% 100%, 100% 100%, 100% 100%, 100% 100%, 300% 300%;
+  animation: cx-shift 22s ease infinite;
+  min-height: 100vh;
 }
 
-/* Custom scrollbar */
-::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: var(--cx-bg); }
-::-webkit-scrollbar-thumb { background: var(--cx-border); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: var(--cx-steel); }
+/* ── SHADCN TOKEN OVERRIDES ──────────────────────────────── */
+@layer base {
+  :root {
+    --background: 214 28% 92%;
+    --foreground: 220 40% 8%;
+    --card: 0 0% 100%;
+    --card-foreground: 220 40% 8%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 40% 8%;
+    --primary: 20 75% 50%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 214 20% 90%;
+    --secondary-foreground: 220 40% 8%;
+    --muted: 214 20% 90%;
+    --muted-foreground: 215 16% 40%;
+    --accent: 214 20% 86%;
+    --accent-foreground: 220 40% 8%;
+    --destructive: 0 75% 45%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 216 18% 75%;
+    --input: 216 18% 75%;
+    --ring: 20 75% 50%;
+    --radius: 0.75rem;
+  }
+}
 
-/* Premium card */
+@layer base {
+  * { @apply border-border; }
+  html { font-size: 15.5px; }
+
+  /* Typography scale */
+  h1 { font-size: 1.55rem; font-weight: 700; line-height: 1.3; }
+  h2 { font-size: 1.3rem;  font-weight: 650; line-height: 1.35; }
+  h3 { font-size: 1.1rem;  font-weight: 600; line-height: 1.4; }
+
+  table   { font-size: 0.945rem; }
+  thead th { font-size: 0.88rem; font-weight: 700; letter-spacing: 0.03em; }
+  label   { font-size: 0.88rem; font-weight: 600; }
+  input, select, textarea { font-size: 15px !important; }
+  button  { font-size: 0.945rem; }
+}
+
+/* ── GLASS CARD UTILITY ──────────────────────────────────── */
+.cx-glass {
+  background: var(--cx-surface);
+  border: 1px solid var(--cx-border);
+  border-radius: 14px;
+  box-shadow: var(--cx-shadow);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* White cards inside glass containers */
+.bg-white {
+  background: rgba(255,255,255,0.92) !important;
+}
+
+/* ── TABLE WRAP ──────────────────────────────────────────── */
+.cx-table-wrap {
+  background: rgba(255,255,255,0.88);
+  border: 1px solid var(--cx-border-solid);
+  border-radius: 12px;
+  box-shadow: var(--cx-shadow);
+  overflow: hidden;
+}
+
+/* ── CARD HOVER ──────────────────────────────────────────── */
 .cx-card {
   transition: box-shadow 0.2s ease, transform 0.15s ease;
 }
 .cx-card:hover {
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.09);
+  box-shadow: var(--cx-shadow-lg);
   transform: translateY(-1px);
 }
 
-/* Cards & surfaces stay clean white */
-.bg-white { background-color: #ffffff !important; }
-
-/* Table container as card */
-.cx-table-wrap {
-  background: #ffffff;
-  border: 1px solid var(--cx-border);
-  border-radius: 0.75rem;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-  overflow: hidden;
+/* ── BUTTON HEATED STEEL HOVER ───────────────────────────── */
+.cx-btn-primary {
+  background: linear-gradient(135deg, #e05a2b, #c0392b);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.45rem 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.cx-btn-primary:hover {
+  box-shadow: 0 0 0 2px rgba(224,90,43,0.35), 0 4px 12px rgba(192,57,43,0.3);
+  transform: translateY(-1px);
 }
 
-/* Button transitions */
+/* ── SCROLLBAR ───────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(80,100,130,0.25); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(80,100,130,0.45); }
+
+/* ── GLOBAL TRANSITION ───────────────────────────────────── */
 button { transition: all 0.15s ease; }
