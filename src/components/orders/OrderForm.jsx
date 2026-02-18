@@ -1,102 +1,183 @@
-import React, { useState } from "react";
-import { base44 } from "@/api/base44Client";
-import { useQuery } from "@tanstack/react-query";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import { X, Save } from "lucide-react";
+import { Card } from "@/components/ui/card";
+import { base44 } from "@/api/base44Client";
+import { useQuery } from "@tanstack/react-query";
 
-const INCOTERMS = ["EXW", "FCA", "CPT", "CIP", "DAP", "DPU", "DDP", "FAS", "FOB", "CFR", "CIF"];
+const INCOTERMS = ['EXW', 'FCA', 'CPT', 'CIP', 'DAP', 'DPU', 'DDP', 'FAS', 'FOB', 'CFR', 'CIF'];
 
-export default function OrderForm({ item, onClose, onSaved }) {
-  const [form, setForm] = useState(item || {
-    order_number: "", supplier_id: "", supplier_name: "",
-    incoterms: "EXW", order_date: new Date().toISOString().split("T")[0],
-    status: "draft", notes: "", total_ordered_tons: 0
+export default function OrderForm({ orderId, onSaved, isDraft }) {
+  const [formData, setFormData] = useState({
+    supplier_id: "",
+    supplier_site_id: "",
+    order_date: new Date().toISOString().split('T')[0],
+    currency: "EUR",
+    incoterms_type: "FCA",
+    incoterms_place: "",
+    payment_terms: "",
+    notes: ""
   });
   const [saving, setSaving] = useState(false);
 
-  const { data: suppliers = [] } = useQuery({
-    queryKey: ["suppliers"],
-    queryFn: async () => {
-      const all = await base44.entities.Partner.list();
-      return all.filter((p) => (p.roles || []).includes("supplier"));
-    },
+  const { data: order } = useQuery({
+    queryKey: ['order', orderId],
+    queryFn: () => base44.entities.PurchaseOrder.filter({ id: orderId }).then(r => r?.[0]),
+    enabled: !!orderId
   });
 
-  const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
+  const { data: suppliers = [] } = useQuery({
+    queryKey: ['suppliers'],
+    queryFn: () => base44.entities.Partner.filter({ roles: 'supplier' }),
+  });
+
+  const { data: sites = [] } = useQuery({
+    queryKey: ['sites', formData.supplier_id],
+    queryFn: () => formData.supplier_id ? base44.entities.PartnerLocation.filter({ partner_id: formData.supplier_id }) : [],
+    enabled: !!formData.supplier_id
+  });
+
+  useEffect(() => {
+    if (order) {
+      setFormData({
+        supplier_id: order.supplier_id,
+        supplier_site_id: order.supplier_site_id,
+        order_date: order.order_date,
+        currency: order.currency,
+        incoterms_type: order.incoterms_type,
+        incoterms_place: order.incoterms_place || "",
+        payment_terms: order.payment_terms || "",
+        notes: order.notes || ""
+      });
+    }
+  }, [order]);
 
   const handleSave = async () => {
+    if (!formData.supplier_id || !formData.supplier_site_id || !formData.order_date) {
+      alert('Supplier, site, and date required');
+      return;
+    }
+
     setSaving(true);
-    if (item?.id) await base44.entities.PurchaseOrder.update(item.id, form);
-    else await base44.entities.PurchaseOrder.create(form);
-    setSaving(false);
-    onSaved();
+    try {
+      const supplier = suppliers.find(s => s.id === formData.supplier_id);
+      const site = sites.find(s => s.id === formData.supplier_site_id);
+
+      const data = {
+        supplier_id: formData.supplier_id,
+        supplier_name: supplier?.name,
+        supplier_site_id: formData.supplier_site_id,
+        supplier_site_name: site?.location_name,
+        order_date: formData.order_date,
+        currency: formData.currency,
+        incoterms_type: formData.incoterms_type,
+        incoterms_place: formData.incoterms_place,
+        payment_terms: formData.payment_terms,
+        notes: formData.notes
+      };
+
+      if (orderId) {
+        await base44.entities.PurchaseOrder.update(orderId, data);
+      } else {
+        await base44.entities.PurchaseOrder.create(data);
+      }
+      onSaved?.();
+    } finally {
+      setSaving(false);
+    }
   };
 
-  const lbl = "text-slate-600 text-xs font-semibold";
-  const inp = "bg-white border-[#c6ccda] text-slate-800";
-
   return (
-    <div className="bg-[#f5f7fa] border border-[rgba(46,58,90,0.12)] rounded-xl p-5 space-y-4">
-      <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-slate-800">{item ? "Edit Order" : "New Order / Új rendelés"}</h3>
-        <button onClick={onClose} className="text-slate-400 hover:text-slate-700"><X className="w-4 h-4" /></button>
+    <Card className="p-5 space-y-4">
+      <h3 className="text-lg font-semibold text-slate-800">Order Details</h3>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <Select value={formData.supplier_id} onValueChange={(v) => setFormData({...formData, supplier_id: v, supplier_site_id: ""})} disabled={!isDraft}>
+          <SelectTrigger disabled={!isDraft}>
+            <SelectValue placeholder="Supplier *" />
+          </SelectTrigger>
+          <SelectContent>
+            {suppliers.map(s => (
+              <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <Select value={formData.supplier_site_id} onValueChange={(v) => setFormData({...formData, supplier_site_id: v})} disabled={!isDraft || !formData.supplier_id}>
+          <SelectTrigger disabled={!isDraft || !formData.supplier_id}>
+            <SelectValue placeholder="Supplier Site *" />
+          </SelectTrigger>
+          <SelectContent>
+            {sites.map(s => (
+              <SelectItem key={s.id} value={s.id}>{s.location_name}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <Input
+          type="date"
+          value={formData.order_date}
+          onChange={(e) => setFormData({...formData, order_date: e.target.value})}
+          disabled={!isDraft}
+        />
+
+        <Select value={formData.currency} onValueChange={(v) => setFormData({...formData, currency: v})} disabled={!isDraft}>
+          <SelectTrigger disabled={!isDraft}>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="EUR">EUR</SelectItem>
+            <SelectItem value="HUF">HUF</SelectItem>
+            <SelectItem value="USD">USD</SelectItem>
+          </SelectContent>
+        </Select>
+
+        <Select value={formData.incoterms_type} onValueChange={(v) => setFormData({...formData, incoterms_type: v})} disabled={!isDraft}>
+          <SelectTrigger disabled={!isDraft}>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {INCOTERMS.map(t => (
+              <SelectItem key={t} value={t}>{t}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <Input
+          type="text"
+          placeholder="Incoterms Place"
+          value={formData.incoterms_place}
+          onChange={(e) => setFormData({...formData, incoterms_place: e.target.value})}
+          disabled={!isDraft}
+        />
+
+        <Input
+          type="text"
+          placeholder="Payment Terms (e.g., 30 days Net)"
+          value={formData.payment_terms}
+          onChange={(e) => setFormData({...formData, payment_terms: e.target.value})}
+          disabled={!isDraft}
+          className="md:col-span-2"
+        />
+
+        <Input
+          type="text"
+          placeholder="Notes"
+          value={formData.notes}
+          onChange={(e) => setFormData({...formData, notes: e.target.value})}
+          disabled={!isDraft}
+          className="md:col-span-2"
+        />
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        <div>
-          <Label className={lbl}>Order Number</Label>
-          <Input className={inp} value={form.order_number} onChange={(e) => set("order_number", e.target.value)} placeholder="Auto-generated if empty" />
+
+      {isDraft && (
+        <div className="flex justify-end">
+          <Button onClick={handleSave} disabled={saving} className="bg-blue-600 hover:bg-blue-700">
+            {saving ? 'Saving...' : 'Save'}
+          </Button>
         </div>
-        <div>
-          <Label className={lbl}>Supplier / Beszállító *</Label>
-          <Select value={form.supplier_id} onValueChange={(v) => {
-            const s = suppliers.find((s) => s.id === v);
-            set("supplier_id", v); set("supplier_name", s?.name || "");
-          }}>
-            <SelectTrigger className={inp}><SelectValue placeholder="Select..." /></SelectTrigger>
-            <SelectContent className="bg-white border-[#c6ccda]">
-              {suppliers.map((s) => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
-            </SelectContent>
-          </Select>
-        </div>
-        <div>
-          <Label className={lbl}>Incoterms</Label>
-          <Select value={form.incoterms} onValueChange={(v) => set("incoterms", v)}>
-            <SelectTrigger className={inp}><SelectValue /></SelectTrigger>
-            <SelectContent className="bg-white border-[#c6ccda]">
-              {INCOTERMS.map((i) => <SelectItem key={i} value={i}>{i}</SelectItem>)}
-            </SelectContent>
-          </Select>
-        </div>
-        <div>
-          <Label className={lbl}>Order Date *</Label>
-          <Input type="date" className={inp} value={form.order_date} onChange={(e) => set("order_date", e.target.value)} />
-        </div>
-        <div>
-          <Label className={lbl}>Status</Label>
-          <Select value={form.status} onValueChange={(v) => set("status", v)}>
-            <SelectTrigger className={inp}><SelectValue /></SelectTrigger>
-            <SelectContent className="bg-white border-[#c6ccda]">
-              <SelectItem value="draft">Draft / Tervezet</SelectItem>
-              <SelectItem value="confirmed">Confirmed / Visszaigazolt</SelectItem>
-              <SelectItem value="partial">Partial / Részleges</SelectItem>
-              <SelectItem value="completed">Completed / Teljesített</SelectItem>
-              <SelectItem value="cancelled">Cancelled / Törölve</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="sm:col-span-2 lg:col-span-3">
-          <Label className={lbl}>Notes</Label>
-          <Textarea className={`${inp} h-16`} value={form.notes} onChange={(e) => set("notes", e.target.value)} />
-        </div>
-      </div>
-      <div className="flex justify-end gap-2 pt-2">
-        <Button variant="outline" onClick={onClose} className="border-[#c6ccda] text-slate-600">Cancel</Button>
-        <Button onClick={handleSave} disabled={saving} className="bg-blue-600 hover:bg-blue-700 text-white gap-2"><Save className="w-4 h-4" /> Save</Button>
-      </div>
-    </div>
+      )}
+    </Card>
   );
 }
