@@ -275,7 +275,7 @@ export default function OrderbookDetail({ orderId, onClose, onUpdated }) {
               {/* Supplier */}
               <div>
                 <label className="text-xs font-medium text-slate-600 mb-1 block">Supplier *</label>
-                {isDraft ? (
+                {isEditable ? (
                   <Select value={form.supplier_id || ""} onValueChange={(v) => handleFormChange({ supplier_id: v, supplier_name: suppliers.find(s => s.id === v)?.name || "", supplier_site_id: "", supplier_site_name: "" })}>
                     <SelectTrigger className="bg-white"><SelectValue placeholder="Select supplier" /></SelectTrigger>
                     <SelectContent>
