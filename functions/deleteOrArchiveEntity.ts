@@ -111,6 +111,16 @@ Deno.serve(async (req) => {
 
     if (requestedAction === 'HARD_DELETE') {
       if (canHardDelete({ locked: entity.locked }, dependencySnapshot)) {
+        // Special case: PurchaseOrder with only OrderLines
+        if (entityName === 'PurchaseOrder' && dependencySnapshot['Order Lines'] > 0 && 
+            dependencySnapshot['Logistics'] === 0 && dependencySnapshot['Finance/Customs'] === 0) {
+          // Cascade delete all order lines first
+          const orderLines = await base44.asServiceRole.entities.OrderLine.filter({ order_id: entityId });
+          for (const line of orderLines) {
+            await base44.asServiceRole.entities.OrderLine.delete(line.id);
+          }
+        }
+
         // Perform hard delete
         await base44.asServiceRole.entities[entityName].delete(entityId);
         resultAction = 'HARD_DELETE';
@@ -127,11 +137,32 @@ Deno.serve(async (req) => {
           dependency_snapshot: dependencySnapshot
         });
       } else if (totalDeps > 0) {
-        // Has dependencies, suggest archive
+        // Special case: PurchaseOrder with only OrderLines
+        const onlyLines = entityName === 'PurchaseOrder' && 
+                         dependencySnapshot['Order Lines'] > 0 && 
+                         dependencySnapshot['Logistics'] === 0 && 
+                         dependencySnapshot['Finance/Customs'] === 0;
+        
+        if (onlyLines) {
+          // Allow hard delete with cascade
+          return Response.json(
+            {
+              error: null,
+              message: `This order has ${dependencySnapshot['Order Lines']} lines but no logistics/finance links.`,
+              canDelete: true,
+              canArchive: true,
+              canCascadeDelete: true,
+              dependencies: dependencySnapshot
+            },
+            { status: 200 }
+          );
+        }
+        
+        // Has non-line dependencies, only allow archive
         return Response.json(
           {
             error: 'Cannot hard delete',
-            message: `${entityName} has dependencies. Suggest archiving instead.`,
+            message: `This order has logistics, finance, or receipt links. Archive only.`,
             canDelete: false,
             canArchive: true,
             dependencies: dependencySnapshot
