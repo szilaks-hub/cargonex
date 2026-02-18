@@ -10,7 +10,8 @@ import {
   Menu,
   X,
   ChevronRight,
-  ClipboardList
+  ClipboardList,
+  FileText
 } from "lucide-react";
 
 const navItems = [
@@ -18,6 +19,7 @@ const navItems = [
   { name: "Products", nameHu: "Termékek", icon: Package, page: "Products" },
   { name: "Partners", nameHu: "Partnerek", icon: Users, page: "Partners" },
   { name: "Freight Sheets", nameHu: "Díjak & Fuvarozási lapok", icon: ClipboardList, page: "FreightSheets" },
+  { name: "Orderbooks", nameHu: "Rendelések", icon: FileText, page: "Orderbooks" },
   { name: "Logistics", nameHu: "Logisztika", icon: Truck, page: "Logistics" },
   { name: "Finance / Customs", nameHu: "Pénzügy / Vám", icon: ShieldCheck, page: "Finance" },
 ];
