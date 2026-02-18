@@ -198,6 +198,21 @@ export default function PartnerForm({ item, onClose, onSaved }) {
               <Label className={lbl}>Capacity (t) / Teherbírás</Label>
               <Input type="number" className={inp} value={form.carrier_capacity_tons} onChange={(e) => set("carrier_capacity_tons", e.target.value)} />
             </div>
+            <div>
+              <Label className={lbl}>Carrier Type / Fuvarozás módja</Label>
+              <Select value={form.carrier_type || "truck"} onValueChange={(v) => set("carrier_type", v)}>
+                <SelectTrigger className={inp}><SelectValue /></SelectTrigger>
+                <SelectContent className="bg-white border-[#c6ccda]">
+                  <SelectItem value="truck">Truck / Közúti</SelectItem>
+                  <SelectItem value="rail">Rail / Vasúti</SelectItem>
+                  <SelectItem value="sea">Sea / Tengeri</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="sm:col-span-2 lg:col-span-3">
+              <Label className={lbl}>Carrier Notes / Megjegyzés</Label>
+              <Input className={inp} value={form.carrier_notes} onChange={(e) => set("carrier_notes", e.target.value)} />
+            </div>
           </div>
         </div>
       )}
