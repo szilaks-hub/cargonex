@@ -10,6 +10,7 @@ import StatusBadge from "@/components/ui/StatusBadge";
 import { ArrowLeft, Plus, Save, X, Trash2, AlertTriangle } from "lucide-react";
 import ProductPicker from "@/components/products/ProductPicker";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { toast } from "sonner";
 
 export default function OrderDetail({ order, onBack }) {
   const [showLineForm, setShowLineForm] = useState(false);
@@ -29,7 +30,45 @@ export default function OrderDetail({ order, onBack }) {
     queryFn: () => base44.entities.Product.list(),
   });
 
-  const handleDelete = async () => {
+  const handleCheckDependencies = async () => {
+    setDeleting(true);
+    try {
+      const res = await base44.functions.invoke('deleteOrArchiveEntity', {
+        entityName: 'PurchaseOrder',
+        entityId: order.id,
+        requestedAction: 'HARD_DELETE',
+        reason: ''
+      });
+
+      if (res.data.canCascadeDelete) {
+        // Order has only lines, ask for confirmation
+        setDeleteDialog({
+          open: true,
+          message: `Rendelés ${res.data.dependencies['Order Lines']} tétellel. Törlöd a rendelést és az összes tételt?`,
+          action: 'HARD_DELETE',
+          cascade: true
+        });
+      } else if (res.status === 409) {
+        // Has logistics/finance/receipts, offer archive only
+        toast.error('Logisztikai/pénzügyi linkek miatt csak archiválható');
+        setDeleteDialog({
+          open: true,
+          message: `Rendelés logisztikai, pénzügyi vagy bevételezési linkekkel kapcsolódik. Csak archiválható.`,
+          action: 'ARCHIVE'
+        });
+      } else {
+        toast.error(res.data?.message || 'Ismeretlen hiba');
+        setDeleteDialog({ open: false, message: "", action: null, cascade: false });
+      }
+    } catch (error) {
+      toast.error(`Hiba: ${error.message}`);
+      setDeleteDialog({ open: false, message: "", action: null, cascade: false });
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const handleConfirmDelete = async () => {
     setDeleting(true);
     try {
       const res = await base44.functions.invoke('deleteOrArchiveEntity', {
@@ -39,37 +78,25 @@ export default function OrderDetail({ order, onBack }) {
         reason: deleteReason || 'User deletion'
       });
 
-      if (res.data.success) {
+      if (res.data.success || res.status === 200) {
+        toast.success('Rendelés sikeresen törlve');
+        setDeleteDialog({ open: false, message: "", action: null, cascade: false });
         qc.invalidateQueries({ queryKey: ["orders"] });
-        onBack();
-      } else if (deleteDialog.action === 'HARD_DELETE' && res.data.canCascadeDelete) {
-        // Order has only lines, ask for confirmation and cascade
-        setDeleteDialog({
-          open: true,
-          message: `Rendelés ${res.data.dependencies['Order Lines']} tétellel. Törlöd a rendelést és az összes tételt?`,
-          action: 'HARD_DELETE',
-          cascade: true
-        });
-      } else if (res.status === 409 && deleteDialog.action === 'HARD_DELETE') {
-        // Has logistics/finance/receipts, offer archive only
+        setTimeout(() => onBack(), 500);
+      } else if (res.status === 403) {
+        toast.error('Nincs jogosultság a törléshez');
+      } else if (res.status === 409) {
+        toast.error('A rendelésnek vannak függőségei. Archiválás szükséges.');
         setDeleteDialog({
           open: true,
           message: `Rendelés logisztikai, pénzügyi vagy bevételezési linkekkel kapcsolódik. Csak archiválható.`,
           action: 'ARCHIVE'
         });
       } else {
-        setDeleteDialog({
-          open: true,
-          message: res.data?.message || res.data?.error || 'Ismeretlen hiba',
-          action: null
-        });
+        toast.error(res.data?.message || res.data?.error || 'Ismeretlen hiba');
       }
     } catch (error) {
-      setDeleteDialog({
-        open: true,
-        message: `Hiba: ${error.message}`,
-        action: null
-      });
+      toast.error(`Hiba: ${error.message}`);
     } finally {
       setDeleting(false);
     }
@@ -105,10 +132,11 @@ export default function OrderDetail({ order, onBack }) {
           <Button 
             variant="outline" 
             size="sm" 
-            onClick={() => setDeleteDialog({ open: true, message: "Delete or archive this order?", action: 'HARD_DELETE' })}
+            onClick={handleCheckDependencies}
+            disabled={deleting}
             className="border-red-600 text-red-600 hover:bg-red-50"
           >
-            <Trash2 className="w-4 h-4 mr-1" /> Delete
+            <Trash2 className="w-4 h-4 mr-1" /> {deleting ? 'Feldolgozás...' : 'Törlés'}
           </Button>
         )}
       </div>
@@ -175,11 +203,16 @@ export default function OrderDetail({ order, onBack }) {
           </DialogHeader>
 
           <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={() => setDeleteDialog({ open: false, message: "", action: null, cascade: false })} className="border-[#2d333b] text-[#8b949e]">
+            <Button 
+              variant="outline" 
+              onClick={() => setDeleteDialog({ open: false, message: "", action: null, cascade: false })} 
+              disabled={deleting}
+              className="border-[#2d333b] text-[#8b949e]"
+            >
               Mégsem
             </Button>
             <Button
-              onClick={handleDelete}
+              onClick={handleConfirmDelete}
               disabled={deleting}
               className={deleteDialog.action === 'ARCHIVE' ? 'bg-amber-600 hover:bg-amber-700' : 'bg-red-600 hover:bg-red-700'}
             >
