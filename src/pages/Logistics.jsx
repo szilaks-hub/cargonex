@@ -21,16 +21,37 @@ export default function Logistics() {
     queryFn: () => base44.entities.Truck.list("-created_date"),
   });
 
+  const handleArchive = async (r) => {
+    await base44.entities.Truck.update(r.id, { status: "cancelled" });
+    qc.invalidateQueries({ queryKey: ["trucks"] });
+  };
+
+  const handleDelete = async (r) => {
+    await base44.entities.Truck.delete(r.id);
+    qc.invalidateQueries({ queryKey: ["trucks"] });
+  };
+
   const columns = [
-    { header: "Truck # / Szám", render: (r) => r.truck_number || `T-${r.id?.slice(0, 6)}` },
-    { header: "Loading Date / Rakodás", key: "expected_loading_date" },
+    { header: "Truck # / Szám", render: (r) => (
+      <span className={r.status === "cancelled" ? "opacity-40 line-through" : ""}>{r.truck_number || `T-${r.id?.slice(0, 6)}`}</span>
+    )},
+    { header: "Loading Date", key: "expected_loading_date" },
     { header: "Product / Termék", key: "product_name" },
     { header: "Planned (t)", render: (r) => r.planned_quantity_tons?.toFixed(2) || "-" },
     { header: "Actual (t)", render: (r) => r.actual_weight_tons?.toFixed(2) || "-" },
-    { header: "Carrier / Fuvarozó", key: "carrier_name", render: (r) => r.carrier_name || "-" },
+    { header: "Carrier / Fuvarozó", render: (r) => r.carrier_name || "-" },
     { header: "Destination", render: (r) => `${r.destination_country || ""} ${r.destination_city || ""}`.trim() || "-" },
-    { header: "Order", key: "order_number", render: (r) => r.order_number || "-" },
     { header: "Status", render: (r) => <StatusBadge status={r.status} /> },
+    { header: "", render: (r) => (
+      <RowActions
+        onEdit={() => { setEditItem(r); setShowForm(true); }}
+        lockedMsg={r.status === "closed" ? "Closed – Reopen in Finance" : null}
+        onArchive={r.status !== "closed" ? () => handleArchive(r) : null}
+        isArchived={r.status === "cancelled"}
+        canDelete={r.status === "cancelled"}
+        onDelete={() => handleDelete(r)}
+      />
+    )},
   ];
 
   return (
