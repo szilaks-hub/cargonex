@@ -38,12 +38,12 @@ export default function DataTable({ columns, data, isLoading, onRowClick, emptyM
   }
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white overflow-hidden shadow-sm">
+    <div className="rounded-xl border overflow-hidden shadow-sm" style={{ background: "#f0f2f5", borderColor: "#d0d4db" }}>
       <Table>
         <TableHeader>
-          <TableRow className="border-slate-200 hover:bg-transparent">
+          <TableRow className="hover:bg-transparent" style={{ borderColor: "#d0d4db" }}>
             {columns.map((col, i) => (
-              <TableHead key={i} className="text-slate-500 text-xs uppercase tracking-wide font-semibold bg-slate-50">
+              <TableHead key={i} className="text-slate-500 text-xs uppercase tracking-wide font-semibold" style={{ background: "#e4e7ec" }}>
                 {col.header}
               </TableHead>
             ))}
