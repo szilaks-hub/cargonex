@@ -167,7 +167,7 @@ function CustomsAgentFees({ partnerId, partnerName, fees, isLoading }) {
   const [editItem, setEditItem] = useState(null);
   const [form, setForm] = useState({ partner_id: partnerId, partner_name: partnerName, period_from: "", period_to: "", fee_per_truck: "", currency: "EUR", notes: "" });
   const [saving, setSaving] = useState(false);
-  const qc = useQueryClient();
+  const qcFees = useQueryClient();
 
   const openForm = (item) => {
     setEditItem(item);
@@ -182,7 +182,7 @@ function CustomsAgentFees({ partnerId, partnerName, fees, isLoading }) {
     else await base44.entities.CustomsAgentFee.create(data);
     setSaving(false);
     setShowForm(false);
-    qc.invalidateQueries({ queryKey: ["fees", partnerId] });
+    qcFees.invalidateQueries({ queryKey: ["fees", partnerId] });
   };
 
   return (
