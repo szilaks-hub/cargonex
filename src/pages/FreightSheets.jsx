@@ -115,23 +115,50 @@ export default function FreightSheets() {
     { header: "Műveletek", render: r => (
       <div className="flex gap-1 items-center" onClick={e => e.stopPropagation()}>
         <button
+          onClick={() => setSelectedSheet(r)}
+          title="Megnyitás"
+          className="text-slate-400 hover:text-blue-600 p-1 rounded hover:bg-blue-50 transition-colors"
+        >
+          <Eye className="w-3.5 h-3.5" />
+        </button>
+        {isAdmin && r.status === "draft" && (
+          <button
+            onClick={() => handleActivate(r)}
+            title="Aktiválás"
+            className="text-slate-400 hover:text-green-600 p-1 rounded hover:bg-green-50 transition-colors"
+          >
+            <CheckCircle2 className="w-3.5 h-3.5" />
+          </button>
+        )}
+        <button
           onClick={() => handleDuplicate(r)}
-          title="Duplicate / Másolás"
+          title="Másolás"
           className="text-slate-400 hover:text-blue-600 p-1 rounded hover:bg-blue-50 transition-colors"
         >
           <Copy className="w-3.5 h-3.5" />
         </button>
-        <button
-          onClick={() => handleArchive(r)}
-          title={r.status === "archived" ? "Visszaállítás" : "Archiválás"}
-          className="text-slate-400 hover:text-amber-600 p-1 rounded hover:bg-amber-50 transition-colors"
-        >
-          <Archive className="w-3.5 h-3.5" />
-        </button>
+        {isAdmin && r.status !== "archived" && (
+          <button
+            onClick={() => handleArchive(r)}
+            title="Archiválás"
+            className="text-slate-400 hover:text-amber-600 p-1 rounded hover:bg-amber-50 transition-colors"
+          >
+            <Archive className="w-3.5 h-3.5" />
+          </button>
+        )}
+        {isAdmin && r.status === "archived" && (
+          <button
+            onClick={() => handleArchive(r)}
+            title="Visszaállítás (Draft)"
+            className="text-slate-400 hover:text-blue-600 p-1 rounded hover:bg-blue-50 transition-colors text-[10px] font-semibold"
+          >
+            ↩
+          </button>
+        )}
         {r.status === "draft" && (
           <button
             onClick={() => handleDelete(r)}
-            title="Delete (Draft only)"
+            title="Törlés (csak Draft)"
             className="text-slate-400 hover:text-red-500 p-1 rounded hover:bg-red-50 transition-colors"
           >
             <span className="text-xs font-bold">×</span>
