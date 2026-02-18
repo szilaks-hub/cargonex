@@ -178,12 +178,13 @@ export default function ProductCatalog({ products, categories, isLoading, onEdit
     return products.filter((p) => {
       const matchCat = selectedCategoryId === "all" || p.category_id === selectedCategoryId;
       const matchStatus = statusFilter === "all" || p.status === statusFilter;
+      const matchFav = !favoritesOnly || favoriteProductIds.has(p.id);
       const q = search.toLowerCase();
-      const matchSearch = !q || [p.factory_code, p.hs_code, p.mesh_name, p.category_name]
+      const matchSearch = !q || [p.factory_code, p.hs_code, p.mesh_name, p.category_name, String(p.diameter || "")]
         .some((v) => v?.toLowerCase().includes(q));
-      return matchCat && matchStatus && matchSearch;
+      return matchCat && matchStatus && matchFav && matchSearch;
     });
-  }, [products, selectedCategoryId, search, statusFilter]);
+  }, [products, selectedCategoryId, search, statusFilter, favoritesOnly, favoriteProductIds]);
 
   // Group by category for display
   const groupedCategories = useMemo(() => {
