@@ -184,8 +184,8 @@ export default function FreightSheetLineEditor({ sheet, readonly = false }) {
         <thead className="bg-slate-50 border-b border-slate-200">
           <tr>
             <th className={thCls} colSpan={2}>{isHU ? "Helyszín (ISZ / Város / Vármegye)" : "Helyszín (City / ZIP / Régió)"}</th>
-            <th className={thCls}>Belföld (határig)</th>
-            <th className={thCls}>Külföld (határtól)</th>
+            <th className={thCls}>Belföld Határtól</th>
+            <th className={thCls}>Külföld Határig</th>
             <th className={`${thCls} text-right`}>Összesen</th>
             <th className={thCls}>Kiterh. (t)</th>
             <th className={`${thCls} text-right`}>EUR/to</th>
