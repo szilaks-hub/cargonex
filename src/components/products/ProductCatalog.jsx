@@ -274,6 +274,17 @@ export default function ProductCatalog({ products, categories, isLoading, onEdit
             </SelectContent>
           </Select>
           <button
+            onClick={() => setFavoritesOnly((v) => !v)}
+            className={`h-8 px-3 text-xs font-medium rounded-lg flex items-center gap-1.5 border transition-colors ${
+              favoritesOnly
+                ? "bg-rose-50 border-rose-200 text-rose-600"
+                : "bg-white border-[#D9E1E8] text-slate-500 hover:text-rose-500 hover:border-rose-200"
+            }`}
+          >
+            <Heart className={`w-3.5 h-3.5 ${favoritesOnly ? "fill-rose-500 text-rose-500" : ""}`} />
+            Favorites only
+          </button>
+          <button
             onClick={onAdd}
             className="h-8 px-3 text-xs font-medium text-white rounded-lg flex items-center gap-1.5 shadow-sm"
             style={{ background: "#2563eb" }}
