@@ -1,287 +1,158 @@
 import React, { useState } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { Card } from "@/components/ui/card";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Eye, Trash2 } from "lucide-react";
-import OrderDetail from "../components/orders/OrderDetail";
+import { Plus, Eye } from "lucide-react";
+import { toast } from "sonner";
+import OrderDetailModal from "@/components/orders/OrderDetailModal";
+import PageHeader from "@/components/ui/PageHeader";
 
-const statusStyles = {
-  draft: "bg-amber-50 text-amber-700 border-amber-200",
-  open: "bg-blue-50 text-blue-700 border-blue-200",
-  closed: "bg-emerald-50 text-emerald-700 border-emerald-200",
-  archived: "bg-slate-50 text-slate-500 border-slate-200"
-};
-
-export default function Orders() {
-  const [activeTab, setActiveTab] = useState("open");
+export default function OrdersPage() {
   const [selectedOrderId, setSelectedOrderId] = useState(null);
-  const queryClient = useQueryClient();
+  const [activeTab, setActiveTab] = useState("open");
+  const qc = useQueryClient();
 
-  // Fetch all orders
-  const { data: orders = [] } = useQuery({
+  const { data: orders = [], isLoading } = useQuery({
     queryKey: ['orders'],
-    queryFn: () => base44.entities.PurchaseOrder.list('-order_date', 200),
+    queryFn: () => base44.entities.PurchaseOrder.list(),
   });
 
-  // Fetch all lines for received qty aggregation
-  const { data: allLines = [] } = useQuery({
-    queryKey: ['allLines'],
+  const { data: lines = [] } = useQuery({
+    queryKey: ['orderLines'],
     queryFn: () => base44.entities.PurchaseOrderLine.list(),
   });
 
-  // Group orders by status
-  const openOrders = orders.filter(o => ['draft', 'open'].includes(o.status));
-  const closedOrders = orders.filter(o => o.status === 'closed');
-  const archivedOrders = orders.filter(o => o.status === 'archived');
-
-  // Calculate order metrics
   const getOrderMetrics = (orderId) => {
-    const lines = allLines.filter(l => l.purchase_order_id === orderId);
-    const totalOrdered = lines.reduce((sum, l) => sum + (l.ordered_quantity_tons || 0), 0);
-    const totalReceived = lines.reduce((sum, l) => sum + (l.received_quantity_tons || 0), 0);
-    return {
-      totalOrdered,
-      totalReceived,
-      remaining: totalOrdered - totalReceived
-    };
+    const orderLines = lines.filter(l => l.purchase_order_id === orderId);
+    const allocated = orderLines.reduce((sum, l) => sum + (l.allocated_quantity_tons || 0), 0);
+    const planned = orderLines.reduce((sum, l) => sum + (l.planned_quantity_tons || 0), 0);
+    return { allocated, planned, lineCount: orderLines.length };
   };
-
-  // Summary calculations for Open orders
-  const openMetrics = openOrders.reduce((acc, order) => {
-    const metrics = getOrderMetrics(order.id);
-    return {
-      count: acc.count + 1,
-      totalOrdered: acc.totalOrdered + metrics.totalOrdered,
-      totalReceived: acc.totalReceived + metrics.totalReceived,
-      suppliers: new Set([...acc.suppliers, order.supplier_name])
-    };
-  }, { count: 0, totalOrdered: 0, totalReceived: 0, suppliers: new Set() });
 
   const handleCreateOrder = async () => {
     try {
-      const order = await base44.entities.PurchaseOrder.create({
-        supplier_id: "temp",
-        supplier_site_id: "temp",
+      const result = await base44.entities.PurchaseOrder.create({
+        supplier_id: "",
+        supplier_site_id: "",
         order_date: new Date().toISOString().split('T')[0],
         currency: "EUR",
         incoterms_type: "FCA",
         status: "draft"
       });
-      if (order?.id) {
-        setSelectedOrderId(order.id);
-        queryClient.invalidateQueries({ queryKey: ['orders'] });
-      }
+      setSelectedOrderId(result.id);
+      qc.invalidateQueries({ queryKey: ['orders'] });
+      toast.success('Draft order created');
     } catch (error) {
-      alert('Error creating order: ' + error.message);
+      toast.error(error.message);
     }
   };
 
-  const handleDeleteOrder = async (orderId) => {
-    if (confirm('Delete this order?')) {
-      try {
-        // Delete associated lines first
-        const lines = allLines.filter(l => l.purchase_order_id === orderId);
-        for (const line of lines) {
-          await base44.entities.PurchaseOrderLine.delete(line.id);
-        }
-        // Delete order
-        await base44.entities.PurchaseOrder.delete(orderId);
-        queryClient.invalidateQueries({ queryKey: ['orders'] });
-        queryClient.invalidateQueries({ queryKey: ['allLines'] });
-      } catch (error) {
-        alert('Cannot delete: ' + error.message);
-      }
-    }
+  const filterByStatus = (status) => {
+    return orders.filter(o => o.status === status).sort((a, b) => new Date(b.order_date) - new Date(a.order_date));
   };
 
-  const OrderRow = ({ order }) => {
+  const renderOrderRow = (order) => {
     const metrics = getOrderMetrics(order.id);
     return (
-      <tr className="border-t hover:bg-slate-50 transition">
-        <td className="px-4 py-3">
-          <div className="font-medium text-slate-800">{order.supplier_name}</div>
-          <div className="text-xs text-slate-500">{order.supplier_site_name}</div>
+      <tr key={order.id} className="border-b hover:bg-slate-50 transition-colors">
+        <td className="py-3 px-4">
+          <div className="font-semibold text-slate-800">{order.order_number || 'Draft'}</div>
+          <div className="text-xs text-slate-500">{order.supplier_name}</div>
         </td>
-        <td className="px-4 py-3 font-mono text-sm font-semibold text-slate-800">{order.order_number || 'N/A'}</td>
-        <td className="px-4 py-3 text-sm text-slate-700">{order.order_date}</td>
-        <td className="px-4 py-3 text-sm text-slate-700">
-          {order.incoterms_type} {order.incoterms_place && `@ ${order.incoterms_place}`}
+        <td className="py-3 px-4 text-sm text-slate-600">{order.supplier_site_name}</td>
+        <td className="py-3 px-4 text-sm text-slate-600">{order.order_date}</td>
+        <td className="py-3 px-4 text-sm text-slate-600">{order.incoterms_type}</td>
+        <td className="py-3 px-4 text-sm text-center font-semibold text-slate-800">{metrics.lineCount}</td>
+        <td className="py-3 px-4 text-sm text-right">
+          <span className="font-semibold text-blue-700">{metrics.allocated.toFixed(2)} t</span>
+          {metrics.planned > 0 && <span className="text-slate-500"> / {metrics.planned.toFixed(2)} t</span>}
         </td>
-        <td className="px-4 py-3 text-sm font-semibold text-slate-800">{metrics.totalOrdered.toFixed(2)}</td>
-        <td className="px-4 py-3 text-sm text-slate-700">{metrics.totalReceived.toFixed(2)}</td>
-        <td className="px-4 py-3 text-sm text-slate-700">{metrics.remaining.toFixed(2)}</td>
-        <td className="px-4 py-3">
-          <Badge className={`${statusStyles[order.status]} border text-xs`}>
-            {order.status.toUpperCase()}
-          </Badge>
-        </td>
-        <td className="px-4 py-3 text-right space-x-1">
-          <button
-            onClick={() => setSelectedOrderId(order.id)}
-            className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-blue-600 hover:text-blue-700"
-          >
-            <Eye className="w-3 h-3" /> View
-          </button>
-          {order.status === 'draft' && (
-            <button
-              onClick={() => handleDeleteOrder(order.id)}
-              className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-red-600 hover:text-red-700"
-            >
-              <Trash2 className="w-3 h-3" />
-            </button>
-          )}
+        <td className="py-3 px-4 text-right">
+          <Button size="sm" variant="ghost" className="text-blue-600 hover:bg-blue-50" onClick={() => setSelectedOrderId(order.id)}>
+            <Eye className="w-4 h-4" />
+          </Button>
         </td>
       </tr>
     );
   };
 
+  const openOrders = filterByStatus('open');
+  const closedOrders = filterByStatus('closed');
+  const archivedOrders = filterByStatus('archived');
+
   return (
     <div className="space-y-6">
-      {/* Summary Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-        <Card className="p-4 bg-gradient-to-br from-blue-50 to-blue-100">
-          <div className="text-xs text-blue-600 font-semibold">OPEN ORDERS</div>
-          <div className="text-3xl font-bold text-blue-800 mt-1">{openMetrics.count}</div>
-        </Card>
-        <Card className="p-4 bg-gradient-to-br from-indigo-50 to-indigo-100">
-          <div className="text-xs text-indigo-600 font-semibold">ORDERED (t)</div>
-          <div className="text-3xl font-bold text-indigo-800 mt-1">{openMetrics.totalOrdered.toFixed(0)}</div>
-        </Card>
-        <Card className="p-4 bg-gradient-to-br from-emerald-50 to-emerald-100">
-          <div className="text-xs text-emerald-600 font-semibold">RECEIVED (t)</div>
-          <div className="text-3xl font-bold text-emerald-800 mt-1">{openMetrics.totalReceived.toFixed(0)}</div>
-        </Card>
-        <Card className="p-4 bg-gradient-to-br from-orange-50 to-orange-100">
-          <div className="text-xs text-orange-600 font-semibold">REMAINING (t)</div>
-          <div className="text-3xl font-bold text-orange-800 mt-1">{(openMetrics.totalOrdered - openMetrics.totalReceived).toFixed(0)}</div>
-        </Card>
-        <Card className="p-4 bg-gradient-to-br from-slate-50 to-slate-100">
-          <div className="text-xs text-slate-600 font-semibold">SUPPLIERS</div>
-          <div className="text-3xl font-bold text-slate-800 mt-1">{openMetrics.suppliers.size}</div>
-        </Card>
-      </div>
+      <PageHeader
+        title="Purchase Orders"
+        subtitle="Manage orders by category"
+        onAdd={handleCreateOrder}
+        addLabel="New Order"
+      />
 
-      {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <div className="flex items-center justify-between mb-4">
-          <TabsList>
-            <TabsTrigger value="open">Open / Nyitott</TabsTrigger>
-            <TabsTrigger value="closed">Closed / Lezárt</TabsTrigger>
-            <TabsTrigger value="archived">Archived / Archivált</TabsTrigger>
-          </TabsList>
-          <Button onClick={handleCreateOrder} className="gap-2 bg-blue-600 hover:bg-blue-700">
-            <Plus className="w-4 h-4" /> New Order
-          </Button>
-        </div>
+        <TabsList className="bg-slate-100 p-1 rounded-lg">
+          <TabsTrigger value="open" className="text-sm">
+            Open ({openOrders.length})
+          </TabsTrigger>
+          <TabsTrigger value="closed" className="text-sm">
+            Closed ({closedOrders.length})
+          </TabsTrigger>
+          <TabsTrigger value="archived" className="text-sm">
+            Archived ({archivedOrders.length})
+          </TabsTrigger>
+        </TabsList>
 
-        <TabsContent value="open" className="space-y-4">
-          <Card className="overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead className="bg-slate-50 border-b">
-                  <tr>
-                    <th className="px-4 py-3 text-left font-semibold text-slate-700">Supplier + Site</th>
-                    <th className="px-4 py-3 text-left font-semibold text-slate-700">Order #</th>
-                    <th className="px-4 py-3 text-left font-semibold text-slate-700">Date</th>
-                    <th className="px-4 py-3 text-left font-semibold text-slate-700">Incoterms</th>
-                    <th className="px-4 py-3 text-left font-semibold text-slate-700">Ordered</th>
-                    <th className="px-4 py-3 text-left font-semibold text-slate-700">Received</th>
-                    <th className="px-4 py-3 text-left font-semibold text-slate-700">Remaining</th>
-                    <th className="px-4 py-3 text-left font-semibold text-slate-700">Status</th>
-                    <th className="px-4 py-3 text-right font-semibold text-slate-700">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {openOrders.length > 0 ? (
-                    openOrders.map(order => <OrderRow key={order.id} order={order} />)
-                  ) : (
-                    <tr>
-                      <td colSpan="9" className="px-4 py-8 text-center text-slate-500">No open orders</td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </Card>
+        <TabsContent value="open" className="mt-4">
+          <OrdersTable orders={openOrders} isLoading={isLoading} onRowClick={(order) => setSelectedOrderId(order.id)} renderRow={renderOrderRow} />
         </TabsContent>
 
-        <TabsContent value="closed" className="space-y-4">
-          <Card className="overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead className="bg-slate-50 border-b">
-                  <tr>
-                    <th className="px-4 py-3 text-left font-semibold text-slate-700">Supplier + Site</th>
-                    <th className="px-4 py-3 text-left font-semibold text-slate-700">Order #</th>
-                    <th className="px-4 py-3 text-left font-semibold text-slate-700">Date</th>
-                    <th className="px-4 py-3 text-left font-semibold text-slate-700">Incoterms</th>
-                    <th className="px-4 py-3 text-left font-semibold text-slate-700">Ordered</th>
-                    <th className="px-4 py-3 text-left font-semibold text-slate-700">Received</th>
-                    <th className="px-4 py-3 text-left font-semibold text-slate-700">Remaining</th>
-                    <th className="px-4 py-3 text-left font-semibold text-slate-700">Status</th>
-                    <th className="px-4 py-3 text-right font-semibold text-slate-700">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {closedOrders.length > 0 ? (
-                    closedOrders.map(order => <OrderRow key={order.id} order={order} />)
-                  ) : (
-                    <tr>
-                      <td colSpan="9" className="px-4 py-8 text-center text-slate-500">No closed orders</td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </Card>
+        <TabsContent value="closed" className="mt-4">
+          <OrdersTable orders={closedOrders} isLoading={isLoading} onRowClick={(order) => setSelectedOrderId(order.id)} renderRow={renderOrderRow} />
         </TabsContent>
 
-        <TabsContent value="archived" className="space-y-4">
-          <Card className="overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead className="bg-slate-50 border-b">
-                  <tr>
-                    <th className="px-4 py-3 text-left font-semibold text-slate-700">Supplier + Site</th>
-                    <th className="px-4 py-3 text-left font-semibold text-slate-700">Order #</th>
-                    <th className="px-4 py-3 text-left font-semibold text-slate-700">Date</th>
-                    <th className="px-4 py-3 text-left font-semibold text-slate-700">Incoterms</th>
-                    <th className="px-4 py-3 text-left font-semibold text-slate-700">Ordered</th>
-                    <th className="px-4 py-3 text-left font-semibold text-slate-700">Received</th>
-                    <th className="px-4 py-3 text-left font-semibold text-slate-700">Remaining</th>
-                    <th className="px-4 py-3 text-left font-semibold text-slate-700">Status</th>
-                    <th className="px-4 py-3 text-right font-semibold text-slate-700">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {archivedOrders.length > 0 ? (
-                    archivedOrders.map(order => <OrderRow key={order.id} order={order} />)
-                  ) : (
-                    <tr>
-                      <td colSpan="9" className="px-4 py-8 text-center text-slate-500">No archived orders</td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </Card>
+        <TabsContent value="archived" className="mt-4">
+          <OrdersTable orders={archivedOrders} isLoading={isLoading} onRowClick={(order) => setSelectedOrderId(order.id)} renderRow={renderOrderRow} />
         </TabsContent>
       </Tabs>
 
-      {/* Order Detail Modal */}
       {selectedOrderId && (
-        <OrderDetail
+        <OrderDetailModal
           orderId={selectedOrderId}
-          onClose={() => {
-            setSelectedOrderId(null);
-            queryClient.invalidateQueries({ queryKey: ['orders'] });
-            queryClient.invalidateQueries({ queryKey: ['allLines'] });
-          }}
+          onClose={() => setSelectedOrderId(null)}
+          onOrderUpdated={() => qc.invalidateQueries({ queryKey: ['orders'] })}
         />
       )}
     </div>
+  );
+}
+
+function OrdersTable({ orders, isLoading, renderRow }) {
+  if (isLoading) return <div className="text-center py-8 text-slate-500">Loading...</div>;
+  if (orders.length === 0) return <div className="text-center py-8 text-slate-500">No orders</div>;
+
+  return (
+    <Card className="overflow-hidden">
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead className="bg-slate-50 border-b">
+            <tr className="text-left text-xs font-semibold text-slate-600">
+              <th className="py-3 px-4">Order</th>
+              <th className="py-3 px-4">Site</th>
+              <th className="py-3 px-4">Date</th>
+              <th className="py-3 px-4">Incoterms</th>
+              <th className="py-3 px-4 text-center">Categories</th>
+              <th className="py-3 px-4 text-right">Allocated</th>
+              <th className="py-3 px-4 text-right"></th>
+            </tr>
+          </thead>
+          <tbody>
+            {orders.map(renderRow)}
+          </tbody>
+        </table>
+      </div>
+    </Card>
   );
 }
