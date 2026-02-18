@@ -8,6 +8,7 @@ import FreightSheetLineEditor from "./FreightSheetLineEditor";
 import FreightSheetPrint from "./FreightSheetPrint";
 import FreightSheetForm from "./FreightSheetForm";
 import CopyLinesModal from "./CopyLinesModal";
+import LogoUpload from "./LogoUpload";
 
 export default function FreightSheetDetail({ sheet, onBack, onUpdated, user }) {
   const qc = useQueryClient();
