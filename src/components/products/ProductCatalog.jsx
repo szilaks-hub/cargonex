@@ -150,7 +150,9 @@ export default function ProductCatalog({ products, categories, isLoading, onEdit
   const [selectedCategoryId, setSelectedCategoryId] = useState("all");
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [favoritesOnly, setFavoritesOnly] = useState(false);
   const qc = useQueryClient();
+  const { favoriteProductIds, toggleFavorite } = useFavorites();
 
   const handleArchive = async (r) => {
     const newStatus = r.status === "archived" ? "active" : "archived";
