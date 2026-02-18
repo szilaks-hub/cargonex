@@ -71,19 +71,31 @@ export default function OrderDetail({ order, onBack }) {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-3">
-        <Button variant="ghost" onClick={onBack} className="text-[#8b949e] hover:text-white p-2">
-          <ArrowLeft className="w-4 h-4" />
-        </Button>
-        <div>
-          <h2 className="text-xl font-bold text-[#e6edf3]">
-            {order.order_number || `PO-${order.id?.slice(0, 6)}`}
-          </h2>
-          <div className="flex items-center gap-2 mt-1">
-            <span className="text-sm text-[#8b949e]">{order.supplier_name}</span>
-            <StatusBadge status={order.status} />
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <Button variant="ghost" onClick={onBack} className="text-[#8b949e] hover:text-white p-2">
+            <ArrowLeft className="w-4 h-4" />
+          </Button>
+          <div>
+            <h2 className="text-xl font-bold text-[#e6edf3]">
+              {order.order_number || `PO-${order.id?.slice(0, 6)}`}
+            </h2>
+            <div className="flex items-center gap-2 mt-1">
+              <span className="text-sm text-[#8b949e]">{order.supplier_name}</span>
+              <StatusBadge status={order.status} />
+            </div>
           </div>
         </div>
+        {!order.locked && (
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => setDeleteDialog({ open: true, message: "Delete or archive this order?", action: 'HARD_DELETE' })}
+            className="border-red-600 text-red-600 hover:bg-red-50"
+          >
+            <Trash2 className="w-4 h-4 mr-1" /> Delete
+          </Button>
+        )}
       </div>
 
       {/* Order info */}
