@@ -1,6 +1,7 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Printer, X } from "lucide-react";
+import { getDeclarationText } from "./DeclarationText";
 
 const COUNTRY_NAMES = {
   HU: "Magyarország", SK: "Szlovákia", RO: "Románia", PL: "Lengyelország",
