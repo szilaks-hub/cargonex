@@ -21,6 +21,7 @@ export default function Partners() {
   const [showForm, setShowForm] = useState(false);
   const [editItem, setEditItem] = useState(null);
   const [selectedPartner, setSelectedPartner] = useState(null);
+  const [filterCountry, setFilterCountry] = useState("");
   const qc = useQueryClient();
 
   const { data: partners = [], isLoading } = useQuery({
