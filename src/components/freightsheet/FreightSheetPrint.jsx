@@ -130,8 +130,13 @@ export default function FreightSheetPrint({ sheet, lines, onClose }) {
                   return (
                     <tr key={line.id || i} style={{ borderBottom: "1px solid #e2e8f0", background: i % 2 === 1 ? "#f8fafc" : "white" }}>
                       {isHU && <td className="py-1.5 pr-2 font-medium text-slate-700">{line.destination_county || "—"}</td>}
-                      <td className="py-1.5 pr-2 text-slate-800">{line.destination_city || "—"}</td>
-                      <td className="py-1.5 pr-2 text-slate-500 font-mono">{line.destination_zip || "—"}</td>
+                      <td className="py-1.5 pr-2 text-slate-800">
+                        {line.destination_city || "—"}
+                        {line.destination_city?.toLowerCase().startsWith("budapest") && !line.destination_zip && (
+                          <span className="text-slate-400 text-[10px] ml-1">(ZIP: n/a)</span>
+                        )}
+                      </td>
+                      <td className="py-1.5 pr-2 text-slate-500 font-mono">{line.destination_zip || (line.destination_city?.toLowerCase().startsWith("budapest") ? "–" : "—")}</td>
                       <td className="py-1.5 pr-2 text-right text-slate-700">{fmt(line.domestic_leg || 0)} {sheet.currency}</td>
                       <td className="py-1.5 pr-2 text-right text-slate-700">{fmt(line.foreign_leg || 0)} {sheet.currency}</td>
                       {/* city display with Budapest ZIP note */}
