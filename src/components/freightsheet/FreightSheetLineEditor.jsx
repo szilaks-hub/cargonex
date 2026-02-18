@@ -19,56 +19,45 @@ function calcTotals(form, defaultLoad) {
 function DestinationFields({ form, set, isHU, inp, readonly = false }) {
   if (readonly) {
     return (
-      <>
-        <td className="px-2 py-1.5 text-xs text-slate-600">{form.destination_zip || "—"}</td>
-        <td className="px-2 py-1.5 text-xs text-slate-700 font-medium">{form.destination_city || "—"}</td>
-        <td className="px-2 py-1.5 text-xs text-slate-500">{form.destination_county || form.destination_region || "—"}</td>
-      </>
+      <td colSpan={2} className="px-2 py-1.5">
+        <div className="text-xs text-slate-700">
+          {form.destination_zip && <span className="font-mono text-slate-500 mr-1">{form.destination_zip}</span>}
+          <span className="font-medium">{form.destination_city || "—"}</span>
+          {(form.destination_county || form.destination_region) && (
+            <span className="text-slate-400 ml-1">· {form.destination_county || form.destination_region}</span>
+          )}
+        </div>
+      </td>
     );
   }
 
   if (isHU) {
     return (
-      <>
-        <td className="px-2 py-1.5">
-          <ZipAutocomplete
-            value={form.destination_zip || ""}
-            inputClassName={inp}
-            onZipChange={v => set("destination_zip", v)}
-            onSelect={(zip, city, county) => {
-              set("destination_zip", zip);
-              set("destination_city", city);
-              if (county) set("destination_county", county);
-            }}
-          />
-        </td>
-        <td className="px-2 py-1.5">
-          <Input className={inp} value={form.destination_city || ""} onChange={e => set("destination_city", e.target.value)} placeholder="Város *" />
-        </td>
-        <td className="px-2 py-1.5">
-          <Select value={form.destination_county || ""} onValueChange={v => set("destination_county", v)}>
-            <SelectTrigger className={`${inp} h-8 text-xs`}><SelectValue placeholder="Vármegye" /></SelectTrigger>
-            <SelectContent className="bg-white border-[#c6ccda]">
-              {HU_COUNTIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-            </SelectContent>
-          </Select>
-        </td>
-      </>
+      <td colSpan={2} className="px-2 py-1.5">
+        <HuLocationSearch
+          zip={form.destination_zip || ""}
+          city={form.destination_city || ""}
+          county={form.destination_county || ""}
+          inputClassName={inp}
+          onChange={({ zip, city, county }) => {
+            set("destination_zip", zip);
+            set("destination_city", city);
+            set("destination_county", county);
+          }}
+        />
+      </td>
     );
   }
 
+  // Non-HU: zip optional, city mandatory, region optional
   return (
-    <>
-      <td className="px-2 py-1.5">
-        <Input className={inp} value={form.destination_zip || ""} onChange={e => set("destination_zip", e.target.value)} placeholder="ZIP" />
-      </td>
-      <td className="px-2 py-1.5">
-        <Input className={inp} value={form.destination_city || ""} onChange={e => set("destination_city", e.target.value)} placeholder="City *" />
-      </td>
-      <td className="px-2 py-1.5">
-        <Input className={inp} value={form.destination_region || ""} onChange={e => set("destination_region", e.target.value)} placeholder="Régió" />
-      </td>
-    </>
+    <td colSpan={2} className="px-2 py-1.5">
+      <div className="flex gap-1">
+        <Input className={`${inp} w-20`} value={form.destination_zip || ""} onChange={e => set("destination_zip", e.target.value)} placeholder="ZIP" />
+        <Input className={`${inp} flex-1`} value={form.destination_city || ""} onChange={e => set("destination_city", e.target.value)} placeholder="City *" />
+        <Input className={`${inp} w-24`} value={form.destination_region || ""} onChange={e => set("destination_region", e.target.value)} placeholder="Régió" />
+      </div>
+    </td>
   );
 }
 
