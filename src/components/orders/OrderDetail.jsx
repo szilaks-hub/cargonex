@@ -42,11 +42,18 @@ export default function OrderDetail({ order, onBack }) {
       if (res.data.success) {
         qc.invalidateQueries({ queryKey: ["orders"] });
         onBack();
-      } else if (res.data.canArchive && deleteDialog.action === 'HARD_DELETE') {
+      } else if (res.status === 409 && deleteDialog.action === 'HARD_DELETE') {
+        // 409 Conflict: has dependencies, offer archive
         setDeleteDialog({
           open: true,
-          message: `This order has dependencies. Would you like to archive it instead? (${Object.entries(res.data.dependencies).map(([k, v]) => `${k}: ${v}`).join(', ')})`,
+          message: `This order has dependencies (${Object.entries(res.data.dependencies).map(([k, v]) => `${k}: ${v}`).join(', ')}). Archive it instead?`,
           action: 'ARCHIVE'
+        });
+      } else {
+        setDeleteDialog({
+          open: true,
+          message: res.data?.message || res.data?.error || 'Unknown error',
+          action: null
         });
       }
     } catch (error) {
