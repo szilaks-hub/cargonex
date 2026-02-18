@@ -67,32 +67,34 @@ export default function CategoryManager() {
       />
 
       {showForm && (
-        <div className="bg-[#1a1e23] border border-[#2d333b] rounded-xl p-5 space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-sm font-medium text-[#e6edf3]">
+        <div className="rounded-xl shadow-md border border-[#D9E1E8] overflow-hidden" style={{ background: "#F4F6F8" }}>
+          <div className="flex items-center justify-between px-5 py-3 border-b border-[#D9E1E8] bg-white">
+            <h3 className="text-sm font-semibold text-[#2E3A46]">
               {editItem ? "Edit Category" : "New Category / Új kategória"}
             </h3>
-            <button onClick={() => setShowForm(false)} className="text-[#8b949e] hover:text-white"><X className="w-4 h-4" /></button>
+            <button onClick={() => setShowForm(false)} className="text-slate-400 hover:text-slate-600 transition-colors"><X className="w-4 h-4" /></button>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            <div>
-              <Label className="text-[#8b949e] text-xs">Name EN *</Label>
-              <Input className="bg-[#22272e] border-[#2d333b] text-[#e6edf3]" value={form.name_en} onChange={(e) => setForm({ ...form, name_en: e.target.value })} />
-            </div>
-            <div>
-              <Label className="text-[#8b949e] text-xs">Name HU *</Label>
-              <Input className="bg-[#22272e] border-[#2d333b] text-[#e6edf3]" value={form.name_hu} onChange={(e) => setForm({ ...form, name_hu: e.target.value })} />
-            </div>
-            <div>
-              <Label className="text-[#8b949e] text-xs">Description</Label>
-              <Input className="bg-[#22272e] border-[#2d333b] text-[#e6edf3]" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+          <div className="p-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-5 gap-y-4">
+              <div>
+                <label className="text-[#2E3A46] text-xs font-semibold mb-1 block">Name EN <span className="text-red-500">*</span></label>
+                <Input className="bg-white border border-[#D9E1E8] rounded-lg text-slate-800 text-sm h-9 placeholder:text-[#9AA6B2] focus:border-[#3A7BFF] focus:ring-2 focus:ring-[#3A7BFF]/20 hover:border-[#3A7BFF]/60 transition-colors" value={form.name_en} onChange={(e) => setForm({ ...form, name_en: e.target.value })} />
+              </div>
+              <div>
+                <label className="text-[#2E3A46] text-xs font-semibold mb-1 block">Name HU <span className="text-red-500">*</span></label>
+                <Input className="bg-white border border-[#D9E1E8] rounded-lg text-slate-800 text-sm h-9 placeholder:text-[#9AA6B2] focus:border-[#3A7BFF] focus:ring-2 focus:ring-[#3A7BFF]/20 hover:border-[#3A7BFF]/60 transition-colors" value={form.name_hu} onChange={(e) => setForm({ ...form, name_hu: e.target.value })} />
+              </div>
+              <div>
+                <label className="text-[#2E3A46] text-xs font-semibold mb-1 block">Description</label>
+                <Input className="bg-white border border-[#D9E1E8] rounded-lg text-slate-800 text-sm h-9 placeholder:text-[#9AA6B2] focus:border-[#3A7BFF] focus:ring-2 focus:ring-[#3A7BFF]/20 hover:border-[#3A7BFF]/60 transition-colors" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+              </div>
             </div>
           </div>
-          <div className="flex justify-between pt-2">
-            <div>{editItem?.id && <Button variant="ghost" onClick={handleDelete} className="text-red-400 hover:text-red-300 hover:bg-red-500/10 gap-2"><Trash2 className="w-4 h-4" /> Delete</Button>}</div>
+          <div className="flex justify-between items-center px-5 py-3 border-t border-[#D9E1E8] bg-white">
+            <div>{editItem?.id && <Button variant="ghost" onClick={handleDelete} className="text-red-500 hover:text-red-600 hover:bg-red-50 gap-2 text-xs h-8"><Trash2 className="w-3.5 h-3.5" /> Delete</Button>}</div>
             <div className="flex gap-2">
-              <Button variant="outline" onClick={() => setShowForm(false)} className="border-[#2d333b] text-[#8b949e]">Cancel</Button>
-              <Button onClick={handleSave} disabled={saving} className="bg-blue-600 hover:bg-blue-700 text-white gap-2"><Save className="w-4 h-4" /> Save</Button>
+              <Button variant="outline" onClick={() => setShowForm(false)} className="bg-[#F4F6F8] border-[#D9E1E8] text-[#2E3A46] hover:bg-[#e8edf3] text-xs h-8 px-4">Cancel</Button>
+              <Button onClick={handleSave} disabled={saving} className="text-white gap-2 text-xs h-8 px-4" style={{ background: "#2563eb" }}><Save className="w-3.5 h-3.5" /> Save</Button>
             </div>
           </div>
         </div>
