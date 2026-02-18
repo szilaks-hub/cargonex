@@ -41,6 +41,7 @@ export default function OrderbooksPage() {
   const handleCreateOrder = async () => {
     try {
       const result = await base44.entities.Orderbook.create({
+        order_no: `ORD-${Date.now()}`,
         supplier_id: "",
         supplier_site_id: "",
         order_date: new Date().toISOString().split('T')[0],
