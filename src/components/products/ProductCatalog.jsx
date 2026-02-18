@@ -48,6 +48,7 @@ function getColumnsForType(type, onEdit, onArchive, onDelete) {
   ];
   if (type === "mesh") {
     return [
+      favCol(toggleFavorite, favoriteProductIds),
       ...base,
       { header: "Mesh Name", render: (r) => r.mesh_name || "-" },
       { header: "Dim.", render: (r) => r.additional_dimension || "-" },
@@ -61,6 +62,7 @@ function getColumnsForType(type, onEdit, onArchive, onDelete) {
   }
   if (type === "wirerod") {
     return [
+      favCol(toggleFavorite, favoriteProductIds),
       ...base,
       { header: "Diameter", render: (r) => r.diameter ? `${r.diameter} mm` : "-" },
       { header: "Unit", key: "unit_of_measure" },
@@ -72,6 +74,7 @@ function getColumnsForType(type, onEdit, onArchive, onDelete) {
   }
   // rebar + coil
   return [
+    favCol(toggleFavorite, favoriteProductIds),
     ...base,
     { header: "Diameter", render: (r) => r.diameter ? `${r.diameter} mm` : "-" },
     { header: "Length", render: (r) => r.length ? `${r.length} mm` : "-" },
