@@ -27,8 +27,21 @@ export default function Partners() {
     queryFn: () => base44.entities.Partner.list(),
   });
 
+  const handleArchive = async (r) => {
+    const newStatus = r.status === "archived" ? "active" : "archived";
+    await base44.entities.Partner.update(r.id, { status: newStatus });
+    qc.invalidateQueries({ queryKey: ["partners"] });
+  };
+
+  const handleDelete = async (r) => {
+    await base44.entities.Partner.delete(r.id);
+    qc.invalidateQueries({ queryKey: ["partners"] });
+  };
+
   const columns = [
-    { header: "Name / Név", key: "name" },
+    { header: "Name / Név", render: (r) => (
+      <span className={r.status === "archived" ? "opacity-40 line-through" : ""}>{r.name}</span>
+    )},
     { header: "Roles / Szerepek", render: (r) => (
       <div className="flex flex-wrap gap-1">
         {(r.roles || []).map((role) => (
@@ -39,9 +52,17 @@ export default function Partners() {
       </div>
     )},
     { header: "Country / Ország", key: "country", render: (r) => r.country || "-" },
-    { header: "City / Város", key: "city", render: (r) => r.city || "-" },
     { header: "Email", key: "email", render: (r) => r.email || "-" },
     { header: "Status", render: (r) => <StatusBadge status={r.status} /> },
+    { header: "", render: (r) => (
+      <RowActions
+        onEdit={() => { setEditItem(r); setShowForm(true); }}
+        onArchive={() => handleArchive(r)}
+        isArchived={r.status === "archived"}
+        canDelete={r.status === "archived"}
+        onDelete={() => handleDelete(r)}
+      />
+    )},
   ];
 
   if (selectedPartner) {
