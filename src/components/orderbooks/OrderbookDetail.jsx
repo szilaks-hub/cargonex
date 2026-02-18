@@ -312,8 +312,8 @@ export default function OrderbookDetail({ orderId, onClose, onUpdated }) {
                   type="date"
                   value={form.order_date || ""}
                   onChange={(e) => handleFormChange({ order_date: e.target.value })}
-                  disabled={!isDraft}
-                  className={!isDraft ? 'bg-slate-100 text-slate-600' : 'bg-white'}
+                  disabled={!isEditable}
+                  className={!isEditable ? 'bg-slate-100 text-slate-600' : 'bg-white'}
                 />
               </div>
 
