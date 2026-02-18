@@ -183,9 +183,7 @@ export default function FreightSheetLineEditor({ sheet, readonly = false }) {
       <table className="w-full text-sm">
         <thead className="bg-slate-50 border-b border-slate-200">
           <tr>
-            <th className={thCls}>ISZ / ZIP</th>
-            <th className={thCls}>Város *</th>
-            <th className={thCls}>{isHU ? "Vármegye" : "Régió"}</th>
+            <th className={thCls} colSpan={2}>{isHU ? "Helyszín (ISZ / Város / Vármegye)" : "Helyszín (City / ZIP / Régió)"}</th>
             <th className={thCls}>Belföld (határig)</th>
             <th className={thCls}>Külföld (határtól)</th>
             <th className={`${thCls} text-right`}>Összesen</th>
