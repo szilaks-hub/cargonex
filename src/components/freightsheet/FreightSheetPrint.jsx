@@ -139,7 +139,7 @@ export default function FreightSheetPrint({ sheet, lines, onClose }) {
                       <td className="py-1.5 pr-2 text-slate-500 font-mono">{line.destination_zip || (line.destination_city?.toLowerCase().startsWith("budapest") ? "–" : "—")}</td>
                       <td className="py-1.5 pr-2 text-right text-slate-700">{fmt(line.domestic_leg || 0)} {sheet.currency}</td>
                       <td className="py-1.5 pr-2 text-right text-slate-700">{fmt(line.foreign_leg || 0)} {sheet.currency}</td>
-                      {/* city display with Budapest ZIP note */}
+
                       <td className="py-1.5 pr-2 text-right font-bold text-slate-900">{fmt(total)} {sheet.currency}</td>
                       <td className="py-1.5 pr-2 text-right text-slate-600">{load} t</td>
                       <td className="py-1.5 text-right font-semibold text-slate-800">{fmt(eurPerTon)} {sheet.currency}</td>
