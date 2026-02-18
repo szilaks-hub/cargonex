@@ -17,8 +17,23 @@ function getCategoryType(name = "") {
 }
 
 function getColumnsForType(type) {
+  const actionsCol = (onEdit, onArchive, onDelete) => ({
+    header: "",
+    render: (r) => (
+      <RowActions
+        onEdit={() => onEdit(r)}
+        onArchive={() => onArchive(r)}
+        isArchived={r.status === "archived"}
+        canDelete={r.status === "archived"}
+        onDelete={() => onDelete(r)}
+      />
+    ),
+  });
+
   const base = [
-    { header: "Factory Code", key: "factory_code", render: (r) => r.factory_code || "-" },
+    { header: "Factory Code", key: "factory_code", render: (r) => (
+      <span className={r.status === "archived" ? "opacity-40 line-through" : ""}>{r.factory_code || "-"}</span>
+    )},
   ];
   if (type === "mesh") {
     return [
@@ -30,6 +45,7 @@ function getColumnsForType(type) {
       { header: "Bundle (kg)", render: (r) => r.bundle_weight ?? "-" },
       { header: "HS Code", key: "hs_code" },
       { header: "Status", render: (r) => <StatusBadge status={r.status} /> },
+      actionsCol(onEdit, onArchive, onDelete),
     ];
   }
   if (type === "wirerod") {
@@ -40,6 +56,7 @@ function getColumnsForType(type) {
       { header: "Bundle (kg)", render: (r) => r.bundle_weight ?? "-" },
       { header: "HS Code", key: "hs_code" },
       { header: "Status", render: (r) => <StatusBadge status={r.status} /> },
+      actionsCol(onEdit, onArchive, onDelete),
     ];
   }
   // rebar + coil
@@ -51,6 +68,7 @@ function getColumnsForType(type) {
     { header: "Bundle (kg)", render: (r) => r.bundle_weight ?? "-" },
     { header: "HS Code", key: "hs_code" },
     { header: "Status", render: (r) => <StatusBadge status={r.status} /> },
+    actionsCol(onEdit, onArchive, onDelete),
   ];
 }
 
