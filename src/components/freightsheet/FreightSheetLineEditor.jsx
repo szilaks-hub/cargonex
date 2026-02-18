@@ -3,72 +3,128 @@ import { base44 } from "@/api/base44Client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Plus, Trash2, Save } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Plus, Trash2, Save, Copy } from "lucide-react";
 import ZipAutocomplete from "@/components/freightsheet/ZipAutocomplete";
 
-function LineRow({ line, defaultLoad, onSave, onDelete, readonly = false }) {
-  const [form, setForm] = useState({ ...line });
-  const set = (k, v) => {
-    setForm(f => {
-      const updated = { ...f, [k]: v };
-      const dom = Number(k === "domestic_leg" ? v : updated.domestic_leg) || 0;
-      const fgn = Number(k === "foreign_leg" ? v : updated.foreign_leg) || 0;
-      const load = Number(k === "load_tons" ? v : updated.load_tons) || defaultLoad || 24;
-      updated.total_price = dom + fgn;
-      updated.eur_per_ton = load > 0 ? parseFloat(((dom + fgn) / load).toFixed(4)) : 0;
-      return updated;
-    });
+const HU_COUNTIES = [
+  "Budapest", "Bács-Kiskun", "Baranya", "Békés", "Borsod-Abaúj-Zemplén",
+  "Csongrád-Csanád", "Fejér", "Győr-Moson-Sopron", "Hajdú-Bihar", "Heves",
+  "Jász-Nagykun-Szolnok", "Komárom-Esztergom", "Nógrád", "Pest", "Somogy",
+  "Szabolcs-Szatmár-Bereg", "Tolna", "Vas", "Veszprém", "Zala"
+];
+
+function calcTotals(form, defaultLoad) {
+  const dom = Number(form.domestic_leg) || 0;
+  const fgn = Number(form.foreign_leg) || 0;
+  const load = Number(form.load_tons) || defaultLoad || 24;
+  return {
+    total_price: dom + fgn,
+    eur_per_ton: load > 0 ? parseFloat(((dom + fgn) / load).toFixed(4)) : 0,
   };
+}
+
+function DestinationFields({ form, set, isHU, inp, readonly = false }) {
+  if (readonly) {
+    return (
+      <>
+        <td className="px-2 py-1.5 text-xs text-slate-600">{form.destination_zip || "—"}</td>
+        <td className="px-2 py-1.5 text-xs text-slate-700 font-medium">{form.destination_city || "—"}</td>
+        <td className="px-2 py-1.5 text-xs text-slate-500">{form.destination_county || form.destination_region || "—"}</td>
+      </>
+    );
+  }
+
+  if (isHU) {
+    return (
+      <>
+        <td className="px-2 py-1.5">
+          <ZipAutocomplete
+            value={form.destination_zip || ""}
+            inputClassName={inp}
+            onZipChange={v => set("destination_zip", v)}
+            onSelect={(zip, city, county) => {
+              set("destination_zip", zip);
+              set("destination_city", city);
+              if (county) set("destination_county", county);
+            }}
+          />
+        </td>
+        <td className="px-2 py-1.5">
+          <Input className={inp} value={form.destination_city || ""} onChange={e => set("destination_city", e.target.value)} placeholder="Város *" />
+        </td>
+        <td className="px-2 py-1.5">
+          <Select value={form.destination_county || ""} onValueChange={v => set("destination_county", v)}>
+            <SelectTrigger className={`${inp} h-8 text-xs`}><SelectValue placeholder="Vármegye" /></SelectTrigger>
+            <SelectContent className="bg-white border-[#c6ccda]">
+              {HU_COUNTIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        </td>
+      </>
+    );
+  }
+
+  return (
+    <>
+      <td className="px-2 py-1.5">
+        <Input className={inp} value={form.destination_zip || ""} onChange={e => set("destination_zip", e.target.value)} placeholder="ZIP" />
+      </td>
+      <td className="px-2 py-1.5">
+        <Input className={inp} value={form.destination_city || ""} onChange={e => set("destination_city", e.target.value)} placeholder="City *" />
+      </td>
+      <td className="px-2 py-1.5">
+        <Input className={inp} value={form.destination_region || ""} onChange={e => set("destination_region", e.target.value)} placeholder="Régió" />
+      </td>
+    </>
+  );
+}
+
+function LineRow({ line, defaultLoad, onSave, onDelete, onDuplicate, isHU, readonly = false }) {
+  const [form, setForm] = useState({ ...line });
+  const set = (k, v) => setForm(f => {
+    const updated = { ...f, [k]: v };
+    const { total_price, eur_per_ton } = calcTotals({ ...updated }, defaultLoad);
+    return { ...updated, total_price, eur_per_ton };
+  });
 
   const inp = "h-8 text-xs bg-white border-[#c6ccda] text-slate-800 px-2";
 
   return (
     <tr className="border-b border-slate-100 hover:bg-slate-50">
-      <td className="px-2 py-1.5">
-        <ZipAutocomplete
-          value={form.destination_zip || ""}
-          inputClassName={inp}
-          onZipChange={v => set("destination_zip", v)}
-          onSelect={(zip, city, county) => setForm(f => {
-            const updated = { ...f, destination_zip: zip, destination_city: city, destination_county: county || f.destination_county };
-            return updated;
-          })}
-        />
-      </td>
-      <td className="px-2 py-1.5"><Input className={inp} value={form.destination_city || ""} onChange={e => set("destination_city", e.target.value)} placeholder="Város *" /></td>
-      <td className="px-2 py-1.5"><Input className={inp} value={form.destination_county || ""} onChange={e => set("destination_county", e.target.value)} placeholder="Vármegye" /></td>
-      <td className="px-2 py-1.5"><Input className={inp} value={form.destination_region || ""} onChange={e => set("destination_region", e.target.value)} placeholder="Régió" /></td>
-      <td className="px-2 py-1.5"><Input type="number" className={inp} value={form.domestic_leg || ""} onChange={e => set("domestic_leg", e.target.value)} placeholder="0" /></td>
-      <td className="px-2 py-1.5"><Input type="number" className={inp} value={form.foreign_leg || ""} onChange={e => set("foreign_leg", e.target.value)} placeholder="0" /></td>
-      <td className="px-2 py-1.5 text-xs text-slate-600 font-medium text-right">{(form.total_price || 0).toLocaleString("hu-HU", { minimumFractionDigits: 0 })}</td>
-      <td className="px-2 py-1.5"><Input type="number" className={inp} value={form.load_tons || ""} onChange={e => set("load_tons", e.target.value)} placeholder={`${defaultLoad}`} /></td>
+      <DestinationFields form={form} set={set} isHU={isHU} inp={inp} readonly={readonly} />
+      <td className="px-2 py-1.5"><Input type="number" className={inp} value={form.domestic_leg || ""} onChange={e => set("domestic_leg", e.target.value)} placeholder="0" readOnly={readonly} /></td>
+      <td className="px-2 py-1.5"><Input type="number" className={inp} value={form.foreign_leg || ""} onChange={e => set("foreign_leg", e.target.value)} placeholder="0" readOnly={readonly} /></td>
+      <td className="px-2 py-1.5 text-xs text-slate-600 font-medium text-right">{(form.total_price || 0).toLocaleString("hu-HU")}</td>
+      <td className="px-2 py-1.5"><Input type="number" className={inp} value={form.load_tons || ""} onChange={e => set("load_tons", e.target.value)} placeholder={`${defaultLoad}`} readOnly={readonly} /></td>
       <td className="px-2 py-1.5 text-xs text-orange-600 font-semibold text-right">{(form.eur_per_ton || 0).toFixed(2)}</td>
       <td className="px-2 py-1.5 text-center">
-        <Checkbox checked={form.is_active !== false} onCheckedChange={v => set("is_active", v)} />
+        <Checkbox checked={form.is_active !== false} onCheckedChange={v => !readonly && set("is_active", v)} disabled={readonly} />
       </td>
-      <td className="px-2 py-1.5 flex gap-1">
-        {!readonly && <>
-          <button onClick={() => onSave(form)} className="text-blue-500 hover:text-blue-700"><Save className="w-3.5 h-3.5" /></button>
-          <button onClick={() => onDelete(line.id)} className="text-red-400 hover:text-red-600"><Trash2 className="w-3.5 h-3.5" /></button>
-        </>}
+      <td className="px-2 py-1.5">
+        <div className="flex gap-1 items-center">
+          {!readonly && (
+            <>
+              <button onClick={() => onSave(form)} className="text-blue-500 hover:text-blue-700" title="Save"><Save className="w-3.5 h-3.5" /></button>
+              <button onClick={() => onDuplicate(form)} className="text-slate-400 hover:text-indigo-600" title="Duplicate"><Copy className="w-3.5 h-3.5" /></button>
+              <button onClick={() => onDelete(line.id)} className="text-red-400 hover:text-red-600" title="Delete"><Trash2 className="w-3.5 h-3.5" /></button>
+            </>
+          )}
+        </div>
       </td>
     </tr>
   );
 }
 
-function NewLineRow({ sheetId, defaultLoad, onSaved }) {
-  const [form, setForm] = useState({ destination_zip: "", destination_city: "", destination_county: "", destination_region: "", domestic_leg: "", foreign_leg: "", load_tons: "", is_active: true });
-  const set = (k, v) => {
-    setForm(f => {
-      const updated = { ...f, [k]: v };
-      const dom = Number(k === "domestic_leg" ? v : updated.domestic_leg) || 0;
-      const fgn = Number(k === "foreign_leg" ? v : updated.foreign_leg) || 0;
-      const load = Number(k === "load_tons" ? v : updated.load_tons) || defaultLoad || 24;
-      updated.total_price = dom + fgn;
-      updated.eur_per_ton = load > 0 ? parseFloat(((dom + fgn) / load).toFixed(4)) : 0;
-      return updated;
-    });
-  };
+function NewLineRow({ sheetId, defaultLoad, isHU, onSaved }) {
+  const emptyForm = { destination_zip: "", destination_city: "", destination_county: "", destination_region: "", domestic_leg: "", foreign_leg: "", load_tons: "", is_active: true };
+  const [form, setForm] = useState(emptyForm);
+
+  const set = (k, v) => setForm(f => {
+    const updated = { ...f, [k]: v };
+    const { total_price, eur_per_ton } = calcTotals(updated, defaultLoad);
+    return { ...updated, total_price, eur_per_ton };
+  });
 
   const handleAdd = async () => {
     if (!form.destination_city) return;
@@ -78,43 +134,28 @@ function NewLineRow({ sheetId, defaultLoad, onSaved }) {
       domestic_leg: Number(form.domestic_leg) || 0,
       foreign_leg: Number(form.foreign_leg) || 0,
       load_tons: form.load_tons ? Number(form.load_tons) : undefined,
-      total_price: (Number(form.domestic_leg) || 0) + (Number(form.foreign_leg) || 0),
     };
-    const load = data.load_tons || defaultLoad || 24;
-    data.eur_per_ton = load > 0 ? parseFloat((data.total_price / load).toFixed(4)) : 0;
-    await base44.entities.FreightSheetLine.create(data);
-    setForm({ destination_zip: "", destination_city: "", destination_county: "", destination_region: "", domestic_leg: "", foreign_leg: "", load_tons: "", is_active: true });
+    const { total_price, eur_per_ton } = calcTotals(data, defaultLoad);
+    await base44.entities.FreightSheetLine.create({ ...data, total_price, eur_per_ton });
+    setForm(emptyForm);
     onSaved();
   };
 
   const inp = "h-8 text-xs bg-blue-50 border-blue-200 text-slate-800 px-2";
+  const total = (Number(form.domestic_leg) || 0) + (Number(form.foreign_leg) || 0);
+  const load = Number(form.load_tons) || defaultLoad || 24;
 
   return (
     <tr className="border-b border-blue-100 bg-blue-50/30">
-      <td className="px-2 py-1.5">
-        <ZipAutocomplete
-          value={form.destination_zip}
-          inputClassName={inp}
-          onZipChange={v => set("destination_zip", v)}
-          onSelect={(zip, city, county) => setForm(f => ({
-            ...f,
-            destination_zip: zip,
-            destination_city: city,
-            destination_county: county || f.destination_county
-          }))}
-        />
-      </td>
-      <td className="px-2 py-1.5"><Input className={inp} value={form.destination_city} onChange={e => set("destination_city", e.target.value)} placeholder="Város *" /></td>
-      <td className="px-2 py-1.5"><Input className={inp} value={form.destination_county} onChange={e => set("destination_county", e.target.value)} placeholder="Vármegye" /></td>
-      <td className="px-2 py-1.5"><Input className={inp} value={form.destination_region} onChange={e => set("destination_region", e.target.value)} placeholder="Régió" /></td>
+      <DestinationFields form={form} set={set} isHU={isHU} inp={inp} />
       <td className="px-2 py-1.5"><Input type="number" className={inp} value={form.domestic_leg} onChange={e => set("domestic_leg", e.target.value)} placeholder="0" /></td>
       <td className="px-2 py-1.5"><Input type="number" className={inp} value={form.foreign_leg} onChange={e => set("foreign_leg", e.target.value)} placeholder="0" /></td>
-      <td className="px-2 py-1.5 text-xs text-slate-500 font-medium text-right">{((Number(form.domestic_leg) || 0) + (Number(form.foreign_leg) || 0)).toLocaleString()}</td>
+      <td className="px-2 py-1.5 text-xs text-slate-500 font-medium text-right">{total.toLocaleString()}</td>
       <td className="px-2 py-1.5"><Input type="number" className={inp} value={form.load_tons} onChange={e => set("load_tons", e.target.value)} placeholder={`${defaultLoad}`} /></td>
-      <td className="px-2 py-1.5 text-xs text-orange-600 font-semibold text-right">{(form.eur_per_ton || 0).toFixed(2)}</td>
+      <td className="px-2 py-1.5 text-xs text-orange-600 font-semibold text-right">{load > 0 ? (total / load).toFixed(2) : "0.00"}</td>
       <td className="px-2 py-1.5 text-center"><Checkbox checked={form.is_active} onCheckedChange={v => set("is_active", v)} /></td>
       <td className="px-2 py-1.5">
-        <button onClick={handleAdd} className="text-green-600 hover:text-green-800"><Plus className="w-4 h-4" /></button>
+        <button onClick={handleAdd} className="text-green-600 hover:text-green-800" title="Add line"><Plus className="w-4 h-4" /></button>
       </td>
     </tr>
   );
@@ -122,6 +163,7 @@ function NewLineRow({ sheetId, defaultLoad, onSaved }) {
 
 export default function FreightSheetLineEditor({ sheet, readonly = false }) {
   const qc = useQueryClient();
+  const isHU = sheet.destination_country === "HU";
 
   const { data: lines = [], isLoading } = useQuery({
     queryKey: ["sheetLines", sheet.id],
@@ -135,15 +177,19 @@ export default function FreightSheetLineEditor({ sheet, readonly = false }) {
       foreign_leg: Number(line.foreign_leg) || 0,
       load_tons: line.load_tons ? Number(line.load_tons) : undefined,
     };
-    const load = data.load_tons || sheet.default_load_tons || 24;
-    data.total_price = (data.domestic_leg || 0) + (data.foreign_leg || 0);
-    data.eur_per_ton = load > 0 ? parseFloat((data.total_price / load).toFixed(4)) : 0;
-    await base44.entities.FreightSheetLine.update(line.id, data);
+    const { total_price, eur_per_ton } = calcTotals(data, sheet.default_load_tons);
+    await base44.entities.FreightSheetLine.update(line.id, { ...data, total_price, eur_per_ton });
     qc.invalidateQueries({ queryKey: ["sheetLines", sheet.id] });
   };
 
   const handleDelete = async (id) => {
     await base44.entities.FreightSheetLine.delete(id);
+    qc.invalidateQueries({ queryKey: ["sheetLines", sheet.id] });
+  };
+
+  const handleDuplicate = async (line) => {
+    const { id, created_date, updated_date, created_by, ...rest } = line;
+    await base44.entities.FreightSheetLine.create({ ...rest, sheet_id: sheet.id });
     qc.invalidateQueries({ queryKey: ["sheetLines", sheet.id] });
   };
 
@@ -156,10 +202,9 @@ export default function FreightSheetLineEditor({ sheet, readonly = false }) {
       <table className="w-full text-sm">
         <thead className="bg-slate-50 border-b border-slate-200">
           <tr>
-            <th className={thCls}>ISZ</th>
+            <th className={thCls}>ISZ / ZIP</th>
             <th className={thCls}>Város *</th>
-            <th className={thCls}>Vármegye</th>
-            <th className={thCls}>Régió</th>
+            <th className={thCls}>{isHU ? "Vármegye" : "Régió"}</th>
             <th className={thCls}>Belföld (határig)</th>
             <th className={thCls}>Külföld (határtól)</th>
             <th className={`${thCls} text-right`}>Összesen</th>
@@ -171,14 +216,36 @@ export default function FreightSheetLineEditor({ sheet, readonly = false }) {
         </thead>
         <tbody>
           {lines.map(line => (
-            <LineRow key={line.id} line={line} defaultLoad={sheet.default_load_tons} onSave={handleSave} onDelete={handleDelete} readonly={readonly} />
+            <LineRow
+              key={line.id}
+              line={line}
+              defaultLoad={sheet.default_load_tons}
+              onSave={handleSave}
+              onDelete={handleDelete}
+              onDuplicate={handleDuplicate}
+              isHU={isHU}
+              readonly={readonly}
+            />
           ))}
           {isLoading && (
-            <tr><td colSpan={11} className="text-center py-4 text-slate-400 text-xs">Loading...</td></tr>
+            <tr><td colSpan={10} className="text-center py-4 text-slate-400 text-xs">Betöltés...</td></tr>
           )}
-          {!readonly && <NewLineRow sheetId={sheet.id} defaultLoad={sheet.default_load_tons} onSaved={onSaved} />}
+          {!lines.length && !isLoading && (
+            <tr><td colSpan={10} className="text-center py-4 text-slate-400 text-xs">
+              {readonly ? "Nincs sor." : "Nincs sor. Add hozzá az első lerakót alul!"}
+            </td></tr>
+          )}
+          {!readonly && (
+            <NewLineRow sheetId={sheet.id} defaultLoad={sheet.default_load_tons} isHU={isHU} onSaved={onSaved} />
+          )}
         </tbody>
       </table>
+      {!readonly && (
+        <div className="px-4 py-2 bg-blue-50/50 border-t border-blue-100 text-[10px] text-blue-400">
+          💡 Az utolsó sor (kék háttér) az új lerakó beviteli sora. Töltsd ki, majd kattints a <strong>+</strong> ikonra.
+          {" "}Mentés soronként a <strong>💾</strong> ikonnal, másolás a <strong>⧉</strong> ikonnal.
+        </div>
+      )}
     </div>
   );
 }
