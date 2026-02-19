@@ -9,17 +9,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { X, Save, Trash2, Package, Truck, MapPin, ShieldCheck } from "lucide-react";
 
 const STATUS_LABELS = {
-  booked: "Előjegyzett / Booked",
-  scheduled: "Ütemezett / Scheduled",
-  loaded: "Megrakott / Loaded",
-  in_transit: "Úton / In Transit",
-  customs: "Vámon / Customs",
-  transit: "Tranzit / TR",
-  arrived: "Érkezett / Arrived",
-  arrived_onsite: "Telephelyi érkezés",
-  arrived_offsite: "Telephelyen kívüli érkezés",
-  closed: "Lezárt / Closed",
-  cancelled: "Törölve / Cancelled",
+  booked: "Előjegyzett",
+  loaded: "Megrakott",
+  arrived_onsite: "Telephelyi",
+  closed: "Lezárt",
+  cancelled: "Törölve",
 };
 
 const COUNTRIES = ["HU", "DE", "AT", "SK", "RO", "HR", "SI", "PL", "CZ", "FR", "IT", "NL", "BE", "BG", "RS", "UA", "TR"];
