@@ -21,22 +21,26 @@ const COUNTRIES = ["HU", "DE", "AT", "SK", "RO", "HR", "SI", "PL", "CZ", "FR", "
 
 export default function TruckForm({ item, onClose, onSaved, defaultOrderbookId, defaultOrderNo }) {
   const [tab, setTab] = useState("order");
-  const [form, setForm] = useState(item || {
-    truck_number: "",
-    expected_loading_date: "",
-    actual_loading_date: "",
-    product_id: "", product_name: "",
-    planned_quantity_tons: "", actual_weight_tons: "",
-    destination_country: "", destination_city: "",
-    carrier_id: "", carrier_name: "",
-    applied_freight_sheet_id: "", applied_freight_sheet_line_id: "",
-    freight_domestic_leg_snapshot: "", freight_foreign_leg_snapshot: "",
-    freight_total_snapshot: "", freight_eur_per_ton_snapshot: "",
-    orderbook_id: defaultOrderbookId || "", orderbook_no: defaultOrderNo || "",
-    customs_agent_id: "", customs_agent_name: "", customs_agent_fee: "",
-    purchase_price: "", hs_code: "",
-    transit: false,
-    status: "booked"
+  const [form, setForm] = useState(() => {
+    if (item) return { ...item, items: item.items || [] };
+    return {
+      truck_number: "",
+      expected_loading_date: "",
+      actual_loading_date: "",
+      product_id: "", product_name: "",
+      planned_quantity_tons: "", actual_weight_tons: "",
+      destination_country: "", destination_city: "",
+      carrier_id: "", carrier_name: "",
+      applied_freight_sheet_id: "", applied_freight_sheet_line_id: "",
+      freight_domestic_leg_snapshot: "", freight_foreign_leg_snapshot: "",
+      freight_total_snapshot: "", freight_eur_per_ton_snapshot: "",
+      orderbook_id: defaultOrderbookId || "", orderbook_no: defaultOrderNo || "",
+      customs_agent_id: "", customs_agent_name: "", customs_agent_fee: "",
+      purchase_price: "", hs_code: "",
+      transit: false,
+      status: "booked",
+      items: [],
+    };
   });
   const [saving, setSaving] = useState(false);
 
