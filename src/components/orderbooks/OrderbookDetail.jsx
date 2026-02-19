@@ -85,6 +85,7 @@ export default function OrderbookDetail({ orderId, onClose, onUpdated }) {
     const newForm = { ...form, ...updates };
     setForm(newForm);
     setSaved(false);
+    setIsDirty(true);
 
     if (newForm.status === 'draft') {
       clearTimeout(saveTimerRef.current);
@@ -92,6 +93,7 @@ export default function OrderbookDetail({ orderId, onClose, onUpdated }) {
         try {
           await base44.entities.Orderbook.update(orderId, newForm);
           setSaved(true);
+          setIsDirty(false);
           setTimeout(() => setSaved(false), 2000);
         } catch (error) {
           toast.error('Save failed: ' + error.message);
@@ -105,6 +107,7 @@ export default function OrderbookDetail({ orderId, onClose, onUpdated }) {
       await base44.entities.Orderbook.update(orderId, form);
       qc.invalidateQueries({ queryKey: ['orderbooks'] });
       setSaved(true);
+      setIsDirty(false);
       setTimeout(() => setSaved(false), 2000);
       toast.success('Rendelés mentve');
       onUpdated?.();
