@@ -197,10 +197,8 @@ function TruckTable({ trucks, isLoading, onEdit, onAdvance, onToggleTransit, sta
                 <td className="py-3 px-4 text-slate-600 text-xs">
                   {r.destination_country}{r.destination_city ? ` · ${r.destination_city}` : ""}
                 </td>
-                <td className="py-3 px-4">
-                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${statusColors[r.status] || "bg-slate-100 text-slate-600"}`}>
-                    {statusLabels[r.status] || r.status}
-                  </span>
+                <td className="py-3 px-4" onClick={e => e.stopPropagation()}>
+                  <StatusDropdown truck={r} onAdvance={onAdvance} statusLabels={statusLabels} statusColors={statusColors} />
                 </td>
                 <td className="py-3 px-4 text-center" onClick={e => e.stopPropagation()}>
                   <input
@@ -210,9 +208,7 @@ function TruckTable({ trucks, isLoading, onEdit, onAdvance, onToggleTransit, sta
                     className="w-4 h-4 accent-blue-600 cursor-pointer"
                   />
                 </td>
-                <td className="py-3 px-4 text-right" onClick={e => e.stopPropagation()}>
-                  <QuickStatusAdvance truck={r} onAdvance={onAdvance} statusLabels={statusLabels} />
-                </td>
+                <td className="py-3 px-4"></td>
               </tr>
             ))}
           </tbody>
