@@ -158,7 +158,7 @@ export default function Dashboard() {
               </ResponsiveContainer>
               <div className="flex flex-wrap gap-3 mt-3">
                 {carrierData.map((c, i) => (
-                  <div key={c.name} className="flex items-center gap-1.5 text-xs" style={{ color: "#8896aa" }}>
+                  <div key={c.name} className="flex items-center gap-1.5 text-xs text-slate-500">
                     <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: COLORS[i % COLORS.length] }} />
                     {c.name}
                   </div>
