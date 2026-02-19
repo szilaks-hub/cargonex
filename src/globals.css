@@ -4,27 +4,27 @@ css
 @tailwind utilities;
 
 :root {
-  /* CARGONEX Modern Dark Palette */
-  --cx-bg-from:    #0f1117;
-  --cx-bg-mid:     #141720;
-  --cx-bg-to:      #181c28;
-  --cx-surface:    rgba(22,26,38,0.97);
-  --cx-surface2:   rgba(28,33,48,0.90);
-  --cx-border:     rgba(255,255,255,0.07);
-  --cx-border-solid: rgba(255,255,255,0.10);
-  --cx-blue:       #4f8ef7;
-  --cx-blue-light: #1e3a5f;
-  --cx-lime:       #c8f135;
+  /* CARGONEX Modern Light Palette */
+  --cx-bg-from:    #F4F6FA;
+  --cx-bg-mid:     #EEF1F7;
+  --cx-bg-to:      #E8EDF5;
+  --cx-surface:    rgba(255,255,255,0.96);
+  --cx-surface2:   rgba(255,255,255,0.80);
+  --cx-border:     rgba(30,40,80,0.08);
+  --cx-border-solid: #DDE1EC;
+  --cx-blue:       #3B6CF4;
+  --cx-blue-light: #EBF0FE;
+  --cx-lime:       #22c55e;
   --cx-red:        #e05a2b;
   --cx-orange:     #f59e0b;
-  --cx-steel:      #8896aa;
-  --cx-text:       #eef2ff;
-  --cx-text-muted: #8896aa;
-  --cx-sidebar:    rgba(15,17,26,0.98);
-  --cx-sidebar-border: rgba(255,255,255,0.06);
-  --cx-sidebar-active: #c8f135;
-  --cx-shadow:     0 4px 32px rgba(0,0,0,0.45);
-  --cx-shadow-lg:  0 8px 48px rgba(0,0,0,0.55);
+  --cx-steel:      #64748b;
+  --cx-text:       #0f172a;
+  --cx-text-muted: #64748b;
+  --cx-sidebar:    rgba(255,255,255,0.98);
+  --cx-sidebar-border: rgba(30,40,80,0.07);
+  --cx-sidebar-active: #3B6CF4;
+  --cx-shadow:     0 2px 16px rgba(15,23,60,0.08);
+  --cx-shadow-lg:  0 8px 40px rgba(15,23,60,0.12);
 }
 
 /* ── ANIMATED CANVAS BACKGROUND ─────────────────────────── */
