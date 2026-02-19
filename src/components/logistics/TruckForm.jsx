@@ -171,7 +171,7 @@ export default function TruckForm({ item, onClose, onSaved, defaultOrderbookId, 
         <TabsContent value="order" className="pt-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <div className="sm:col-span-2 lg:col-span-3">
-              <Label className={lbl}>Rendelés (Orderbook) *</Label>
+              <Label className={lbl}>Bész. rendelésszám *</Label>
               <Select value={form.orderbook_id} onValueChange={(v) => {
                 const o = orderbooks.find(o => o.id === v);
                 set("orderbook_id", v);
@@ -179,6 +179,14 @@ export default function TruckForm({ item, onClose, onSaved, defaultOrderbookId, 
                 // Reset product when orderbook changes
                 set("product_id", "");
                 set("product_name", "");
+                // Auto-fill customs agent from orderbook
+                if (o && o.customs_required && o.customs_agent_id) {
+                  set("customs_agent_id", o.customs_agent_id);
+                  set("customs_agent_name", o.customs_agent_name || "");
+                  if (o.customs_fee_eur_per_truck) {
+                    set("customs_agent_fee", o.customs_fee_eur_per_truck);
+                  }
+                }
               }}>
                 <SelectTrigger className={inp}>
                   <SelectValue placeholder="Válassz nyitott rendelést..." />
@@ -186,7 +194,7 @@ export default function TruckForm({ item, onClose, onSaved, defaultOrderbookId, 
                 <SelectContent className="bg-white border-[#c6ccda]">
                   {orderbooks.map((o) => (
                     <SelectItem key={o.id} value={o.id}>
-                      {o.supplier_order_no || o.order_no} – {o.supplier_name} ({o.supplier_site_name})
+                      {o.supplier_order_no ? `${o.supplier_order_no} (${o.order_no})` : o.order_no} – {o.supplier_name}
                     </SelectItem>
                   ))}
                 </SelectContent>
