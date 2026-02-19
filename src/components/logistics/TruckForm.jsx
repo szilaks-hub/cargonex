@@ -27,6 +27,7 @@ export default function TruckForm({ item, onClose, onSaved, defaultOrderbookId, 
   const { data: partners = [] } = useQuery({ queryKey: ["partners"], queryFn: () => base44.entities.Partner.list() });
   const { data: locations = [] } = useQuery({ queryKey: ["allLocations"], queryFn: () => base44.entities.PartnerLocation.list() });
   const { data: orders = [] } = useQuery({ queryKey: ["orders"], queryFn: () => base44.entities.PurchaseOrder.list() });
+  const { data: orderbooks = [] } = useQuery({ queryKey: ["orderbooks-list"], queryFn: () => base44.entities.Orderbook.filter({ status: "open" }) });
   const { data: freightRates = [] } = useQuery({ queryKey: ["freightRates"], queryFn: () => base44.entities.FreightRate.list() });
   const { data: agentFees = [] } = useQuery({ queryKey: ["allFees"], queryFn: () => base44.entities.CustomsAgentFee.list() });
 
