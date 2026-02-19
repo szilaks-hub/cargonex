@@ -26,7 +26,6 @@ export default function TruckForm({ item, onClose, onSaved, defaultOrderbookId, 
     actual_loading_date: "",
     product_id: "", product_name: "",
     planned_quantity_tons: "", actual_weight_tons: "",
-    loading_location_id: "", loading_location_name: "",
     destination_country: "", destination_city: "",
     carrier_id: "", carrier_name: "",
     applied_freight_sheet_id: "", applied_freight_sheet_line_id: "",
@@ -35,6 +34,7 @@ export default function TruckForm({ item, onClose, onSaved, defaultOrderbookId, 
     orderbook_id: defaultOrderbookId || "", orderbook_no: defaultOrderNo || "",
     customs_agent_id: "", customs_agent_name: "", customs_agent_fee: "",
     purchase_price: "", hs_code: "",
+    transit: false,
     status: "booked"
   });
   const [saving, setSaving] = useState(false);
