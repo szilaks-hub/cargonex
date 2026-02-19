@@ -23,18 +23,20 @@ export default function OrderbookDetail({ orderId, onClose, onUpdated }) {
   const saveTimerRef = useRef(null);
   const qc = useQueryClient();
 
-  // Fetch orderbook
+  // Fetch orderbook - refetch every 10s for real-time collab
   const { data: orderbook, isLoading } = useQuery({
     queryKey: ['orderbook', orderId],
     queryFn: () => base44.entities.Orderbook.filter({ id: orderId }).then(r => r?.[0]),
     enabled: !!orderId,
+    refetchInterval: 10000,
   });
 
-  // Fetch lines
+  // Fetch lines - refetch every 10s
   const { data: fetchedLines = [] } = useQuery({
     queryKey: ['orderbook-lines', orderId],
     queryFn: () => base44.entities.OrderbookLine.filter({ orderbook_id: orderId }),
     enabled: !!orderId,
+    refetchInterval: 10000,
   });
 
   const { data: categories = [] } = useQuery({
