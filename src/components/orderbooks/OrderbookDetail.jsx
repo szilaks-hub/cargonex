@@ -251,7 +251,10 @@ export default function OrderbookDetail({ orderId, onClose, onUpdated }) {
         {/* Header */}
         <div className="sticky top-0 bg-gradient-to-r from-slate-50 to-white border-b p-4 flex items-center justify-between">
           <div>
-            <h2 className="text-xl font-bold text-slate-800">{form.order_no || 'Draft'}</h2>
+            <h2 className="text-xl font-bold text-slate-800">
+              {form.supplier_order_no || form.order_no || 'Draft'}
+              {form.supplier_order_no && <span className="ml-2 text-sm font-normal text-slate-400">({form.order_no})</span>}
+            </h2>
             <p className="text-sm text-slate-500 mt-1">{selectedSupplier?.name || 'No supplier selected'}</p>
           </div>
           <div className="flex items-center gap-3">
