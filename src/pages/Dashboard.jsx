@@ -85,7 +85,7 @@ export default function Dashboard() {
         {[
           { label: "Nyitott fuvar", value: openTrucks.length, icon: Truck, accent: "#4f8ef7" },
           { label: "Vámra vár", value: loadedWaiting.length, icon: ShieldCheck, accent: "#f59e0b" },
-          { label: "Lezárt (hó)", value: thisMonth.length, icon: Package, accent: "#c8f135" },
+          { label: "Lezárt (hó)", value: thisMonth.length, icon: Package, accent: "#22c55e" },
           { label: "Partnerek", value: partners.length, icon: Users, accent: "#8b5cf6" },
           {
             label: "Vámérték (hó)",
