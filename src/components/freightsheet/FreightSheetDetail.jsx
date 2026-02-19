@@ -53,7 +53,7 @@ export default function FreightSheetDetail({ sheet, onBack, onUpdated, user }) {
     setActivating(true);
     setActivateError("");
     const updated = await base44.entities.FreightSheet.update(currentSheet.id, { status: "active" });
-    setCurrentSheet(prev => ({ ...prev, status: "active" }));
+    setCurrentSheet(updated);
     qc.invalidateQueries({ queryKey: ["freightSheets"] });
     setActivating(false);
   };
