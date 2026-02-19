@@ -71,7 +71,7 @@ export default function FreightSheetPrint({ sheet, lines, onClose }) {
           </div>
 
           {/* Document */}
-          <div className="print-page p-10 text-[13px] text-slate-900 font-sans">
+          <div id="freight-print-doc" className="print-page p-10 text-[13px] text-slate-900 font-sans">
 
             {/* ── HEADER ───────────────────────────────────────────── */}
              <div className="flex items-start justify-between mb-8 pb-6 border-b-2 border-slate-200">
