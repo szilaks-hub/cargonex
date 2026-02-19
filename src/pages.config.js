@@ -54,6 +54,7 @@ import FreightSheets from './pages/FreightSheets';
 import Orderbooks from './pages/Orderbooks';
 import Partners from './pages/Partners';
 import Products from './pages/Products';
+import Logistics from './pages/Logistics';
 import __Layout from './Layout.jsx';
 
 
@@ -65,6 +66,7 @@ export const PAGES = {
     "Orderbooks": Orderbooks,
     "Partners": Partners,
     "Products": Products,
+    "Logistics": Logistics,
 }
 
 export const pagesConfig = {
