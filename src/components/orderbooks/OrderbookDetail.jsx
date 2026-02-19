@@ -433,20 +433,78 @@ export default function OrderbookDetail({ orderId, onClose, onUpdated }) {
                     )}
                   </div>
                   <div>
-                    <label className="text-xs font-medium text-slate-600 mb-1 block">Fee (EUR/ton)</label>
+                    <label className="text-xs font-medium text-slate-600 mb-1 block">Díj (EUR/kamion)</label>
                     <Input
                       type="number"
                       step="0.01"
-                      value={form.customs_fee_eur_per_ton || ""}
-                      onChange={(e) => handleFormChange({ customs_fee_eur_per_ton: e.target.value ? parseFloat(e.target.value) : 0 })}
+                      value={form.customs_fee_eur_per_truck || ""}
+                      onChange={(e) => handleFormChange({ customs_fee_eur_per_truck: e.target.value ? parseFloat(e.target.value) : 0 })}
                       disabled={!isEditable}
                       className={!isEditable ? 'bg-slate-100 text-slate-600' : 'bg-white'}
                     />
                   </div>
-                </div>
-              )}
-            </div>
-          </div>
+                  </div>
+                  )}
+                  </div>
+
+                  {/* Other Fees */}
+                  <div className="border-t pt-4 space-y-2">
+                  <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-slate-700">Egyéb költségek</span>
+                  {isEditable && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-7 text-xs gap-1 border-slate-300"
+                    onClick={() => handleFormChange({ other_fees: [...(form.other_fees || []), { name: "", fee_eur_per_truck: 0 }] })}
+                  >
+                    <Plus className="w-3 h-3" /> Hozzáad
+                  </Button>
+                  )}
+                  </div>
+                  {(form.other_fees || []).map((fee, idx) => (
+                  <div key={idx} className="flex gap-2 items-center">
+                  <Input
+                    placeholder="Megnevezés (pl. Rakodás)"
+                    value={fee.name || ""}
+                    onChange={(e) => {
+                      const updated = [...(form.other_fees || [])];
+                      updated[idx] = { ...updated[idx], name: e.target.value };
+                      handleFormChange({ other_fees: updated });
+                    }}
+                    disabled={!isEditable}
+                    className={`flex-1 text-sm ${!isEditable ? 'bg-slate-100' : 'bg-white'}`}
+                  />
+                  <Input
+                    type="number"
+                    step="0.01"
+                    placeholder="EUR/kamion"
+                    value={fee.fee_eur_per_truck || ""}
+                    onChange={(e) => {
+                      const updated = [...(form.other_fees || [])];
+                      updated[idx] = { ...updated[idx], fee_eur_per_truck: parseFloat(e.target.value) || 0 };
+                      handleFormChange({ other_fees: updated });
+                    }}
+                    disabled={!isEditable}
+                    className={`w-32 text-sm ${!isEditable ? 'bg-slate-100' : 'bg-white'}`}
+                  />
+                  <span className="text-xs text-slate-400">EUR/kamion</span>
+                  {isEditable && (
+                    <button
+                      onClick={() => {
+                        const updated = (form.other_fees || []).filter((_, i) => i !== idx);
+                        handleFormChange({ other_fees: updated });
+                      }}
+                      className="text-red-500 hover:text-red-700"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  )}
+                  </div>
+                  ))}
+                  </div>
+                  </div>
+                  </div>
 
           {/* Category Lines */}
           <div className="space-y-3">
