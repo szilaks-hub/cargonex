@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { X, Save, Trash2 } from "lucide-react";
 import ProductPicker from "@/components/products/ProductPicker";
 
-export default function TruckForm({ item, onClose, onSaved }) {
+export default function TruckForm({ item, onClose, onSaved, defaultOrderbookId, defaultOrderNo }) {
   const [form, setForm] = useState(item || {
     truck_number: "", expected_loading_date: "", actual_loading_date: "",
     product_id: "", product_name: "", planned_quantity_tons: "", actual_weight_tons: "",
@@ -17,6 +17,7 @@ export default function TruckForm({ item, onClose, onSaved }) {
     carrier_id: "", carrier_name: "", freight_rate_id: "",
     foreign_freight: "", domestic_freight: "",
     order_id: "", order_number: "",
+    orderbook_id: defaultOrderbookId || "", orderbook_no: defaultOrderNo || "",
     customs_agent_id: "", customs_agent_name: "", customs_agent_fee: "",
     purchase_price: "", hs_code: "", status: "scheduled"
   });
