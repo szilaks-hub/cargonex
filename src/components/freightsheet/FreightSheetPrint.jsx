@@ -203,3 +203,8 @@ export default function FreightSheetPrint({ sheet, lines, onClose }) {
     </>
   );
 }
+
+// Build the HTML for the print document content
+function buildPrintHtml(sheet, activeLines, isHU, today, destCountryName, getDeclarationText) {
+  // unused — content rendered via innerHTML of #freight-print-doc
+}
