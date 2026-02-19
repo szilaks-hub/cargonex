@@ -77,7 +77,7 @@ function getColumnsForType(type, onEdit, onArchive, onDelete, toggleFavorite, fa
     favCol(toggleFavorite, favoriteProductIds),
     ...base,
     { header: "Diameter", render: (r) => r.diameter ? `${r.diameter} mm` : "-" },
-    { header: "Length", render: (r) => r.length ? `${r.length} mm` : "-" },
+    { header: "Length", render: (r) => r.length ? `${r.length} m` : "-" },
     { header: "Unit", key: "unit_of_measure" },
     { header: "Bundle (kg)", render: (r) => r.bundle_weight ?? "-" },
     { header: "HS Code", key: "hs_code" },
