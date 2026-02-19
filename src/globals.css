@@ -51,25 +51,25 @@ body {
 /* ── SHADCN TOKEN OVERRIDES ──────────────────────────────── */
 @layer base {
   :root {
-    --background: 214 28% 92%;
-    --foreground: 220 40% 8%;
-    --card: 0 0% 100%;
-    --card-foreground: 220 40% 8%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 220 40% 8%;
-    --primary: 20 75% 50%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 214 20% 90%;
-    --secondary-foreground: 220 40% 8%;
-    --muted: 214 20% 90%;
-    --muted-foreground: 215 16% 40%;
-    --accent: 214 20% 86%;
-    --accent-foreground: 220 40% 8%;
-    --destructive: 0 75% 45%;
+    --background: 224 22% 9%;
+    --foreground: 220 40% 93%;
+    --card: 224 20% 13%;
+    --card-foreground: 220 40% 93%;
+    --popover: 224 20% 13%;
+    --popover-foreground: 220 40% 93%;
+    --primary: 76 86% 58%;
+    --primary-foreground: 224 22% 9%;
+    --secondary: 224 18% 20%;
+    --secondary-foreground: 220 40% 90%;
+    --muted: 224 18% 17%;
+    --muted-foreground: 215 16% 55%;
+    --accent: 224 18% 22%;
+    --accent-foreground: 220 40% 93%;
+    --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
-    --border: 216 18% 75%;
-    --input: 216 18% 75%;
-    --ring: 20 75% 50%;
+    --border: 224 15% 20%;
+    --input: 224 15% 20%;
+    --ring: 76 86% 58%;
     --radius: 0.75rem;
   }
 }
