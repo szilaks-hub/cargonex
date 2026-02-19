@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { X, Copy, Trash2, Check, AlertCircle, Edit2, Plus } from "lucide-react";
 import OrderbookTrucksSidebar from "./OrderbookTrucksSidebar";
+import OrderbookSummaryTable from "./OrderbookSummaryTable";
 import { toast } from "sonner";
 
 const INCOTERMS = ['EXW', 'FCA', 'CPT', 'CIP', 'DAP', 'DPU', 'DDP', 'FAS', 'FOB', 'CFR', 'CIF'];
