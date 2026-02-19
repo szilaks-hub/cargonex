@@ -66,9 +66,10 @@ export default function Dashboard() {
   };
 
   const cardStyle = {
-    background: "rgba(22,26,40,0.95)",
-    border: "1px solid rgba(255,255,255,0.07)",
+    background: "#ffffff",
+    border: "1px solid #E8ECF4",
     borderRadius: "16px",
+    boxShadow: "0 2px 12px rgba(15,23,60,0.06)",
   };
 
   return (
