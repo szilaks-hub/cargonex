@@ -93,8 +93,10 @@ export default function OrderbooksPage() {
                 <div className="text-2xl font-bold text-slate-800">{openMetrics.tons.toFixed(0)}</div>
               </Card>
               <Card className="p-3 bg-slate-50">
-                <div className="text-xs text-slate-600">Total Value (k EUR)</div>
-                <div className="text-2xl font-bold text-slate-800">{(openMetrics.value / 1000).toFixed(1)}</div>
+                <div className="text-xs text-slate-600">Total Value (EUR)</div>
+                <div className="text-2xl font-bold text-slate-800">
+                  {openMetrics.value.toLocaleString("hu-HU", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                </div>
               </Card>
               <Card className="p-3 bg-orange-50">
                 <div className="text-xs text-slate-600">Customs Required</div>
