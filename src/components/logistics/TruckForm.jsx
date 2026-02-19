@@ -272,20 +272,6 @@ export default function TruckForm({ item, onClose, onSaved, defaultOrderbookId, 
               <Input className={inp} value={form.truck_number} onChange={(e) => set("truck_number", e.target.value)} placeholder="Pl. ABC-123 (kitölthető később)" />
             </div>
 
-            <div>
-              <Label className={lbl}>Rakodási helyszín</Label>
-              <Select value={form.loading_location_id} onValueChange={(v) => {
-                const l = locations.find(l => l.id === v);
-                set("loading_location_id", v);
-                set("loading_location_name", l ? `${l.partner_name} - ${l.location_name}` : "");
-              }}>
-                <SelectTrigger className={inp}><SelectValue placeholder="Válassz..." /></SelectTrigger>
-                <SelectContent className="bg-white border-[#c6ccda]">
-                  {locations.map((l) => <SelectItem key={l.id} value={l.id}>{l.partner_name} - {l.location_name}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-
             <div className="sm:col-span-2">
               <Label className={lbl}>Státusz</Label>
               <Select value={form.status} onValueChange={(v) => set("status", v)}>
@@ -296,6 +282,17 @@ export default function TruckForm({ item, onClose, onSaved, defaultOrderbookId, 
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+
+            <div className="flex items-center gap-2 mt-2">
+              <input
+                type="checkbox"
+                id="transit_checkbox"
+                checked={form.transit || false}
+                onChange={(e) => set("transit", e.target.checked)}
+                className="w-4 h-4 accent-blue-600"
+              />
+              <label htmlFor="transit_checkbox" className={`${lbl} cursor-pointer`}>TR (Tranzit)</label>
             </div>
           </div>
         </TabsContent>
