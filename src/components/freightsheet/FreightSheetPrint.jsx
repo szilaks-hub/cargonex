@@ -18,40 +18,145 @@ export default function FreightSheetPrint({ sheet, lines, onClose }) {
   const destCountryName = COUNTRY_NAMES[sheet.destination_country] || sheet.destination_country;
 
   const handlePrint = () => {
-    const printContent = document.getElementById("freight-print-doc").innerHTML;
-    const win = window.open("", "_blank", "width=900,height=700");
-    win.document.write(`
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <meta charset="utf-8"/>
-          <title>Fuvarköltség nyilatkozat</title>
-          <style>
-            * { box-sizing: border-box; margin: 0; padding: 0; }
-            body { font-family: Arial, sans-serif; font-size: 13px; color: #1e293b; background: white; padding: 24mm 20mm; }
-            h1 { font-size: 20px; font-weight: 700; }
-            h2 { font-size: 14px; font-weight: 700; margin-bottom: 8px; padding-bottom: 4px; border-bottom: 1px solid #e2e8f0; }
-            table { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 24px; }
-            th { text-align: left; padding: 6px 8px 6px 0; font-weight: 700; border-bottom: 2px solid #334155; }
-            th.right, td.right { text-align: right; }
-            td { padding: 6px 8px 6px 0; border-bottom: 1px solid #e2e8f0; }
-            tr:nth-child(even) td { background: #f8fafc; }
-            .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 40px; margin-bottom: 24px; }
-            .label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: #94a3b8; font-weight: 700; margin-bottom: 2px; }
-            .val { font-weight: 700; }
-            .decl { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 16px; margin-bottom: 24px; font-size: 12px; line-height: 1.6; white-space: pre-wrap; }
-            .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 2px solid #e2e8f0; }
-            .header-right { text-align: right; font-size: 12px; color: #64748b; }
-            img { max-height: 48px; object-fit: contain; margin-bottom: 8px; }
-            @media print { @page { margin: 15mm; } body { padding: 0; } }
-          </style>
-        </head>
-        <body>${printContent}</body>
-      </html>
-    `);
+    const logoUrl = sheet.sheet_logo_url || "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/user_695955de68183bcabeb8b12f/3e4f22a2f_CARGONEXv.png";
+    const fmt = (n) => Number(n || 0).toLocaleString("hu-HU", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const validityText = sheet.valid_until_revoked
+      ? "Jelen nyilatkozat visszavonásig érvényes."
+      : `Jelen nyilatkozat ${sheet.valid_from} – ${sheet.valid_to || "?"} között érvényes.`;
+
+    const tableRows = activeLines.map((line, i) => {
+      const load = line.load_tons || sheet.default_load_tons || 24;
+      const total = (line.domestic_leg || 0) + (line.foreign_leg || 0);
+      const eurPerTon = load > 0 ? total / load : 0;
+      const bg = i % 2 === 1 ? "#f8fafc" : "#ffffff";
+      const countyCell = isHU ? `<td style="padding:6px 8px 6px 0;border-bottom:1px solid #e2e8f0;background:${bg}">${line.destination_county || "—"}</td>` : "";
+      return `<tr>
+        ${countyCell}
+        <td style="padding:6px 8px 6px 0;border-bottom:1px solid #e2e8f0;background:${bg}">${line.destination_city || "—"}</td>
+        <td style="padding:6px 8px 6px 0;border-bottom:1px solid #e2e8f0;background:${bg};font-family:monospace">${line.destination_zip || "—"}</td>
+        <td style="padding:6px 8px 6px 0;border-bottom:1px solid #e2e8f0;background:${bg};text-align:right">${fmt(line.domestic_leg)} ${sheet.currency}</td>
+        <td style="padding:6px 8px 6px 0;border-bottom:1px solid #e2e8f0;background:${bg};text-align:right">${fmt(line.foreign_leg)} ${sheet.currency}</td>
+        <td style="padding:6px 8px 6px 0;border-bottom:1px solid #e2e8f0;background:${bg};text-align:right;font-weight:700">${fmt(total)} ${sheet.currency}</td>
+        <td style="padding:6px 8px 6px 0;border-bottom:1px solid #e2e8f0;background:${bg};text-align:right">${load} t</td>
+        <td style="padding:6px 8px 6px 0;border-bottom:1px solid #e2e8f0;background:${bg};text-align:right;font-weight:600">${fmt(eurPerTon)} ${sheet.currency}</td>
+      </tr>`;
+    }).join("");
+
+    const countyHeader = isHU ? `<th style="text-align:left;padding:7px 8px 7px 0;font-weight:700;border-bottom:2px solid #334155">Vármegye</th>` : "";
+
+    const html = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Fuvarköltség nyilatkozat</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: Arial, Helvetica, sans-serif; font-size: 13px; color: #1e293b; background: white; }
+    @media print { @page { margin: 15mm; } }
+    @media screen { body { padding: 20mm; } }
+  </style>
+</head>
+<body>
+  <!-- HEADER -->
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;padding-bottom:16px;border-bottom:2px solid #e2e8f0">
+    <div>
+      <img src="${logoUrl}" alt="Logo" style="max-height:56px;object-fit:contain;margin-bottom:10px;display:block"/>
+      <div style="font-size:20px;font-weight:700;color:#0f172a">Fuvarköltség nyilatkozat</div>
+      <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.1em;color:#94a3b8;margin-top:3px">Freight Cost Declaration</div>
+    </div>
+    <div style="text-align:right;font-size:12px;color:#64748b;line-height:1.7">
+      ${sheet.sheet_number ? `<div style="font-weight:700;font-size:14px;color:#1e293b">#${sheet.sheet_number}</div>` : ""}
+      <div>Kelt: ${today}</div>
+      <div style="font-weight:600;color:#475569;margin-top:4px">${sheet.currency}</div>
+    </div>
+  </div>
+
+  <!-- META GRID -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px 48px;margin-bottom:24px">
+    <div>
+      <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;font-weight:700;margin-bottom:3px">Fuvarozó / Carrier</div>
+      <div style="font-weight:700;color:#0f172a">${sheet.carrier_name || "—"}</div>
+    </div>
+    <div>
+      <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;font-weight:700;margin-bottom:3px">Célország / Destination</div>
+      <div style="font-weight:700;color:#0f172a">${destCountryName} (${sheet.destination_country})</div>
+    </div>
+    <div>
+      <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;font-weight:700;margin-bottom:3px">Feladó / Origin</div>
+      <div style="font-weight:700;color:#0f172a">${sheet.supplier_name || "—"}</div>
+      ${sheet.supplier_site_name ? `<div style="color:#475569">${sheet.supplier_site_name}</div>` : ""}
+      ${(sheet.origin_address || sheet.origin_city) ? `<div style="color:#475569">${[sheet.origin_address, sheet.origin_city, sheet.origin_country].filter(Boolean).join(", ")}</div>` : ""}
+    </div>
+    <div>
+      <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;font-weight:700;margin-bottom:3px">Érvényesség / Validity</div>
+      <div style="font-weight:700;color:#0f172a">${sheet.valid_from} → ${sheet.valid_until_revoked ? "visszavonásig" : (sheet.valid_to || "?")}</div>
+    </div>
+    <div>
+      <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;font-weight:700;margin-bottom:3px">Incoterms</div>
+      <div style="font-weight:700;color:#0f172a">${sheet.incoterms || "—"}</div>
+    </div>
+    <div>
+      <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;font-weight:700;margin-bottom:3px">Alap kiterhelés / Default Load</div>
+      <div style="font-weight:700;color:#0f172a">${sheet.default_load_tons} t</div>
+    </div>
+  </div>
+
+  <!-- DECLARATION -->
+  <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:12px 16px;margin-bottom:28px;font-size:12px;line-height:1.6;color:#334155">
+    ${getDeclarationText(sheet)}
+  </div>
+
+  <!-- TABLE HEADING -->
+  <div style="font-size:14px;font-weight:700;color:#334155;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid #e2e8f0">
+    Fuvardíj táblázat (${activeLines.length} lerakó)
+  </div>
+
+  <!-- TABLE -->
+  <table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:28px">
+    <thead>
+      <tr>
+        ${countyHeader}
+        <th style="text-align:left;padding:7px 8px 7px 0;font-weight:700;border-bottom:2px solid #334155">Város</th>
+        <th style="text-align:left;padding:7px 8px 7px 0;font-weight:700;border-bottom:2px solid #334155">ISZ</th>
+        <th style="text-align:right;padding:7px 8px 7px 0;font-weight:700;border-bottom:2px solid #334155">Belföld Határtól</th>
+        <th style="text-align:right;padding:7px 8px 7px 0;font-weight:700;border-bottom:2px solid #334155">Külföld Határig</th>
+        <th style="text-align:right;padding:7px 8px 7px 0;font-weight:700;border-bottom:2px solid #334155">Összesen</th>
+        <th style="text-align:right;padding:7px 8px 7px 0;font-weight:700;border-bottom:2px solid #334155">Kiterh. (t)</th>
+        <th style="text-align:right;padding:7px 8px 7px 0;font-weight:700;border-bottom:2px solid #334155">EUR/to</th>
+      </tr>
+    </thead>
+    <tbody>${tableRows}</tbody>
+  </table>
+
+  <!-- VALIDITY NOTE -->
+  <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;padding:10px 14px;margin-bottom:32px;font-size:12px;color:#475569">
+    ${validityText}
+  </div>
+
+  <!-- SIGNATURE -->
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0 32px;padding-top:20px;border-top:1px solid #e2e8f0;font-size:12px">
+    <div>
+      <div style="color:#94a3b8;margin-bottom:4px">Kelt / Date</div>
+      <div style="border-bottom:1px solid #94a3b8;padding-bottom:4px;min-height:28px">${today}</div>
+    </div>
+    <div>
+      <div style="color:#94a3b8;margin-bottom:4px">Helyszín / Place</div>
+      <div style="border-bottom:1px solid #94a3b8;padding-bottom:4px;min-height:28px"></div>
+    </div>
+    <div>
+      <div style="color:#94a3b8;margin-bottom:4px">Aláírás / Signature</div>
+      <div style="border-bottom:1px solid #94a3b8;padding-bottom:4px;min-height:28px"></div>
+      <div style="color:#94a3b8;margin-top:4px">Név / Cég:</div>
+    </div>
+  </div>
+</body>
+</html>`;
+
+    const win = window.open("", "_blank", "width=950,height=750");
+    win.document.write(html);
     win.document.close();
     win.focus();
-    setTimeout(() => { win.print(); }, 500);
+    setTimeout(() => { win.print(); }, 600);
   };
 
   return (
