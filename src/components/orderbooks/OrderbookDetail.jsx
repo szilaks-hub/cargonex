@@ -552,7 +552,17 @@ export default function OrderbookDetail({ orderId, onClose, onUpdated }) {
               <Button variant="outline" size="sm" onClick={() => setConfirmDialog({ action: 'reopen' })}>Reopen</Button>
             )}
           </div>
-        </div>
+          </div>{/* end left main content */}
+
+          {/* Right: Trucks Sidebar */}
+          <div className="w-80 flex-shrink-0">
+            <OrderbookTrucksSidebar
+              orderId={orderId}
+              orderNo={form.order_no}
+              isEditable={isOpen}
+            />
+          </div>
+        </div>{/* end flex row */}
       </Card>
 
       {/* Confirm Dialog */}
