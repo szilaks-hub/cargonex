@@ -55,7 +55,7 @@ export default function Layout({ children, currentPageName }) {
           <div className="flex items-center justify-between">
             <div className="flex-1 flex justify-center">
               <img
-                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/user_695955de68183bcabeb8b12f/3e4f22a2f_CARGONEXv.png"
+                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6995745b061c5cfec8978279/7ed19bd16_image.png"
                 alt="CARGONEX"
                 className="w-auto object-contain"
                 style={{ height: "240px" }}
