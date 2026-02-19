@@ -59,12 +59,19 @@ export default function OrderbookDetail({ orderId, onClose, onUpdated }) {
     queryFn: () => base44.entities.Partner.filter({ roles: 'customs_agent' }),
   });
 
-  // Initialize form from orderbook
+  // Initialize form from orderbook; also sync remote changes when not dirty
+  const [isDirty, setIsDirty] = useState(false);
+
   useEffect(() => {
-    if (orderbook && !form) {
-      setForm(orderbook);
+    if (orderbook) {
+      if (!form) {
+        setForm(orderbook);
+      } else if (!isDirty) {
+        // Silently sync remote changes when user hasn't made local edits
+        setForm(prev => ({ ...orderbook, ...Object.fromEntries(Object.entries(prev).filter(([k]) => isDirty)) }));
+      }
     }
-  }, [orderbook, form]);
+  }, [orderbook]);
 
   // Update lines when fetched
   useEffect(() => {
