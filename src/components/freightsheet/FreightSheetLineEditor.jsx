@@ -62,18 +62,28 @@ function DestinationFields({ form, set, isHU, inp, readonly = false }) {
   );
 }
 
-function LineRow({ line, defaultLoad, onSave, onDelete, onDuplicate, isHU, readonly = false }) {
+function LineRow({ line, defaultLoad, onSave, onDelete, onDuplicate, isHU, readonly = false, onDirtyChange }) {
   const [form, setForm] = useState({ ...line });
+  const [dirty, setDirty] = useState(false);
+
   const set = (k, v) => setForm(f => {
     const updated = { ...f, [k]: v };
     const { total_price, eur_per_ton } = calcTotals({ ...updated }, defaultLoad);
+    if (!dirty) { setDirty(true); onDirtyChange?.(line.id, true, { ...updated, total_price, eur_per_ton }); }
+    else { onDirtyChange?.(line.id, true, { ...updated, total_price, eur_per_ton }); }
     return { ...updated, total_price, eur_per_ton };
   });
 
-  const inp = "h-8 text-xs bg-white border-[#c6ccda] text-slate-800 px-2";
+  const handleSave = () => {
+    onSave(form);
+    setDirty(false);
+    onDirtyChange?.(line.id, false);
+  };
+
+  const inp = `h-8 text-xs px-2 ${dirty ? "bg-amber-50 border-amber-300 text-slate-800" : "bg-white border-[#c6ccda] text-slate-800"}`;
 
   return (
-    <tr className="border-b border-slate-100 hover:bg-slate-50">
+    <tr className={`border-b border-slate-100 hover:bg-slate-50 ${dirty ? "bg-amber-50/30" : ""}`}>
       <DestinationFields form={form} set={set} isHU={isHU} inp={inp} readonly={readonly} />
       <td className="px-2 py-1.5"><Input type="number" className={inp} value={form.domestic_leg || ""} onChange={e => set("domestic_leg", e.target.value)} placeholder="Határtól" readOnly={readonly} /></td>
       <td className="px-2 py-1.5"><Input type="number" className={inp} value={form.foreign_leg || ""} onChange={e => set("foreign_leg", e.target.value)} placeholder="Határig" readOnly={readonly} /></td>
@@ -87,9 +97,11 @@ function LineRow({ line, defaultLoad, onSave, onDelete, onDuplicate, isHU, reado
         <div className="flex gap-1 items-center">
           {!readonly && (
             <>
-              <button onClick={() => onSave(form)} className="text-blue-500 hover:text-blue-700" title="Save"><Save className="w-3.5 h-3.5" /></button>
-              <button onClick={() => onDuplicate(form)} className="text-slate-400 hover:text-indigo-600" title="Duplicate"><Copy className="w-3.5 h-3.5" /></button>
-              <button onClick={() => onDelete(line.id)} className="text-red-400 hover:text-red-600" title="Delete"><Trash2 className="w-3.5 h-3.5" /></button>
+              <button onClick={handleSave} className={dirty ? "text-amber-500 hover:text-amber-700" : "text-blue-400 hover:text-blue-600"} title="Mentés">
+                <Save className="w-3.5 h-3.5" />
+              </button>
+              <button onClick={() => onDuplicate(form)} className="text-slate-400 hover:text-indigo-600" title="Másolás"><Copy className="w-3.5 h-3.5" /></button>
+              <button onClick={() => onDelete(line.id)} className="text-red-400 hover:text-red-600" title="Törlés"><Trash2 className="w-3.5 h-3.5" /></button>
             </>
           )}
         </div>
