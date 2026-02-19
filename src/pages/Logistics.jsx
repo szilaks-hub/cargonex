@@ -14,41 +14,24 @@ import { toast } from "sonner";
 const STATUS_TABS = [
   { key: "all", label: "Összes" },
   { key: "booked", label: "Előjegyzett" },
-  { key: "scheduled", label: "Ütemezett" },
   { key: "loaded", label: "Megrakott" },
-  { key: "in_transit", label: "Úton" },
-  { key: "customs", label: "Vámon" },
-  { key: "transit", label: "TR" },
   { key: "arrived_onsite", label: "Telephelyi" },
-  { key: "arrived_offsite", label: "Off-site" },
   { key: "closed", label: "Lezárt" },
   { key: "cancelled", label: "Törölve" },
 ];
 
 const STATUS_LABELS = {
   booked: "Előjegyzett",
-  scheduled: "Ütemezett",
   loaded: "Megrakott",
-  in_transit: "Úton",
-  customs: "Vámon",
-  transit: "TR",
-  arrived: "Érkezett",
   arrived_onsite: "Telephelyi",
-  arrived_offsite: "Off-site",
   closed: "Lezárt",
   cancelled: "Törölve",
 };
 
 const STATUS_COLORS = {
   booked: "bg-slate-100 text-slate-700",
-  scheduled: "bg-blue-100 text-blue-800",
   loaded: "bg-amber-100 text-amber-800",
-  in_transit: "bg-purple-100 text-purple-800",
-  customs: "bg-orange-100 text-orange-800",
-  transit: "bg-cyan-100 text-cyan-800",
-  arrived: "bg-emerald-100 text-emerald-800",
   arrived_onsite: "bg-emerald-100 text-emerald-900",
-  arrived_offsite: "bg-teal-100 text-teal-800",
   closed: "bg-green-100 text-green-800",
   cancelled: "bg-red-100 text-red-800",
 };
