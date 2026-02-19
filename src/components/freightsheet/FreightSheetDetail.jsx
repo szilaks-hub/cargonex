@@ -67,6 +67,23 @@ export default function FreightSheetDetail({ sheet, onBack, onUpdated, user }) {
     setArchiving(false);
   };
 
+  const handleDelete = async () => {
+    if (!window.confirm("Biztosan törlöd ezt a fuvarozási lapot? Ez a művelet nem vonható vissza.")) return;
+    setDeleting(true);
+    const res = await base44.functions.invoke("deleteOrArchiveEntity", {
+      entityName: "FreightSheet",
+      entityId: currentSheet.id,
+      requestedAction: "HARD_DELETE"
+    });
+    setDeleting(false);
+    if (res.data?.success) {
+      qc.invalidateQueries({ queryKey: ["freightSheets"] });
+      onBack();
+    } else {
+      alert(res.data?.message || "Törlés sikertelen.");
+    }
+  };
+
   // Create new version: archive old → create new draft with same data
   const handleNewVersion = async () => {
     await base44.entities.FreightSheet.update(currentSheet.id, { status: "archived" });
