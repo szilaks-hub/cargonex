@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useCallback } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Plus, Trash2, Save, Copy } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Plus, Trash2, Save, Copy, CheckCircle2 } from "lucide-react";
 import HuLocationSearch from "@/components/ui/HuLocationSearch";
 
 function calcTotals(form, defaultLoad) {
