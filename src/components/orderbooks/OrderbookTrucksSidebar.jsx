@@ -42,6 +42,7 @@ export default function OrderbookTrucksSidebar({ orderId, orderNo }) {
     queryKey: ["orderbook-trucks", orderId],
     queryFn: () => base44.entities.Truck.filter({ orderbook_id: orderId }, "-created_date"),
     enabled: !!orderId,
+    refetchInterval: 10000,
   });
 
   const totalPlanned = trucks.reduce((s, t) => s + (t.planned_quantity_tons || 0), 0);
