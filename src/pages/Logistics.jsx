@@ -46,6 +46,7 @@ export default function Logistics() {
   const { data: trucks = [], isLoading } = useQuery({
     queryKey: ["trucks"],
     queryFn: () => base44.entities.Truck.list("-created_date"),
+    refetchInterval: 10000,
   });
 
   const handleAdvanceStatus = async (truck, newStatus) => {
