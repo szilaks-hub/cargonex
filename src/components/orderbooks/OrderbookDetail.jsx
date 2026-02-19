@@ -267,7 +267,9 @@ export default function OrderbookDetail({ orderId, onClose, onUpdated }) {
           </div>
         </div>
 
-        <div className="p-6 space-y-6">
+        <div className="p-6 flex gap-6">
+          {/* Left: main content */}
+          <div className="flex-1 min-w-0 space-y-6">
           {/* Header Section */}
           <div className="space-y-4 p-4 bg-slate-50 rounded-lg border border-slate-200">
             <h3 className="font-semibold text-slate-800">Order Details</h3>
