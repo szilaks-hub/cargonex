@@ -54,6 +54,11 @@ export default function Logistics() {
     toast.success(`Státusz: ${STATUS_LABELS[newStatus] || newStatus}`);
   };
 
+  const handleToggleTransit = async (truck) => {
+    await base44.entities.Truck.update(truck.id, { transit: !truck.transit });
+    qc.invalidateQueries({ queryKey: ["trucks"] });
+  };
+
   const filteredTrucks = activeTab === "all"
     ? trucks
     : trucks.filter(t => t.status === activeTab);
