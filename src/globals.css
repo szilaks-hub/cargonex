@@ -92,24 +92,22 @@ body {
 
 /* ── GLASS CARD UTILITY ──────────────────────────────────── */
 .cx-glass {
-  background: var(--cx-surface);
-  border: 1px solid var(--cx-border);
-  border-radius: 14px;
+  background: rgba(22,26,40,0.95);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 16px;
   box-shadow: var(--cx-shadow);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
 }
 
-/* White cards inside glass containers */
+/* Override white to dark surface */
 .bg-white {
-  background: rgba(255,255,255,0.92) !important;
+  background: rgba(22,26,40,0.98) !important;
 }
 
 /* ── TABLE WRAP ──────────────────────────────────────────── */
 .cx-table-wrap {
-  background: rgba(255,255,255,0.88);
-  border: 1px solid var(--cx-border-solid);
-  border-radius: 12px;
+  background: rgba(18,22,34,0.98);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 14px;
   box-shadow: var(--cx-shadow);
   overflow: hidden;
 }
