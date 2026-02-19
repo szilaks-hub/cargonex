@@ -166,7 +166,7 @@ export default function Dashboard() {
               </div>
             </>
           ) : (
-            <div className="h-[240px] flex items-center justify-center text-sm" style={{ color: "#8896aa" }}>
+            <div className="h-[240px] flex items-center justify-center text-sm text-slate-400">
               Nincs adat
             </div>
           )}
