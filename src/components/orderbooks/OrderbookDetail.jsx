@@ -278,6 +278,18 @@ export default function OrderbookDetail({ orderId, onClose, onUpdated }) {
           {/* Header Section */}
           <div className="space-y-4 p-4 bg-slate-50 rounded-lg border border-slate-200">
             <h3 className="font-semibold text-slate-800">Order Details</h3>
+
+            {/* Supplier Order Number */}
+            <div>
+              <label className="text-xs font-medium text-slate-600 mb-1 block">Beszállítói rendelésszám *</label>
+              <Input
+                placeholder="pl. SZ-2024-001 (a beszállító saját száma)"
+                value={form.supplier_order_no || ""}
+                onChange={(e) => handleFormChange({ supplier_order_no: e.target.value })}
+                disabled={!isEditable}
+                className={`font-semibold ${!isEditable ? 'bg-slate-100 text-slate-600' : 'bg-white'}`}
+              />
+            </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Supplier */}
