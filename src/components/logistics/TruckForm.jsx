@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { X, Save, Trash2, Package, Truck, MapPin, ShieldCheck } from "lucide-react";
+import TruckItemsEditor from "./TruckItemsEditor";
 
 const STATUS_LABELS = {
   booked: "Előjegyzett",
