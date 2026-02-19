@@ -10,12 +10,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Map, List } from "lucide-react";
 import { toast } from "sonner";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const STATUS_TABS = [
   { key: "all", label: "Összes" },
   { key: "booked", label: "Előjegyzett" },
   { key: "loaded", label: "Megrakott" },
-  { key: "arrived_onsite", label: "Telephelyi" },
   { key: "closed", label: "Lezárt" },
   { key: "cancelled", label: "Törölve" },
 ];
@@ -23,7 +23,6 @@ const STATUS_TABS = [
 const STATUS_LABELS = {
   booked: "Előjegyzett",
   loaded: "Megrakott",
-  arrived_onsite: "Telephelyi",
   closed: "Lezárt",
   cancelled: "Törölve",
 };
@@ -31,7 +30,6 @@ const STATUS_LABELS = {
 const STATUS_COLORS = {
   booked: "bg-slate-100 text-slate-700",
   loaded: "bg-amber-100 text-amber-800",
-  arrived_onsite: "bg-emerald-100 text-emerald-900",
   closed: "bg-green-100 text-green-800",
   cancelled: "bg-red-100 text-red-800",
 };
