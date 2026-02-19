@@ -141,8 +141,8 @@ export default function Dashboard() {
 
         {/* Carrier breakdown */}
         <div className="p-5 rounded-2xl" style={cardStyle}>
-          <h3 className="text-xs font-semibold uppercase tracking-widest mb-5" style={{ color: "#8896aa" }}>
-            Carrier Breakdown / Fuvarozó bontás
+          <h3 className="text-xs font-semibold uppercase tracking-widest mb-5 text-slate-500">
+           Carrier Breakdown / Fuvarozó bontás
           </h3>
           {carrierData.length > 0 ? (
             <>
