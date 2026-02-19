@@ -230,8 +230,8 @@ export default function FreightSheetDetail({ sheet, onBack, onUpdated, user }) {
          {currentSheet.notes && <div><span className="text-slate-400 text-xs">Megjegyzés</span><div className="font-semibold text-slate-700">{currentSheet.notes}</div></div>}
        </div>
 
-       {/* Logo upload section (Draft only) */}
-       {isDraft && (
+       {/* Logo section — always visible if logo exists or in draft */}
+       {(isDraft || currentSheet.sheet_logo_url) && (
          <LogoUpload
            sheetId={currentSheet.id}
            currentLogoUrl={currentSheet.sheet_logo_url}
