@@ -76,8 +76,8 @@ export default function Dashboard() {
     <div className="space-y-6">
       {/* Page title */}
       <div>
-        <h1 className="text-2xl font-bold" style={{ color: "#eef2ff" }}>Delivery Tracking Overview</h1>
-        <p className="text-sm mt-0.5" style={{ color: "#8896aa" }}>Logistics management & shipment overview — CARGONEX</p>
+        <h1 className="text-2xl font-bold text-slate-800">Delivery Tracking Overview</h1>
+        <p className="text-sm mt-0.5 text-slate-500">Logistics management & shipment overview — CARGONEX</p>
       </div>
 
       {/* Stats grid */}
