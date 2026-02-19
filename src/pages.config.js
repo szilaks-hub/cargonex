@@ -51,10 +51,10 @@ import Dashboard from './pages/Dashboard';
 import Finance from './pages/Finance';
 import FreightRates from './pages/FreightRates';
 import FreightSheets from './pages/FreightSheets';
+import Logistics from './pages/Logistics';
 import Orderbooks from './pages/Orderbooks';
 import Partners from './pages/Partners';
 import Products from './pages/Products';
-import Logistics from './pages/Logistics';
 import __Layout from './Layout.jsx';
 
 
@@ -63,10 +63,10 @@ export const PAGES = {
     "Finance": Finance,
     "FreightRates": FreightRates,
     "FreightSheets": FreightSheets,
+    "Logistics": Logistics,
     "Orderbooks": Orderbooks,
     "Partners": Partners,
     "Products": Products,
-    "Logistics": Logistics,
 }
 
 export const pagesConfig = {
