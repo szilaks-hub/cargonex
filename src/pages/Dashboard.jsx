@@ -128,7 +128,7 @@ export default function Dashboard() {
               <BarChart data={countryData} barCategoryGap="35%">
                 <XAxis dataKey="name" tick={{ fill: "#8896aa", fontSize: 11 }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fill: "#8896aa", fontSize: 11 }} axisLine={false} tickLine={false} />
-                <Tooltip content={<CustomTooltip />} cursor={{ fill: "rgba(200,241,53,0.05)" }} />
+                <Tooltip content={<CustomTooltip />} cursor={{ fill: "rgba(59,108,244,0.06)" }} />
                 <Bar dataKey="value" fill="#3B6CF4" radius={[6, 6, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
