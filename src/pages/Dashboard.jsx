@@ -65,80 +65,108 @@ export default function Dashboard() {
     return null;
   };
 
+  const cardStyle = {
+    background: "rgba(22,26,40,0.95)",
+    border: "1px solid rgba(255,255,255,0.07)",
+    borderRadius: "16px",
+  };
+
   return (
     <div className="space-y-6">
+      {/* Page title */}
+      <div>
+        <h1 className="text-2xl font-bold" style={{ color: "#eef2ff" }}>Delivery Tracking Overview</h1>
+        <p className="text-sm mt-0.5" style={{ color: "#8896aa" }}>Logistics management & shipment overview — CARGONEX</p>
+      </div>
+
       {/* Stats grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-        <StatCard title="Open Trucks / Nyitott" value={openTrucks.length} icon={Truck} color="blue" />
-        <StatCard title="Loaded + Customs / Vámra vár" value={loadedWaiting.length} icon={ShieldCheck} color="orange" />
-        <StatCard title="Closed This Month / Lezárt" value={thisMonth.length} icon={Package} color="green" />
-        <StatCard title="Partners / Partnerek" value={partners.length} icon={Users} color="steel" />
-        <StatCard
-          title="Customs Value / Vámérték (month)"
-          value={totalCustomsValue.toLocaleString("hu-HU", { style: "currency", currency: "EUR", maximumFractionDigits: 0 })}
-          icon={DollarSign}
-          color="blue"
-        />
-        <StatCard
-          title="Total Freight / Fuvardíj (month)"
-          value={totalFreight.toLocaleString("hu-HU", { style: "currency", currency: "EUR", maximumFractionDigits: 0 })}
-          icon={MapPin}
-          color="red"
-        />
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+        {[
+          { label: "Nyitott fuvar", value: openTrucks.length, icon: Truck, accent: "#4f8ef7" },
+          { label: "Vámra vár", value: loadedWaiting.length, icon: ShieldCheck, accent: "#f59e0b" },
+          { label: "Lezárt (hó)", value: thisMonth.length, icon: Package, accent: "#c8f135" },
+          { label: "Partnerek", value: partners.length, icon: Users, accent: "#8b5cf6" },
+          {
+            label: "Vámérték (hó)",
+            value: totalCustomsValue > 0
+              ? (totalCustomsValue / 1000).toFixed(1) + "k €"
+              : "—",
+            icon: DollarSign,
+            accent: "#4f8ef7"
+          },
+          {
+            label: "Fuvardíj (hó)",
+            value: totalFreight > 0
+              ? (totalFreight / 1000).toFixed(1) + "k €"
+              : "—",
+            icon: MapPin,
+            accent: "#e05a2b"
+          },
+        ].map((s, i) => (
+          <div key={i} className="p-4 rounded-2xl flex flex-col gap-3" style={cardStyle}>
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-medium" style={{ color: "#8896aa" }}>{s.label}</span>
+              <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: s.accent + "22" }}>
+                <s.icon className="w-4 h-4" style={{ color: s.accent }} />
+              </div>
+            </div>
+            <div className="text-2xl font-bold" style={{ color: "#eef2ff" }}>{s.value}</div>
+          </div>
+        ))}
       </div>
 
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Country breakdown */}
-        <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
-          <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-4">
+        <div className="p-5 rounded-2xl" style={cardStyle}>
+          <h3 className="text-xs font-semibold uppercase tracking-widest mb-5" style={{ color: "#8896aa" }}>
             Country Breakdown / Ország bontás
           </h3>
           {countryData.length > 0 ? (
-            <ResponsiveContainer width="100%" height={250}>
-              <BarChart data={countryData}>
-                <XAxis dataKey="name" tick={{ fill: "#94a3b8", fontSize: 11 }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fill: "#94a3b8", fontSize: 11 }} axisLine={false} tickLine={false} />
-                <Tooltip content={<CustomTooltip />} />
-                <Bar dataKey="value" fill="#2563eb" radius={[4, 4, 0, 0]} />
+            <ResponsiveContainer width="100%" height={240}>
+              <BarChart data={countryData} barCategoryGap="35%">
+                <XAxis dataKey="name" tick={{ fill: "#8896aa", fontSize: 11 }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fill: "#8896aa", fontSize: 11 }} axisLine={false} tickLine={false} />
+                <Tooltip content={<CustomTooltip />} cursor={{ fill: "rgba(200,241,53,0.05)" }} />
+                <Bar dataKey="value" fill="#c8f135" radius={[6, 6, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           ) : (
-            <div className="h-[250px] flex items-center justify-center text-slate-400 text-sm">
-              No data / Nincs adat
+            <div className="h-[240px] flex items-center justify-center text-sm" style={{ color: "#8896aa" }}>
+              Nincs adat
             </div>
           )}
         </div>
 
         {/* Carrier breakdown */}
-        <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
-          <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-4">
+        <div className="p-5 rounded-2xl" style={cardStyle}>
+          <h3 className="text-xs font-semibold uppercase tracking-widest mb-5" style={{ color: "#8896aa" }}>
             Carrier Breakdown / Fuvarozó bontás
           </h3>
           {carrierData.length > 0 ? (
-            <ResponsiveContainer width="100%" height={250}>
-              <PieChart>
-                <Pie data={carrierData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={90} strokeWidth={2} stroke="#fff">
-                  {carrierData.map((_, i) => (
-                    <Cell key={i} fill={COLORS[i % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip content={<CustomTooltip />} />
-              </PieChart>
-            </ResponsiveContainer>
+            <>
+              <ResponsiveContainer width="100%" height={200}>
+                <PieChart>
+                  <Pie data={carrierData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={85} innerRadius={45} strokeWidth={0}>
+                    {carrierData.map((_, i) => (
+                      <Cell key={i} fill={COLORS[i % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip content={<CustomTooltip />} />
+                </PieChart>
+              </ResponsiveContainer>
+              <div className="flex flex-wrap gap-3 mt-3">
+                {carrierData.map((c, i) => (
+                  <div key={c.name} className="flex items-center gap-1.5 text-xs" style={{ color: "#8896aa" }}>
+                    <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: COLORS[i % COLORS.length] }} />
+                    {c.name}
+                  </div>
+                ))}
+              </div>
+            </>
           ) : (
-            <div className="h-[250px] flex items-center justify-center text-slate-400 text-sm">
-              No data / Nincs adat
-            </div>
-          )}
-          {carrierData.length > 0 && (
-            <div className="flex flex-wrap gap-3 mt-3">
-              {carrierData.map((c, i) => (
-                <div key={c.name} className="flex items-center gap-1.5 text-xs text-slate-500">
-                  <div className="w-2 h-2 rounded-full" style={{ backgroundColor: COLORS[i % COLORS.length] }} />
-                  {c.name}
-                </div>
-              ))}
+            <div className="h-[240px] flex items-center justify-center text-sm" style={{ color: "#8896aa" }}>
+              Nincs adat
             </div>
           )}
         </div>
