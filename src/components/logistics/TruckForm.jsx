@@ -62,32 +62,17 @@ export default function TruckForm({ item, onClose, onSaved, defaultOrderbookId, 
 
   const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
 
-  // Auto-fill customs agent from orderbook
+  // Auto-fill customs agent + fee from orderbook (on load for existing items too)
   useEffect(() => {
-    if (!item && form.orderbook_id) {
+    if (form.orderbook_id && orderbooks.length > 0) {
       const ob = orderbooks.find(o => o.id === form.orderbook_id);
-      if (ob && ob.customs_required && ob.customs_agent_id) {
+      if (ob && ob.customs_required && ob.customs_agent_id && !form.customs_agent_id) {
         set("customs_agent_id", ob.customs_agent_id);
         set("customs_agent_name", ob.customs_agent_name || "");
-        // Also fill loading location from supplier site
-        if (ob.supplier_site_id) {
-          const loc = locations.find(l => l.id === ob.supplier_site_id);
-          if (loc) {
-            set("loading_location_id", loc.id);
-            set("loading_location_name", `${loc.partner_name || ""} - ${loc.location_name}`);
-          }
-        }
+        if (ob.customs_fee_eur_per_truck) set("customs_agent_fee", ob.customs_fee_eur_per_truck);
       }
     }
   }, [form.orderbook_id, orderbooks]);
-
-  // Auto-fill customs fee from agent
-  useEffect(() => {
-    if (form.customs_agent_id) {
-      const fee = agentFees.find((f) => f.partner_id === form.customs_agent_id && f.status === "active");
-      if (fee) set("customs_agent_fee", fee.fee_per_truck);
-    }
-  }, [form.customs_agent_id]);
 
   // Auto-fill freight when carrier + sheet line selected
   useEffect(() => {
