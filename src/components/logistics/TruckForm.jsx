@@ -162,14 +162,14 @@ export default function TruckForm({ item, onClose, onSaved, defaultOrderbookId, 
           <Input type="number" className={inp} value={form.domestic_freight} onChange={(e) => set("domestic_freight", e.target.value)} />
         </div>
         <div>
-          <Label className={lbl}>Purchase Order</Label>
-          <Select value={form.order_id} onValueChange={(v) => {
-            const o = orders.find((o) => o.id === v);
-            set("order_id", v); set("order_number", o?.order_number || `PO-${v?.slice(0, 6)}`);
+          <Label className={lbl}>Orderbook (Rendelés) *</Label>
+          <Select value={form.orderbook_id} onValueChange={(v) => {
+            const o = orderbooks.find((o) => o.id === v);
+            set("orderbook_id", v); set("orderbook_no", o?.order_no || "");
           }}>
-            <SelectTrigger className={inp}><SelectValue placeholder="Select..." /></SelectTrigger>
+            <SelectTrigger className={inp}><SelectValue placeholder="Válassz rendelést..." /></SelectTrigger>
             <SelectContent className="bg-white border-[#c6ccda]">
-              {orders.map((o) => <SelectItem key={o.id} value={o.id}>{o.order_number || `PO-${o.id?.slice(0, 6)}`} - {o.supplier_name}</SelectItem>)}
+              {orderbooks.map((o) => <SelectItem key={o.id} value={o.id}>{o.order_no || o.id?.slice(0, 8)} – {o.supplier_name}</SelectItem>)}
             </SelectContent>
           </Select>
         </div>
