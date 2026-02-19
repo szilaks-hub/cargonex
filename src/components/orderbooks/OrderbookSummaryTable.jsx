@@ -3,58 +3,52 @@ import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
 
-const fmt = (n) =>
+const fmtTon = (n) =>
   typeof n === "number"
     ? n.toLocaleString("hu-HU", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-    : "—";
+    : "0,00";
 
-const fmtEur = (n, currency = "EUR") =>
+const fmtVal = (n, currency = "EUR") =>
   typeof n === "number"
     ? `${n.toLocaleString("hu-HU", { minimumFractionDigits: 0, maximumFractionDigits: 0 })} ${currency}`
-    : `— ${currency}`;
+    : `0 ${currency}`;
+
+// Active statuses = planned/booked not yet closed or cancelled
+const ACTIVE_STATUSES = ["booked", "scheduled", "loaded", "in_transit", "customs", "transit", "arrived", "arrived_onsite", "arrived_offsite"];
 
 export default function OrderbookSummaryTable({ lines, orderbookId, currency = "EUR" }) {
   const { data: trucks = [] } = useQuery({
     queryKey: ["orderbook-trucks", orderbookId],
     queryFn: () => base44.entities.Truck.filter({ orderbook_id: orderbookId }, "-created_date"),
     enabled: !!orderbookId,
-    refetchInterval: 10000,
+    refetchInterval: 5000,
   });
 
-  // Closed trucks: actual weight
+  // Trucks in active statuses (booked, loaded, in transit etc.) - planned quantity
+  const activeTrucks = trucks.filter((t) => ACTIVE_STATUSES.includes(t.status));
   const closedTrucks = trucks.filter((t) => t.status === "closed");
-  const totalDelivered = closedTrucks.reduce(
-    (s, t) => s + (t.actual_weight_tons || t.planned_quantity_tons || 0),
-    0
-  );
 
-  // Totals from order lines
+  // Total planned (active, not yet closed)
+  const totalActivePlanned = activeTrucks.reduce((s, t) => s + (t.planned_quantity_tons || 0), 0);
+  // Total delivered (closed, actual weight or planned fallback)
+  const totalDelivered = closedTrucks.reduce((s, t) => s + (t.actual_weight_tons || t.planned_quantity_tons || 0), 0);
+
+  // Order totals from lines
   const totalOrdered = lines.reduce((s, l) => s + (l.planned_quantity_tons || 0), 0);
   const totalOrderValue = lines.reduce((s, l) => s + (l.line_value_eur || 0), 0);
-
-  // Planned allocated = sum of allocated_quantity_tons on lines (kept up-to-date by automation)
-  const totalPlannedAllocated = lines.reduce((s, l) => s + (l.allocated_quantity_tons || 0), 0);
-
-  // Average price/ton (weighted)
   const avgPrice = totalOrdered > 0 ? totalOrderValue / totalOrdered : 0;
 
-  // Invoice value = delivered tons × price per line
-  const totalInvoiceValue = lines.reduce((s, l) => {
-    // Approximate per-line delivered as proportional to allocated
-    const deliveredForLine = totalOrdered > 0
-      ? totalDelivered * ((l.planned_quantity_tons || 0) / totalOrdered)
-      : 0;
-    return s + deliveredForLine * (l.unit_price_eur_per_ton || 0);
-  }, 0);
+  // Free = ordered - active planned - delivered
+  const totalFree = Math.max(0, totalOrdered - totalActivePlanned - totalDelivered);
 
-  // Free = ordered - planned allocated (allocated already includes delivered)
-  const totalFree = Math.max(0, totalOrdered - totalPlannedAllocated);
+  // Invoice value = closed trucks * avg price (or per line)
+  const totalInvoiceValue = totalDelivered * avgPrice;
+  const totalActivePlannedValue = totalActivePlanned * avgPrice;
   const totalFreeValue = totalFree * avgPrice;
-  const totalPlannedValue = totalPlannedAllocated * avgPrice;
 
   return (
     <Card className="overflow-hidden border-blue-200">
-      {/* Title bar */}
+      {/* Header */}
       <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-4 py-2.5">
         <h3 className="font-semibold text-white text-sm">Összesítő / Summary</h3>
       </div>
@@ -78,41 +72,31 @@ export default function OrderbookSummaryTable({ lines, orderbookId, currency = "
             </thead>
             <tbody>
               {lines.map((line) => {
-                const allocated = line.allocated_quantity_tons || 0;
-                const free = Math.max(0, (line.planned_quantity_tons || 0) - allocated);
-                // Estimate per-line delivered proportionally
-                const deliveredLine = totalOrdered > 0
-                  ? totalDelivered * ((line.planned_quantity_tons || 0) / totalOrdered)
-                  : 0;
-                const invoiceLine = deliveredLine * (line.unit_price_eur_per_ton || 0);
-                const plannedValue = allocated * (line.unit_price_eur_per_ton || 0);
-                const orderValue = (line.planned_quantity_tons || 0) * (line.unit_price_eur_per_ton || 0);
+                const price = line.unit_price_eur_per_ton || 0;
+                const ordered = line.planned_quantity_tons || 0;
+                const orderValue = ordered * price;
+
+                // Per-line: proportional share of trucks
+                const share = totalOrdered > 0 ? ordered / totalOrdered : 0;
+                const linePlanned = totalActivePlanned * share;
+                const lineDelivered = totalDelivered * share;
+                const lineFree = Math.max(0, ordered - linePlanned - lineDelivered);
+                const linePlannedValue = linePlanned * price;
+                const lineInvoice = lineDelivered * price;
 
                 return (
                   <tr key={line.id} className="border-b hover:bg-slate-50">
                     <td className="px-3 py-2 font-medium text-slate-800">{line.category_name}</td>
-                    <td className="px-3 py-2 text-right text-slate-700">{fmt(line.planned_quantity_tons)}</td>
-                    <td className="px-3 py-2 text-right font-semibold text-slate-800">
-                      {fmtEur(orderValue, currency)}
+                    <td className="px-3 py-2 text-right text-slate-700">{fmtTon(ordered)}</td>
+                    <td className="px-3 py-2 text-right font-semibold text-slate-800">{fmtVal(orderValue, currency)}</td>
+                    <td className="px-3 py-2 text-right text-slate-500">{fmtVal(price, currency)}</td>
+                    <td className="px-3 py-2 text-right font-semibold text-amber-700">{fmtTon(linePlanned)}</td>
+                    <td className="px-3 py-2 text-right text-amber-700">{fmtVal(linePlannedValue, currency)}</td>
+                    <td className={`px-3 py-2 text-right font-semibold ${lineFree > 0 ? "text-emerald-700" : "text-slate-400"}`}>
+                      {fmtTon(lineFree)}
                     </td>
-                    <td className="px-3 py-2 text-right text-slate-500">
-                      {fmtEur(line.unit_price_eur_per_ton, currency)}
-                    </td>
-                    <td className="px-3 py-2 text-right text-amber-700 font-semibold">
-                      {fmt(allocated)}
-                    </td>
-                    <td className="px-3 py-2 text-right text-amber-700">
-                      {fmtEur(plannedValue, currency)}
-                    </td>
-                    <td className={`px-3 py-2 text-right font-semibold ${free > 0 ? "text-emerald-700" : "text-slate-400"}`}>
-                      {fmt(free)}
-                    </td>
-                    <td className="px-3 py-2 text-right text-blue-700 font-semibold">
-                      {fmt(deliveredLine)}
-                    </td>
-                    <td className="px-3 py-2 text-right font-bold text-blue-800">
-                      {fmtEur(invoiceLine, currency)}
-                    </td>
+                    <td className="px-3 py-2 text-right text-blue-700 font-semibold">{fmtTon(lineDelivered)}</td>
+                    <td className="px-3 py-2 text-right font-bold text-blue-800">{fmtVal(lineInvoice, currency)}</td>
                   </tr>
                 );
               })}
@@ -120,16 +104,16 @@ export default function OrderbookSummaryTable({ lines, orderbookId, currency = "
             <tfoot>
               <tr className="bg-slate-50 font-bold text-slate-800 border-t-2 border-slate-300">
                 <td className="px-3 py-2.5 text-xs">ÖSSZESEN</td>
-                <td className="px-3 py-2.5 text-right text-xs">{fmt(totalOrdered)} t</td>
-                <td className="px-3 py-2.5 text-right text-xs">{fmtEur(totalOrderValue, currency)}</td>
+                <td className="px-3 py-2.5 text-right text-xs">{fmtTon(totalOrdered)} t</td>
+                <td className="px-3 py-2.5 text-right text-xs">{fmtVal(totalOrderValue, currency)}</td>
                 <td className="px-3 py-2.5 text-right text-xs text-slate-400">—</td>
-                <td className="px-3 py-2.5 text-right text-xs text-amber-700">{fmt(totalPlannedAllocated)} t</td>
-                <td className="px-3 py-2.5 text-right text-xs text-amber-700">{fmtEur(totalPlannedValue, currency)}</td>
+                <td className="px-3 py-2.5 text-right text-xs text-amber-700">{fmtTon(totalActivePlanned)} t</td>
+                <td className="px-3 py-2.5 text-right text-xs text-amber-700">{fmtVal(totalActivePlannedValue, currency)}</td>
                 <td className={`px-3 py-2.5 text-right text-xs ${totalFree > 0 ? "text-emerald-700" : "text-slate-400"}`}>
-                  {fmt(totalFree)} t
+                  {fmtTon(totalFree)} t
                 </td>
-                <td className="px-3 py-2.5 text-right text-xs text-blue-700">{fmt(totalDelivered)} t</td>
-                <td className="px-3 py-2.5 text-right text-xs text-blue-800">{fmtEur(totalInvoiceValue, currency)}</td>
+                <td className="px-3 py-2.5 text-right text-xs text-blue-700">{fmtTon(totalDelivered)} t</td>
+                <td className="px-3 py-2.5 text-right text-xs text-blue-800">{fmtVal(totalInvoiceValue, currency)}</td>
               </tr>
             </tfoot>
           </table>
@@ -140,29 +124,29 @@ export default function OrderbookSummaryTable({ lines, orderbookId, currency = "
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-0 border-t">
         <SummaryBox
           label="Teljes rendelt érték"
-          value={fmtEur(totalOrderValue, currency)}
-          sub={`${fmt(totalOrdered)} t`}
+          value={fmtVal(totalOrderValue, currency)}
+          sub={`${fmtTon(totalOrdered)} t`}
           color="text-slate-900"
           bg="bg-white"
         />
         <SummaryBox
           label="Tervezett rakodáson"
-          value={fmtEur(totalPlannedValue, currency)}
-          sub={`${fmt(totalPlannedAllocated)} t`}
+          value={fmtVal(totalActivePlannedValue, currency)}
+          sub={`${fmtTon(totalActivePlanned)} t`}
           color="text-amber-700"
           bg="bg-amber-50"
         />
         <SummaryBox
           label="Szabad (fogható)"
-          value={fmtEur(totalFreeValue, currency)}
-          sub={`${fmt(totalFree)} t`}
+          value={fmtVal(totalFreeValue, currency)}
+          sub={`${fmtTon(totalFree)} t`}
           color={totalFree > 0 ? "text-emerald-700" : "text-slate-400"}
           bg="bg-emerald-50"
         />
         <SummaryBox
           label="Számla végösszeg"
-          value={fmtEur(totalInvoiceValue, currency)}
-          sub={`${fmt(totalDelivered)} t szállítva`}
+          value={fmtVal(totalInvoiceValue, currency)}
+          sub={`${fmtTon(totalDelivered)} t szállítva`}
           color="text-blue-700"
           bg="bg-blue-50"
         />
