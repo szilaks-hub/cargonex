@@ -218,6 +218,11 @@ export default function TruckForm({ item, onClose, onSaved, defaultOrderbookId, 
                 set("product_id", v);
                 set("product_name", [cat?.name_en || cat?.name_hu, p?.diameter ? `Ø${p.diameter}` : "", p?.factory_code || ""].filter(Boolean).join(" "));
                 set("hs_code", p?.hs_code || "");
+                // Auto-fill price from orderbook line matching the product's category
+                if (form.orderbook_id) {
+                  const matchLine = orderbookLines.find(l => l.category_id === p?.category_id);
+                  if (matchLine?.unit_price_eur_per_ton) set("purchase_price", matchLine.unit_price_eur_per_ton);
+                }
               }}>
                 <SelectTrigger className={inp}>
                   <SelectValue placeholder={form.orderbook_id ? "Válassz terméket a rendelésből..." : "Válassz rendelést először"} />
