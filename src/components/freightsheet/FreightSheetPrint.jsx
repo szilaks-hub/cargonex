@@ -177,7 +177,9 @@ export default function FreightSheetPrint({ sheet, lines, onClose }) {
 
             {/* ── VALIDITY NOTE ─────────────────────────────────────── */}
             <div className="bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 mb-10 text-xs text-slate-600">
-              {validityText}
+              {sheet.valid_until_revoked
+                ? "Jelen nyilatkozat visszavonásig érvényes."
+                : `Jelen nyilatkozat ${sheet.valid_from} – ${sheet.valid_to || "?"} között érvényes.`}
             </div>
 
             {/* ── SIGNATURE ────────────────────────────────────────── */}
