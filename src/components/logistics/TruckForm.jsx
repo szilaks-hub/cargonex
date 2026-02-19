@@ -194,58 +194,51 @@ export default function TruckForm({ item, onClose, onSaved, defaultOrderbookId, 
                   <div><span className="font-semibold">Incoterms:</span> {selectedOrderbook.incoterms_type} {selectedOrderbook.incoterms_place}</div>
                   {selectedOrderbook.customs_required && <div className="text-orange-700 font-semibold">⚠ Vámkezelés szükséges</div>}
                   {orderbookLines.length > 0 && (
-                    <div><span className="font-semibold">Termékkörök:</span> {orderbookLines.map(l => l.category_name).join(", ")}</div>
+                    <div className="flex flex-wrap gap-2 mt-1">
+                      {orderbookLines.map(l => (
+                        <span key={l.id} className="bg-white border border-blue-200 rounded px-2 py-0.5 text-[10px] text-blue-800">
+                          <span className="font-semibold">{l.category_name}</span>
+                          {l.unit_price_eur_per_ton ? ` · ${l.unit_price_eur_per_ton} EUR/t` : ""}
+                          {l.planned_quantity_tons ? ` · ${((l.planned_quantity_tons || 0) - (l.allocated_quantity_tons || 0)).toFixed(2)} t hátra` : ""}
+                        </span>
+                      ))}
+                    </div>
                   )}
                 </div>
               )}
             </div>
 
-            <div className="sm:col-span-2 lg:col-span-2">
-              <Label className={lbl}>Termék *</Label>
-              <Select value={form.product_id} onValueChange={(v) => {
-                const p = products.find(p => p.id === v);
-                const cat = categories.find(c => c.id === p?.category_id);
-                set("product_id", v);
-                set("product_name", [cat?.name_en || cat?.name_hu, p?.diameter ? `Ø${p.diameter}` : "", p?.factory_code || ""].filter(Boolean).join(" "));
-                set("hs_code", p?.hs_code || "");
-                // Auto-fill price from orderbook line matching the product's category
-                if (form.orderbook_id) {
-                  const matchLine = orderbookLines.find(l => l.category_id === p?.category_id);
-                  if (matchLine?.unit_price_eur_per_ton) set("purchase_price", matchLine.unit_price_eur_per_ton);
-                }
-              }}>
-                <SelectTrigger className={inp}>
-                  <SelectValue placeholder={form.orderbook_id ? "Válassz terméket a rendelésből..." : "Válassz rendelést először"} />
-                </SelectTrigger>
-                <SelectContent className="bg-white border-[#c6ccda]">
-                  {allowedProducts.map((p) => {
-                    const cat = categories.find(c => c.id === p.category_id);
-                    return (
-                      <SelectItem key={p.id} value={p.id}>
-                        {cat?.name_en || cat?.name_hu} {p.diameter ? `Ø${p.diameter}` : ""} {p.factory_code || ""}
-                      </SelectItem>
-                    );
-                  })}
-                </SelectContent>
-              </Select>
+            {/* Multi-product editor */}
+            <div className="sm:col-span-2 lg:col-span-3">
+              <TruckItemsEditor
+                items={form.items || []}
+                allowedProducts={allowedProducts}
+                categories={categories}
+                orderbookLines={orderbookLines}
+                onChange={(newItems) => {
+                  // Sync total planned tons and primary product fields from items
+                  const total = newItems.reduce((s, i) => s + (parseFloat(i.planned_quantity_tons) || 0), 0);
+                  const first = newItems[0];
+                  setForm(f => ({
+                    ...f,
+                    items: newItems,
+                    planned_quantity_tons: total || f.planned_quantity_tons,
+                    product_id: first?.product_id || f.product_id,
+                    product_name: newItems.map(i => i.product_name).filter(Boolean).join(", ") || f.product_name,
+                    hs_code: first?.hs_code || f.hs_code,
+                    purchase_price: first?.purchase_price || f.purchase_price,
+                  }));
+                }}
+              />
             </div>
 
-            <div>
-              <Label className={lbl}>HS Kód</Label>
-              <Input className={inp} value={form.hs_code} onChange={(e) => set("hs_code", e.target.value)} placeholder="Auto-kitöltés termékből" />
-            </div>
-
-            <div>
-              <Label className={lbl}>Tervezett mennyiség (t) *</Label>
-              <Input type="number" className={inp} value={form.planned_quantity_tons} onChange={(e) => set("planned_quantity_tons", e.target.value)} />
-            </div>
             <div>
               <Label className={lbl}>Tényleges súly (t)</Label>
               <Input type="number" className={inp} value={form.actual_weight_tons} onChange={(e) => set("actual_weight_tons", e.target.value)} />
             </div>
             <div>
-              <Label className={lbl}>Vételár / tonna</Label>
-              <Input type="number" className={inp} value={form.purchase_price} onChange={(e) => set("purchase_price", e.target.value)} />
+              <Label className={lbl}>Összes tervezett (t)</Label>
+              <Input type="number" className={`${inp} font-semibold bg-slate-50`} value={form.planned_quantity_tons} onChange={(e) => set("planned_quantity_tons", e.target.value)} />
             </div>
 
             <div>
