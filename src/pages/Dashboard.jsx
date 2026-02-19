@@ -111,7 +111,7 @@ export default function Dashboard() {
                 <s.icon className="w-4 h-4" style={{ color: s.accent }} />
               </div>
             </div>
-            <div className="text-2xl font-bold" style={{ color: "#eef2ff" }}>{s.value}</div>
+            <div className="text-2xl font-bold text-slate-800">{s.value}</div>
           </div>
         ))}
       </div>
