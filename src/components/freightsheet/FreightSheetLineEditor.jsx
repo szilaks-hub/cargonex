@@ -158,11 +158,25 @@ function NewLineRow({ sheetId, defaultLoad, isHU, onSaved }) {
 export default function FreightSheetLineEditor({ sheet, readonly = false }) {
   const qc = useQueryClient();
   const isHU = sheet.destination_country === "HU";
+  const [dirtyRows, setDirtyRows] = useState({}); // { [id]: formData }
+  const [saving, setSaving] = useState(false);
+  const [savedFlash, setSavedFlash] = useState(false);
 
   const { data: lines = [], isLoading } = useQuery({
     queryKey: ["sheetLines", sheet.id],
     queryFn: () => base44.entities.FreightSheetLine.filter({ sheet_id: sheet.id }, "sort_order"),
   });
+
+  const handleDirtyChange = useCallback((id, isDirty, formData) => {
+    setDirtyRows(prev => {
+      if (!isDirty) {
+        const next = { ...prev };
+        delete next[id];
+        return next;
+      }
+      return { ...prev, [id]: formData };
+    });
+  }, []);
 
   const handleSave = async (line) => {
     const data = {
@@ -176,8 +190,30 @@ export default function FreightSheetLineEditor({ sheet, readonly = false }) {
     qc.invalidateQueries({ queryKey: ["sheetLines", sheet.id] });
   };
 
+  const handleSaveAll = async () => {
+    const dirty = Object.entries(dirtyRows);
+    if (!dirty.length) return;
+    setSaving(true);
+    await Promise.all(dirty.map(([id, formData]) => {
+      const data = {
+        ...formData,
+        domestic_leg: Number(formData.domestic_leg) || 0,
+        foreign_leg: Number(formData.foreign_leg) || 0,
+        load_tons: formData.load_tons ? Number(formData.load_tons) : undefined,
+      };
+      const { total_price, eur_per_ton } = calcTotals(data, sheet.default_load_tons);
+      return base44.entities.FreightSheetLine.update(id, { ...data, total_price, eur_per_ton });
+    }));
+    setDirtyRows({});
+    setSaving(false);
+    setSavedFlash(true);
+    setTimeout(() => setSavedFlash(false), 2000);
+    qc.invalidateQueries({ queryKey: ["sheetLines", sheet.id] });
+  };
+
   const handleDelete = async (id) => {
     await base44.entities.FreightSheetLine.delete(id);
+    setDirtyRows(prev => { const n = { ...prev }; delete n[id]; return n; });
     qc.invalidateQueries({ queryKey: ["sheetLines", sheet.id] });
   };
 
@@ -189,55 +225,82 @@ export default function FreightSheetLineEditor({ sheet, readonly = false }) {
 
   const onSaved = () => qc.invalidateQueries({ queryKey: ["sheetLines", sheet.id] });
 
+  const dirtyCount = Object.keys(dirtyRows).length;
   const thCls = "px-2 py-2 text-left text-[10px] font-bold text-slate-500 uppercase tracking-wide whitespace-nowrap";
 
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full text-sm">
-        <thead className="bg-slate-50 border-b border-slate-200">
-          <tr>
-            <th className={thCls} colSpan={2}>{isHU ? "Helyszín (ISZ / Város / Vármegye)" : "Helyszín (City / ZIP / Régió)"}</th>
-            <th className={thCls}>Belföld Határtól</th>
-            <th className={thCls}>Külföld Határig</th>
-            <th className={`${thCls} text-right`}>Összesen</th>
-            <th className={thCls}>Kiterh. (t)</th>
-            <th className={`${thCls} text-right`}>EUR/to</th>
-            <th className={`${thCls} text-center`}>Aktív</th>
-            <th className={thCls}></th>
-          </tr>
-        </thead>
-        <tbody>
-          {lines.map(line => (
-            <LineRow
-              key={line.id}
-              line={line}
-              defaultLoad={sheet.default_load_tons}
-              onSave={handleSave}
-              onDelete={handleDelete}
-              onDuplicate={handleDuplicate}
-              isHU={isHU}
-              readonly={readonly}
-            />
-          ))}
-          {isLoading && (
-            <tr><td colSpan={10} className="text-center py-4 text-slate-400 text-xs">Betöltés...</td></tr>
-          )}
-          {!lines.length && !isLoading && (
-            <tr><td colSpan={10} className="text-center py-4 text-slate-400 text-xs">
-              {readonly ? "Nincs sor." : "Nincs sor. Add hozzá az első lerakót alul!"}
-            </td></tr>
-          )}
-          {!readonly && (
-            <NewLineRow sheetId={sheet.id} defaultLoad={sheet.default_load_tons} isHU={isHU} onSaved={onSaved} />
-          )}
-        </tbody>
-      </table>
+    <div>
+      {/* Save All bar */}
       {!readonly && (
-        <div className="px-4 py-2 bg-blue-50/50 border-t border-blue-100 text-[10px] text-blue-400">
-          💡 Az utolsó sor (kék háttér) az új lerakó beviteli sora. Töltsd ki, majd kattints a <strong>+</strong> ikonra.
-          {" "}Mentés soronként a <strong>💾</strong> ikonnal, másolás a <strong>⧉</strong> ikonnal.
+        <div className={`flex items-center justify-between px-4 py-2 border-b transition-colors ${dirtyCount > 0 ? "bg-amber-50 border-amber-200" : "bg-slate-50 border-slate-200"}`}>
+          <span className="text-xs text-slate-500">
+            {dirtyCount > 0
+              ? <span className="text-amber-700 font-semibold">⚠ {dirtyCount} sor módosítva — mentés szükséges</span>
+              : savedFlash
+                ? <span className="text-green-600 font-semibold flex items-center gap-1"><CheckCircle2 className="w-3.5 h-3.5" /> Mentve!</span>
+                : <span>Az árak módosításához szerkeszd a sorokat, majd nyomj <strong>Mentés</strong>.</span>
+            }
+          </span>
+          <Button
+            size="sm"
+            disabled={dirtyCount === 0 || saving}
+            onClick={handleSaveAll}
+            className={`gap-1.5 h-7 text-xs ${dirtyCount > 0 ? "bg-amber-500 hover:bg-amber-600 text-white" : "bg-slate-200 text-slate-400"}`}
+          >
+            <Save className="w-3.5 h-3.5" />
+            {saving ? "Mentés..." : `Mentés${dirtyCount > 0 ? ` (${dirtyCount})` : ""}`}
+          </Button>
         </div>
       )}
+
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead className="bg-slate-50 border-b border-slate-200">
+            <tr>
+              <th className={thCls} colSpan={2}>{isHU ? "Helyszín (ISZ / Város / Vármegye)" : "Helyszín (City / ZIP / Régió)"}</th>
+              <th className={thCls}>Belföld Határtól</th>
+              <th className={thCls}>Külföld Határig</th>
+              <th className={`${thCls} text-right`}>Összesen</th>
+              <th className={thCls}>Kiterh. (t)</th>
+              <th className={`${thCls} text-right`}>EUR/to</th>
+              <th className={`${thCls} text-center`}>Aktív</th>
+              <th className={thCls}></th>
+            </tr>
+          </thead>
+          <tbody>
+            {lines.map(line => (
+              <LineRow
+                key={line.id}
+                line={line}
+                defaultLoad={sheet.default_load_tons}
+                onSave={handleSave}
+                onDelete={handleDelete}
+                onDuplicate={handleDuplicate}
+                isHU={isHU}
+                readonly={readonly}
+                onDirtyChange={handleDirtyChange}
+              />
+            ))}
+            {isLoading && (
+              <tr><td colSpan={10} className="text-center py-4 text-slate-400 text-xs">Betöltés...</td></tr>
+            )}
+            {!lines.length && !isLoading && (
+              <tr><td colSpan={10} className="text-center py-4 text-slate-400 text-xs">
+                {readonly ? "Nincs sor." : "Nincs sor. Add hozzá az első lerakót alul!"}
+              </td></tr>
+            )}
+            {!readonly && (
+              <NewLineRow sheetId={sheet.id} defaultLoad={sheet.default_load_tons} isHU={isHU} onSaved={onSaved} />
+            )}
+          </tbody>
+        </table>
+        {!readonly && (
+          <div className="px-4 py-2 bg-blue-50/50 border-t border-blue-100 text-[10px] text-blue-400">
+            💡 Az utolsó sor (kék háttér) az új lerakó beviteli sora. Töltsd ki, majd kattints a <strong>+</strong> ikonra.
+            {" "}Az árak módosítása után nyomj <strong>Mentés</strong> a felső sávban.
+          </div>
+        )}
+      </div>
     </div>
   );
 }
