@@ -51,8 +51,11 @@ export default function FreightSheets() {
 
   const handleDelete = async (r) => {
     if (r.status !== "draft") return;
-    const lines = allLines.filter(l => l.sheet_id === r.id);
-    for (const l of lines) await base44.entities.FreightSheetLine.delete(l.id);
+    // Fetch lines fresh from API to avoid stale cache issues
+    const freshLines = await base44.entities.FreightSheetLine.filter({ sheet_id: r.id });
+    for (const l of freshLines) {
+      try { await base44.entities.FreightSheetLine.delete(l.id); } catch (_) {}
+    }
     await base44.entities.FreightSheet.delete(r.id);
     qc.invalidateQueries({ queryKey: ["freightSheets"] });
     qc.invalidateQueries({ queryKey: ["allFreightLines"] });
