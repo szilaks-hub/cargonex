@@ -18,6 +18,7 @@ export default function FreightSheetDetail({ sheet, onBack, onUpdated, user }) {
   const [showCopyLines, setShowCopyLines] = useState(false);
   const [activating, setActivating] = useState(false);
   const [archiving, setArchiving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [currentSheet, setCurrentSheet] = useState(sheet);
   const [activateError, setActivateError] = useState("");
 
