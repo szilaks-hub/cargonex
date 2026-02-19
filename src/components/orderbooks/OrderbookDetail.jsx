@@ -502,8 +502,7 @@ export default function OrderbookDetail({ orderId, onClose, onUpdated }) {
                 </div>
               ))}
             </div>
-          </div>
-        </div>
+          </div>{/* end bg-slate-50 Order Details section */}
 
           {/* Category Lines */}
           <div className="space-y-3">
