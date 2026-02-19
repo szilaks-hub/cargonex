@@ -159,7 +159,7 @@ export default function Logistics() {
   );
 }
 
-function TruckTable({ trucks, isLoading, onEdit, onAdvance, statusLabels, statusColors }) {
+function TruckTable({ trucks, isLoading, onEdit, onAdvance, onToggleTransit, statusLabels, statusColors }) {
   if (isLoading) return <div className="text-center py-8 text-slate-400">Betöltés...</div>;
   if (!trucks || trucks.length === 0) return <div className="text-center py-8 text-slate-400">Nincs adat / No data</div>;
 
@@ -178,6 +178,7 @@ function TruckTable({ trucks, isLoading, onEdit, onAdvance, statusLabels, status
               <th className="py-3 px-4">Fuvarozó</th>
               <th className="py-3 px-4">Célállomás</th>
               <th className="py-3 px-4">Státusz</th>
+              <th className="py-3 px-4 text-center">TR</th>
               <th className="py-3 px-4 text-right"></th>
             </tr>
           </thead>
@@ -202,6 +203,14 @@ function TruckTable({ trucks, isLoading, onEdit, onAdvance, statusLabels, status
                   <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${statusColors[r.status] || "bg-slate-100 text-slate-600"}`}>
                     {statusLabels[r.status] || r.status}
                   </span>
+                </td>
+                <td className="py-3 px-4 text-center" onClick={e => e.stopPropagation()}>
+                  <input
+                    type="checkbox"
+                    checked={r.transit || false}
+                    onChange={() => onToggleTransit(r)}
+                    className="w-4 h-4 accent-blue-600 cursor-pointer"
+                  />
                 </td>
                 <td className="py-3 px-4 text-right" onClick={e => e.stopPropagation()}>
                   <QuickStatusAdvance truck={r} onAdvance={onAdvance} statusLabels={statusLabels} />
