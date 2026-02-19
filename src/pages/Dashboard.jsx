@@ -120,8 +120,8 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Country breakdown */}
         <div className="p-5 rounded-2xl" style={cardStyle}>
-          <h3 className="text-xs font-semibold uppercase tracking-widest mb-5" style={{ color: "#8896aa" }}>
-            Country Breakdown / Ország bontás
+          <h3 className="text-xs font-semibold uppercase tracking-widest mb-5 text-slate-500">
+           Country Breakdown / Ország bontás
           </h3>
           {countryData.length > 0 ? (
             <ResponsiveContainer width="100%" height={240}>
