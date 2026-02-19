@@ -226,25 +226,9 @@ function TruckTable({ trucks, isLoading, onEdit, onAdvance, onToggleTransit, sta
 
 function QuickStatusAdvance({ truck, onAdvance, statusLabels }) {
   const nextMap = {
-    booked: [{ val: "scheduled", label: "→ Ütemez" }],
-    scheduled: [{ val: "loaded", label: "→ Megrak" }],
-    loaded: [{ val: "in_transit", label: "→ Útnak indul" }],
-    in_transit: [
-      { val: "customs", label: "→ Vámra" },
-      { val: "arrived_onsite", label: "→ Telephely" },
-      { val: "arrived_offsite", label: "→ Off-site" },
-    ],
-    customs: [
-      { val: "arrived_onsite", label: "→ Telephely" },
-      { val: "arrived_offsite", label: "→ Off-site" },
-      { val: "transit", label: "→ TR" },
-    ],
-    transit: [
-      { val: "arrived_onsite", label: "→ Telephely" },
-      { val: "arrived_offsite", label: "→ Off-site" },
-    ],
+    booked: [{ val: "loaded", label: "→ Megrakott" }],
+    loaded: [{ val: "arrived_onsite", label: "→ Telephelyi" }],
     arrived_onsite: [{ val: "closed", label: "→ Lezár" }],
-    arrived_offsite: [{ val: "closed", label: "→ Lezár" }],
   };
   const options = nextMap[truck.status] || [];
   if (!options.length) return null;
