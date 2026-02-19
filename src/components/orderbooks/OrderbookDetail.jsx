@@ -71,7 +71,7 @@ export default function OrderbookDetail({ orderId, onClose, onUpdated }) {
     }
   }, [fetchedLines]);
 
-  // Auto-save draft orders
+  // Auto-save draft orders; open orders require manual save
   const handleFormChange = (updates) => {
     const newForm = { ...form, ...updates };
     setForm(newForm);
@@ -88,6 +88,19 @@ export default function OrderbookDetail({ orderId, onClose, onUpdated }) {
           toast.error('Save failed: ' + error.message);
         }
       }, 800);
+    }
+  };
+
+  const handleManualSave = async () => {
+    try {
+      await base44.entities.Orderbook.update(orderId, form);
+      qc.invalidateQueries({ queryKey: ['orderbooks'] });
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+      toast.success('Rendelés mentve');
+      onUpdated?.();
+    } catch (error) {
+      toast.error('Save failed: ' + error.message);
     }
   };
 
