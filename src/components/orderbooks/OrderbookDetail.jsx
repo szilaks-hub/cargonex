@@ -588,9 +588,18 @@ export default function OrderbookDetail({ orderId, onClose, onUpdated }) {
                 <div className="text-xs text-slate-500">k EUR</div>
               </div>
             </div>
-            {customsFeeEUR > 0 && (
-              <div className="mt-3 pt-3 border-t text-sm">
-                <div className="flex justify-between"><span className="text-slate-600">Customs Fee ({plannedTons.toFixed(2)}t × {form.customs_fee_eur_per_ton} EUR/t):</span><span className="font-semibold">{customsFeeEUR.toFixed(0)} EUR</span></div>
+            {(customsFeePerTruck > 0 || otherFees.length > 0) && (
+              <div className="mt-3 pt-3 border-t text-sm space-y-1">
+                {customsFeePerTruck > 0 && (
+                  <div className="flex justify-between text-slate-600">
+                    <span>Vám díj ({form.customs_agent_name || "Vámügynök"}): {customsFeePerTruck} EUR/kamion</span>
+                  </div>
+                )}
+                {otherFees.map((fee, i) => fee.name && (
+                  <div key={i} className="flex justify-between text-slate-600">
+                    <span>{fee.name}: {fee.fee_eur_per_truck} EUR/kamion</span>
+                  </div>
+                ))}
               </div>
             )}
           </Card>
