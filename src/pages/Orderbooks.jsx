@@ -126,6 +126,8 @@ export default function OrderbooksPage() {
 }
 
 function OrderbooksList({ orders, lines, onSelect, onDelete, isClosed }) {
+  const [expandedId, setExpandedId] = useState(null);
+
   if (!orders || orders.length === 0) {
     return <div className="text-center py-8 text-slate-500">No orders</div>;
   }
@@ -136,13 +138,14 @@ function OrderbooksList({ orders, lines, onSelect, onDelete, isClosed }) {
         <table className="w-full text-sm">
           <thead className="bg-slate-50 border-b">
             <tr className="text-left text-xs font-semibold text-slate-600">
-              <th className="py-3 px-4">Order No</th>
-              <th className="py-3 px-4">Supplier</th>
-              <th className="py-3 px-4">Date</th>
+              <th className="py-3 px-4">Bész. rendelésszám</th>
+              <th className="py-3 px-4">Belső szám</th>
+              <th className="py-3 px-4">Beszállító</th>
+              <th className="py-3 px-4">Dátum</th>
               <th className="py-3 px-4">Incoterms</th>
-              <th className="py-3 px-4 text-right">Planned (t)</th>
-              <th className="py-3 px-4 text-right">Value (k EUR)</th>
-              <th className="py-3 px-4 text-center">Customs</th>
+              <th className="py-3 px-4 text-right">Tervezett (t)</th>
+              <th className="py-3 px-4 text-right">Érték (k EUR)</th>
+              <th className="py-3 px-4 text-center">Vám</th>
               <th className="py-3 px-4 text-right"></th>
             </tr>
           </thead>
@@ -150,30 +153,115 @@ function OrderbooksList({ orders, lines, onSelect, onDelete, isClosed }) {
             {orders.map(order => {
               const orderLines = lines.filter(l => l.orderbook_id === order.id);
               const plannedTons = orderLines.reduce((s, l) => s + (l.planned_quantity_tons || 0), 0);
+              const allocatedTons = orderLines.reduce((s, l) => s + (l.allocated_quantity_tons || 0), 0);
               const valueEUR = orderLines.reduce((s, l) => s + (l.line_value_eur || 0), 0);
+              const isExpanded = expandedId === order.id;
+              const remainingTons = plannedTons - allocatedTons;
+              const allocPct = plannedTons > 0 ? Math.round((allocatedTons / plannedTons) * 100) : 0;
               
               return (
-                <tr key={order.id} className="border-b hover:bg-slate-50">
-                  <td className="py-3 px-4 font-semibold text-slate-800">{order.order_no}</td>
-                  <td className="py-3 px-4 text-slate-700">
-                    <div className="font-medium">{order.supplier_name}</div>
-                    <div className="text-xs text-slate-500">{order.supplier_site_name}</div>
-                  </td>
-                  <td className="py-3 px-4 text-slate-600">{order.order_date}</td>
-                  <td className="py-3 px-4 text-slate-600">{order.incoterms_type}</td>
-                  <td className="py-3 px-4 text-right font-semibold text-slate-800">{plannedTons.toFixed(2)}</td>
-                  <td className="py-3 px-4 text-right text-slate-800">{(valueEUR / 1000).toFixed(1)}</td>
-                  <td className="py-3 px-4 text-center">
-                    {order.customs_required && (
-                      <Badge className="bg-orange-100 text-orange-800 text-xs">Yes</Badge>
-                    )}
-                  </td>
-                  <td className="py-3 px-4 text-right">
-                    <Button size="sm" variant="ghost" className="text-blue-600" onClick={() => onSelect(order.id)}>
-                      <Eye className="w-4 h-4" />
-                    </Button>
-                  </td>
-                </tr>
+                <React.Fragment key={order.id}>
+                  <tr className={`border-b hover:bg-slate-50 ${isExpanded ? 'bg-blue-50/40' : ''}`}>
+                    <td className="py-3 px-4 font-bold text-slate-900">
+                      {order.supplier_order_no || <span className="text-slate-400 font-normal italic">—</span>}
+                    </td>
+                    <td className="py-3 px-4 text-xs text-slate-500">{order.order_no}</td>
+                    <td className="py-3 px-4 text-slate-700">
+                      <div className="font-medium">{order.supplier_name}</div>
+                      <div className="text-xs text-slate-500">{order.supplier_site_name}</div>
+                    </td>
+                    <td className="py-3 px-4 text-slate-600">{order.order_date}</td>
+                    <td className="py-3 px-4 text-slate-600">{order.incoterms_type}</td>
+                    <td className="py-3 px-4 text-right">
+                      <div className="font-semibold text-slate-800">{plannedTons.toFixed(2)}</div>
+                      {plannedTons > 0 && (
+                        <div className="text-xs text-slate-400">{allocPct}% allokált</div>
+                      )}
+                    </td>
+                    <td className="py-3 px-4 text-right text-slate-800">{(valueEUR / 1000).toFixed(1)}</td>
+                    <td className="py-3 px-4 text-center">
+                      {order.customs_required && (
+                        <Badge className="bg-orange-100 text-orange-800 text-xs">Igen</Badge>
+                      )}
+                    </td>
+                    <td className="py-3 px-4 text-right flex items-center justify-end gap-1">
+                      {orderLines.length > 0 && (
+                        <button
+                          onClick={() => setExpandedId(isExpanded ? null : order.id)}
+                          className="text-slate-400 hover:text-slate-700 p-1 rounded"
+                          title="Termékkörök mutatása"
+                        >
+                          <ChevronDown className={`w-4 h-4 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                        </button>
+                      )}
+                      <Button size="sm" variant="ghost" className="text-blue-600" onClick={() => onSelect(order.id)}>
+                        <Eye className="w-4 h-4" />
+                      </Button>
+                    </td>
+                  </tr>
+                  {isExpanded && (
+                    <tr className="border-b bg-slate-50/70">
+                      <td colSpan="9" className="px-6 py-3">
+                        <div className="space-y-2">
+                          <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Termékkörök összesítése</div>
+                          {orderLines.map(line => {
+                            const pct = line.planned_quantity_tons > 0
+                              ? Math.round(((line.allocated_quantity_tons || 0) / line.planned_quantity_tons) * 100)
+                              : 0;
+                            const remaining = (line.planned_quantity_tons || 0) - (line.allocated_quantity_tons || 0);
+                            return (
+                              <div key={line.id} className="flex items-center gap-3">
+                                <div className="w-36 text-sm font-medium text-slate-700 truncate">{line.category_name || '—'}</div>
+                                <div className="flex-1">
+                                  <div className="flex items-center gap-2 mb-0.5">
+                                    <div className="h-2 flex-1 bg-slate-200 rounded-full overflow-hidden">
+                                      <div
+                                        className={`h-full rounded-full transition-all ${pct >= 100 ? 'bg-emerald-500' : pct >= 50 ? 'bg-blue-500' : 'bg-amber-400'}`}
+                                        style={{ width: `${Math.min(pct, 100)}%` }}
+                                      />
+                                    </div>
+                                    <span className={`text-xs font-bold w-10 text-right ${pct >= 100 ? 'text-emerald-600' : pct >= 50 ? 'text-blue-600' : 'text-amber-600'}`}>{pct}%</span>
+                                  </div>
+                                  <div className="text-xs text-slate-500">
+                                    <span className="font-medium text-blue-700">{(line.allocated_quantity_tons || 0).toFixed(2)} t</span>
+                                    {' / '}
+                                    <span>{line.planned_quantity_tons?.toFixed(2)} t tervezett</span>
+                                    {remaining > 0.01 && <span className="ml-2 text-amber-600">· {remaining.toFixed(2)} t szabad</span>}
+                                    {remaining <= 0 && remaining > -0.01 && <span className="ml-2 text-emerald-600">· Teljes</span>}
+                                  </div>
+                                </div>
+                                <div className="text-right text-xs text-slate-500 w-24">
+                                  {(line.unit_price_eur_per_ton || 0).toFixed(2)} EUR/t
+                                </div>
+                              </div>
+                            );
+                          })}
+                          {/* Total row */}
+                          <div className="flex items-center gap-3 pt-2 border-t border-slate-200">
+                            <div className="w-36 text-xs font-bold text-slate-600 uppercase">Összesen</div>
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-0.5">
+                                <div className="h-2 flex-1 bg-slate-200 rounded-full overflow-hidden">
+                                  <div
+                                    className={`h-full rounded-full ${allocPct >= 100 ? 'bg-emerald-500' : allocPct >= 50 ? 'bg-blue-500' : 'bg-amber-400'}`}
+                                    style={{ width: `${Math.min(allocPct, 100)}%` }}
+                                  />
+                                </div>
+                                <span className={`text-xs font-bold w-10 text-right ${allocPct >= 100 ? 'text-emerald-600' : allocPct >= 50 ? 'text-blue-600' : 'text-amber-600'}`}>{allocPct}%</span>
+                              </div>
+                              <div className="text-xs text-slate-600 font-semibold">
+                                {allocatedTons.toFixed(2)} t / {plannedTons.toFixed(2)} t · marad: {remainingTons.toFixed(2)} t
+                              </div>
+                            </div>
+                            <div className="text-right text-xs font-semibold text-slate-700 w-24">
+                              {(valueEUR / 1000).toFixed(1)} k EUR
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+                </React.Fragment>
               );
             })}
           </tbody>
