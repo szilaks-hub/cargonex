@@ -53,15 +53,17 @@ export default function Layout({ children, currentPageName }) {
         {/* Logo */}
         <div className="px-5 pt-5 pb-4" style={{ borderBottom: "1px solid #EEF0F6" }}>
           <div className="flex items-center justify-between">
-            <img
-              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/user_695955de68183bcabeb8b12f/3e4f22a2f_CARGONEXv.png"
-              alt="CARGONEX"
-              className="w-auto object-contain"
-              style={{ height: "80px" }}
-            />
+            <div className="flex-1 flex justify-center">
+              <img
+                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/user_695955de68183bcabeb8b12f/3e4f22a2f_CARGONEXv.png"
+                alt="CARGONEX"
+                className="w-auto object-contain"
+                style={{ height: "240px" }}
+              />
+            </div>
             <button
               onClick={() => setSidebarOpen(false)}
-              className="lg:hidden text-slate-400 hover:text-slate-600"
+              className="lg:hidden text-slate-400 hover:text-slate-600 absolute right-4"
             >
               <X className="w-4 h-4" />
             </button>
