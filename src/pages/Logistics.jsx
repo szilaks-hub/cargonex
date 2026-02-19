@@ -218,11 +218,28 @@ function TruckTable({ trucks, isLoading, onEdit, onAdvance, onToggleTransit, sta
   );
 }
 
+function StatusDropdown({ truck, onAdvance, statusLabels, statusColors }) {
+  const allStatuses = Object.keys(statusLabels);
+  return (
+    <Select value={truck.status} onValueChange={(val) => onAdvance(truck, val)}>
+      <SelectTrigger className={`h-7 text-xs w-32 font-medium border-0 ${statusColors[truck.status] || "bg-slate-100 text-slate-600"}`}>
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent className="bg-white">
+        {allStatuses.map(s => (
+          <SelectItem key={s} value={s} className="text-xs">
+            {statusLabels[s]}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+}
+
 function QuickStatusAdvance({ truck, onAdvance, statusLabels }) {
   const nextMap = {
     booked: [{ val: "loaded", label: "→ Megrakott" }],
-    loaded: [{ val: "arrived_onsite", label: "→ Telephelyi" }],
-    arrived_onsite: [{ val: "closed", label: "→ Lezár" }],
+    loaded: [{ val: "closed", label: "→ Lezár" }],
   };
   const options = nextMap[truck.status] || [];
   if (!options.length) return null;
