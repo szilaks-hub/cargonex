@@ -245,7 +245,7 @@ export default function OrderbookDetail({ orderId, onClose, onUpdated }) {
 
   return (
     <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-start justify-center z-50 p-4 overflow-y-auto">
-      <Card className="w-full max-w-5xl mt-6 mb-6 flex-shrink-0">
+      <Card className="w-full max-w-6xl mt-6 mb-6 flex-shrink-0">
         {/* Header */}
         <div className="sticky top-0 bg-gradient-to-r from-slate-50 to-white border-b p-4 flex items-center justify-between">
           <div>
