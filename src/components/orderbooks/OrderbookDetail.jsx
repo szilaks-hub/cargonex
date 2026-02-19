@@ -7,7 +7,8 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { X, Copy, Trash2, Check, AlertCircle, Edit2 } from "lucide-react";
+import { X, Copy, Trash2, Check, AlertCircle, Edit2, Plus } from "lucide-react";
+import OrderbookTrucksSidebar from "./OrderbookTrucksSidebar";
 import { toast } from "sonner";
 
 const INCOTERMS = ['EXW', 'FCA', 'CPT', 'CIP', 'DAP', 'DPU', 'DDP', 'FAS', 'FOB', 'CFR', 'CIF'];
