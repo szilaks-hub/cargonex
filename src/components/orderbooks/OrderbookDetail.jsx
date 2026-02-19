@@ -602,45 +602,7 @@ export default function OrderbookDetail({ orderId, onClose, onUpdated }) {
           </div>
 
           {/* Summary Card */}
-          <Card className="p-4 bg-gradient-to-r from-blue-50 to-slate-50 border-blue-200">
-            <h3 className="font-semibold text-slate-800 mb-3">Summary</h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-              <div>
-                <div className="text-slate-600 text-xs">Planned</div>
-                <div className="text-2xl font-bold text-slate-800">{plannedTons.toFixed(2)}</div>
-                <div className="text-xs text-slate-500">tons</div>
-              </div>
-              <div>
-                <div className="text-slate-600 text-xs">Allocated</div>
-                <div className="text-2xl font-bold text-blue-700">{allocatedTons.toFixed(2)}</div>
-                <div className="text-xs text-slate-500">tons</div>
-              </div>
-              <div>
-                <div className="text-slate-600 text-xs">Order Value</div>
-                <div className="text-2xl font-bold text-slate-800">{(valueEUR / 1000).toFixed(1)}</div>
-                <div className="text-xs text-slate-500">k EUR</div>
-              </div>
-              <div>
-                <div className="text-slate-600 text-xs">Grand Total</div>
-                <div className="text-2xl font-bold text-blue-700">{(grandTotalEUR / 1000).toFixed(1)}</div>
-                <div className="text-xs text-slate-500">k EUR</div>
-              </div>
-            </div>
-            {(customsFeePerTruck > 0 || otherFees.length > 0) && (
-              <div className="mt-3 pt-3 border-t text-sm space-y-1">
-                {customsFeePerTruck > 0 && (
-                  <div className="flex justify-between text-slate-600">
-                    <span>Vám díj ({form.customs_agent_name || "Vámügynök"}): {customsFeePerTruck} EUR/kamion</span>
-                  </div>
-                )}
-                {otherFees.map((fee, i) => fee.name && (
-                  <div key={i} className="flex justify-between text-slate-600">
-                    <span>{fee.name}: {fee.fee_eur_per_truck} EUR/kamion</span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </Card>
+          <OrderbookSummaryTable lines={lines} orderbookId={orderId} currency={form.currency || 'EUR'} />
 
           {/* Action Buttons */}
           <div className="flex justify-between items-center gap-2 pt-4 border-t">
