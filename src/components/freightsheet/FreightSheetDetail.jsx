@@ -126,27 +126,32 @@ export default function FreightSheetDetail({ sheet, onBack, onUpdated, user }) {
         </div>
 
         <div className="flex gap-2 flex-wrap">
-           {/* Draft: Edit + Activate */}
+           {/* Draft: Edit + Activate + Delete */}
            {isDraft && (
              <>
                <Button variant="outline" onClick={() => setShowEdit(true)} className="gap-2 border-[#c6ccda] text-slate-600">
                  <Edit2 className="w-3.5 h-3.5" /> Szerkesztés
                </Button>
                {isAdmin && (
-                 <Button
-                   onClick={handleActivate}
-                   disabled={activating || !canActivate}
-                   title={!canActivate ? "Nem teljesülnek az aktiválási feltételek" : "Aktiválás"}
-                   className="gap-2 text-white"
-                   style={{ background: canActivate ? "linear-gradient(135deg,#16a34a,#15803d)" : undefined }}
-                   variant={canActivate ? "default" : "outline"}
-                 >
-                   <CheckCircle2 className="w-3.5 h-3.5" /> {activating ? "Aktiválás..." : "Aktiválás"}
-                 </Button>
+                 <>
+                   <Button
+                     onClick={handleActivate}
+                     disabled={activating || !canActivate}
+                     title={!canActivate ? "Nem teljesülnek az aktiválási feltételek" : "Aktiválás"}
+                     className="gap-2 text-white"
+                     style={{ background: canActivate ? "linear-gradient(135deg,#16a34a,#15803d)" : undefined }}
+                     variant={canActivate ? "default" : "outline"}
+                   >
+                     <CheckCircle2 className="w-3.5 h-3.5" /> {activating ? "Aktiválás..." : "Aktiválás"}
+                   </Button>
+                   <Button variant="outline" onClick={handleDelete} disabled={deleting} className="gap-2 border-red-300 text-red-600 hover:bg-red-50">
+                     <Trash2 className="w-3.5 h-3.5" /> {deleting ? "..." : "Törlés"}
+                   </Button>
+                 </>
                )}
              </>
            )}
-           {/* Active: Edit + New version + Archive */}
+           {/* Active: Edit + New version + Archive + Delete (if no refs) */}
            {isActive && (
              <>
                <Button variant="outline" onClick={() => setShowEdit(true)} className="gap-2 border-[#c6ccda] text-slate-600">
@@ -159,6 +164,9 @@ export default function FreightSheetDetail({ sheet, onBack, onUpdated, user }) {
                    </Button>
                    <Button variant="outline" onClick={handleArchive} disabled={archiving} className="gap-2 border-slate-300 text-slate-500 hover:bg-slate-50">
                      <Archive className="w-3.5 h-3.5" /> {archiving ? "..." : "Archiválás"}
+                   </Button>
+                   <Button variant="outline" onClick={handleDelete} disabled={deleting} className="gap-2 border-red-300 text-red-600 hover:bg-red-50">
+                     <Trash2 className="w-3.5 h-3.5" /> {deleting ? "..." : "Törlés"}
                    </Button>
                  </>
                )}
