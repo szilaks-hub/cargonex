@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Printer, Edit2, GitBranch, Copy, CheckCircle2, Archive, AlertCircle } from "lucide-react";
+import { ArrowLeft, Printer, Edit2, GitBranch, Copy, CheckCircle2, Archive, AlertCircle, Trash2 } from "lucide-react";
 import StatusBadge from "@/components/ui/StatusBadge";
 import FreightSheetLineEditor from "./FreightSheetLineEditor";
 import FreightSheetPrint from "./FreightSheetPrint";
