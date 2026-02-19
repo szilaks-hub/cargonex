@@ -86,16 +86,11 @@ export default function Logistics() {
 
       {/* Summary Cards */}
       {!showForm && (
-        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 xl:grid-cols-10 gap-2">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
           {[
             { key: "booked", label: "Előjegyzett", color: "bg-slate-100 text-slate-700" },
-            { key: "scheduled", label: "Ütemezett", color: "bg-blue-50 text-blue-700" },
             { key: "loaded", label: "Megrakott", color: "bg-amber-50 text-amber-700" },
-            { key: "in_transit", label: "Úton", color: "bg-purple-50 text-purple-700" },
-            { key: "customs", label: "Vámon", color: "bg-orange-50 text-orange-700" },
-            { key: "transit", label: "TR", color: "bg-cyan-50 text-cyan-700" },
             { key: "arrived_onsite", label: "Telephelyi", color: "bg-emerald-50 text-emerald-700" },
-            { key: "arrived_offsite", label: "Off-site", color: "bg-teal-50 text-teal-700" },
             { key: "closed", label: "Lezárt", color: "bg-green-50 text-green-700" },
             { key: "cancelled", label: "Törölve", color: "bg-red-50 text-red-500" },
           ].map(s => (
