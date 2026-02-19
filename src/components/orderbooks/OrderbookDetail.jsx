@@ -111,8 +111,10 @@ export default function OrderbookDetail({ orderId, onClose, onUpdated }) {
   const plannedTons = lines.reduce((s, l) => s + (l.planned_quantity_tons || 0), 0);
   const allocatedTons = lines.reduce((s, l) => s + (l.allocated_quantity_tons || 0), 0);
   const valueEUR = lines.reduce((s, l) => s + (l.line_value_eur || 0), 0);
-  const customsFeeEUR = form.customs_required ? (form.customs_fee_eur_per_ton || 0) * plannedTons : 0;
-  const grandTotalEUR = valueEUR + customsFeeEUR;
+  // Customs fee is now per-truck (fixed EUR/truck), shown separately in summary
+  const customsFeePerTruck = form.customs_required ? (form.customs_fee_eur_per_truck || 0) : 0;
+  const otherFees = form.other_fees || [];
+  const grandTotalEUR = valueEUR;
 
   const canOpenOrder = form.supplier_id && form.supplier_site_id && lines.length > 0;
 
