@@ -631,21 +631,30 @@ export default function OrderbookDetail({ orderId, onClose, onUpdated }) {
           </Card>
 
           {/* Action Buttons */}
-          <div className="flex justify-end gap-2 pt-4 border-t">
-            {isDraft && (
-              <>
+          <div className="flex justify-between items-center gap-2 pt-4 border-t">
+            <div>
+              {isDraft && (
                 <Button variant="destructive" size="sm" onClick={() => setConfirmDialog({ action: 'delete' })}>Delete</Button>
+              )}
+            </div>
+            <div className="flex gap-2">
+              {isOpen && (
+                <Button className="bg-blue-600 hover:bg-blue-700 text-white" size="sm" onClick={handleManualSave}>
+                  Mentés
+                </Button>
+              )}
+              {isDraft && (
                 <Button className="bg-blue-600 hover:bg-blue-700 text-white" size="sm" onClick={handleOpenOrder} disabled={!canOpenOrder}>
                   Open Order
                 </Button>
-              </>
-            )}
-            {isOpen && (
-              <Button variant="outline" size="sm" onClick={() => setConfirmDialog({ action: 'close' })}>Close Order</Button>
-            )}
-            {isClosed && (
-              <Button variant="outline" size="sm" onClick={() => setConfirmDialog({ action: 'reopen' })}>Reopen</Button>
-            )}
+              )}
+              {isOpen && (
+                <Button variant="outline" size="sm" onClick={() => setConfirmDialog({ action: 'close' })}>Close Order</Button>
+              )}
+              {isClosed && (
+                <Button variant="outline" size="sm" onClick={() => setConfirmDialog({ action: 'reopen' })}>Reopen</Button>
+              )}
+            </div>
           </div>
           </div>{/* end left main content */}
 
