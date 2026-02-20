@@ -86,6 +86,7 @@ export default function FreightSheetAnalysis() {
           zip: line.destination_zip,
           county: line.destination_county || line.destination_region || "",
           carrier: sheet.carrier_name || "—",
+          originSite: sheet.supplier_site_name || "",
           freightDomestic: line.domestic_leg || 0,
           freightForeign: line.foreign_leg || 0,
           freight: freight,
