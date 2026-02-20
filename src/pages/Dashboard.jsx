@@ -306,11 +306,13 @@ export default function Dashboard() {
         </div>
       </div>
 
+      <SectionDivider label="Statisztikák & Grafikonok" />
+
       {/* ── SECTION 4: CHARTS ROW 1 ───────────────────────────── */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Truck status donut */}
         <div className="p-5 rounded-2xl" style={cardBase}>
-          <SectionTitle sub="Fuvarok státusz megoszlása">Státusz megoszlás</SectionTitle>
+          <SectionTitle sub="Fuvarok státusz megoszlása" accent="#3B6CF4">Státusz megoszlás</SectionTitle>
           {statusData.length > 0 ? (
             <>
               <ResponsiveContainer width="100%" height={180}>
