@@ -118,6 +118,10 @@ export default function FreightSheetForm({ item, onClose, onSaved, forceDraft = 
             <Input className={inp} value={form.sheet_number} onChange={e => set("sheet_number", e.target.value)} placeholder="Auto if empty" />
           </div>
           <div>
+            <Label className={lbl}>Reláció neve / Alias</Label>
+            <Input className={inp} value={form.alias || ""} onChange={e => set("alias", e.target.value)} placeholder="pl. TRIBAL-HU, ARIZONA-SK" />
+          </div>
+          <div>
             <Label className={lbl}>Carrier / Fuvarozó *</Label>
             <Select value={form.carrier_id} onValueChange={v => {
               const c = carriers.find(c => c.id === v);
