@@ -75,6 +75,7 @@ export default function TruckCustomsDetail({ truck, onBack, onUpdated }) {
   const handleSave = async () => {
     setSaving(true);
     await base44.entities.Truck.update(truck.id, {
+      supplier_invoice_number: form.supplier_invoice_number,
       ...form,
       actual_weight_tons: Number(form.actual_weight_tons) || 0,
       declared_vat: Number(form.declared_vat) || 0,
