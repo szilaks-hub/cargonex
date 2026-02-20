@@ -428,59 +428,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* ── SECTION 6: ORDERBOOK CATEGORIES + FINANCE ─────────── */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {/* Category distribution */}
-        <div className="p-5 rounded-2xl" style={cardBase}>
-          <SectionTitle sub="Termékkategóriák rendelési értéke és tonnája">Termékkategória bontás</SectionTitle>
-          {catData.length > 0 ? (
-            <div className="space-y-2 mt-2">
-              {catData.map((c, i) => {
-                const pct = catData[0].value > 0 ? (c.value / catData[0].value) * 100 : 0;
-                return (
-                  <div key={c.name}>
-                    <div className="flex items-center justify-between text-xs mb-0.5">
-                      <span className="font-medium text-slate-700 truncate max-w-[50%]">{c.name}</span>
-                      <span className="text-slate-500 text-[11px]">
-                        {fmt(c.tons, 1)} t &nbsp;·&nbsp; {fmt(c.value, 0)} EUR
-                      </span>
-                    </div>
-                    <div className="h-2 rounded-full bg-slate-100 overflow-hidden">
-                      <div
-                        className="h-full rounded-full transition-all"
-                        style={{ width: `${pct}%`, background: COLORS[i % COLORS.length] }}
-                      />
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          ) : <div className="h-32 flex items-center justify-center text-sm text-slate-400">Nincs rendelési sor</div>}
-        </div>
 
-        {/* Finance summary */}
-        <div className="p-5 rounded-2xl" style={cardBase}>
-          <SectionTitle sub="Vám és pénzügyi összesítő">Finance / Customs összesítő</SectionTitle>
-          <div className="grid grid-cols-2 gap-3 mt-2">
-            {[
-              { label: "MRN-re vár", value: mrnPending, color: "#eab308", sub: "finance_control státusz" },
-              { label: "MRN lezárva", value: mrnClosed, color: "#22c55e", sub: "lezárt fuvarok" },
-              { label: "Összes vámolt (HUF)", value: totalMrnHuf > 0 ? fmt(totalMrnHuf) : "—", color: "#3B6CF4", sub: "total_base összesen" },
-              { label: "Összes rendelés (EUR)", value: totalOrderValueEur > 0 ? fmt(totalOrderValueEur, 0) : "—", color: "#8b5cf6", sub: "összes rendelési érték" },
-            ].map(item => (
-              <div key={item.label} className="rounded-xl p-3.5" style={{ background: item.color + "12", border: `1px solid ${item.color}33` }}>
-                <p className="text-[11px] font-semibold text-slate-500">{item.label}</p>
-                <p className="text-xl font-bold mt-1 leading-none" style={{ color: item.color }}>{item.value}</p>
-                <p className="text-[10px] text-slate-400 mt-1">{item.sub}</p>
-              </div>
-            ))}
-          </div>
-
-          <Link to={createPageUrl("Finance")} className="mt-4 flex items-center gap-2 text-xs font-semibold text-blue-600 hover:underline">
-            Finance / Customs oldal <ArrowRight className="w-3.5 h-3.5" />
-          </Link>
-        </div>
-      </div>
 
       {/* ── SECTION 7: RECENT TRUCKS TABLE ────────────────────── */}
       <div className="p-5 rounded-2xl" style={cardBase}>
