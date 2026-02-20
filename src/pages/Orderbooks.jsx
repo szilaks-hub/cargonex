@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Eye, Trash2, ChevronDown } from "lucide-react";
+import { Plus, Eye, ChevronDown, GripVertical } from "lucide-react";
 import { toast } from "sonner";
 import OrderbookDetail from "@/components/orderbooks/OrderbookDetail";
 import OrderbooksMasterSummary from "@/components/orderbooks/OrderbooksMasterSummary";
