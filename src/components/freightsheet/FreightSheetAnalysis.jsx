@@ -155,7 +155,7 @@ export default function FreightSheetAnalysis() {
         {/* Country filter */}
         <div className="px-5 py-3 border-b bg-white flex items-center gap-3 flex-wrap">
           <Globe className="w-4 h-4 text-slate-400" />
-          <span className="text-xs font-semibold text-slate-600">Szűrés országra:</span>
+          <span className="text-xs font-semibold text-slate-600">Ország:</span>
           <div className="flex flex-wrap gap-1.5">
             <button
               onClick={() => setFilterCountry("")}
@@ -170,6 +170,26 @@ export default function FreightSheetAnalysis() {
             ))}
           </div>
         </div>
+
+        {/* Carrier filter */}
+        {carriers.length > 0 && (
+          <div className="px-5 py-3 border-b bg-white flex items-center gap-3 flex-wrap">
+            <span className="text-xs font-semibold text-slate-600">Fuvarozó:</span>
+            <div className="flex flex-wrap gap-1.5">
+              <button
+                onClick={() => setFilterCarrier("")}
+                className={`px-3 py-1 rounded-full text-xs font-semibold border transition-all ${!filterCarrier ? "bg-emerald-600 text-white border-emerald-600" : "border-slate-200 text-slate-500 hover:border-emerald-400"}`}
+              >Összes</button>
+              {carriers.map(c => (
+                <button
+                  key={c}
+                  onClick={() => setFilterCarrier(filterCarrier === c ? "" : c)}
+                  className={`px-3 py-1 rounded-full text-xs font-semibold border transition-all ${filterCarrier === c ? "bg-emerald-600 text-white border-emerald-600" : "border-slate-200 text-slate-500 hover:border-emerald-400"}`}
+                >{c}</button>
+              ))}
+            </div>
+          </div>
+        )}
       </Card>
 
       {/* Results table */}
