@@ -115,8 +115,8 @@ export default function Logistics() {
           {[
             { key: "booked", label: "Előjegyzett", color: "bg-slate-100 text-slate-700" },
             { key: "loaded", label: "Megrakott", color: "bg-orange-50 text-orange-700" },
+            { key: "finance_control", label: "Pénzügyi kontrol", color: "bg-yellow-50 text-yellow-700" },
             { key: "closed", label: "Lezárt", color: "bg-green-50 text-green-700" },
-            { key: "cancelled", label: "Törölve", color: "bg-red-50 text-red-500" },
           ].map(s => (
             <Card
               key={s.key}
