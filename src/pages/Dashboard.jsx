@@ -206,9 +206,69 @@ export default function Dashboard() {
         </div>
       </div>
 
+      {/* ── SECTION 0: FINANCE + CATEGORIES (prominently at top) ─── */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* Finance summary */}
+        <div className="p-5 rounded-2xl relative overflow-hidden" style={{ ...cardBase, background: "linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 60%, #3B6CF4 100%)" }}>
+          <div className="absolute inset-0 opacity-10" style={{ backgroundImage: "radial-gradient(circle at 80% 20%, #fff 0%, transparent 60%)" }} />
+          <div className="relative">
+            <SectionTitle sub="Vám és pénzügyi összesítő" accent="#fff">
+              <span className="text-white">💰 Finance / Customs összesítő</span>
+            </SectionTitle>
+            <div className="grid grid-cols-2 gap-3 mt-1">
+              {[
+                { label: "MRN-re vár", value: mrnPending, colorBg: "rgba(234,179,8,0.25)", colorText: "#fde047", sub: "finance_control státusz" },
+                { label: "MRN lezárva", value: mrnClosed, colorBg: "rgba(34,197,94,0.2)", colorText: "#86efac", sub: "lezárt fuvarok" },
+                { label: "Összes vámolt (HUF)", value: totalMrnHuf > 0 ? fmt(totalMrnHuf) : "—", colorBg: "rgba(255,255,255,0.12)", colorText: "#bfdbfe", sub: "total_base összesen" },
+                { label: "Összes rendelés (EUR)", value: totalOrderValueEur > 0 ? fmt(totalOrderValueEur, 0) : "—", colorBg: "rgba(255,255,255,0.12)", colorText: "#e9d5ff", sub: "összes rendelési érték" },
+              ].map(item => (
+                <div key={item.label} className="rounded-xl p-3" style={{ background: item.colorBg }}>
+                  <p className="text-[10px] font-semibold text-blue-200">{item.label}</p>
+                  <p className="text-lg font-bold mt-0.5 leading-none" style={{ color: item.colorText }}>{item.value}</p>
+                  <p className="text-[10px] text-blue-300 mt-1">{item.sub}</p>
+                </div>
+              ))}
+            </div>
+            <Link to={createPageUrl("Finance")} className="mt-4 flex items-center gap-2 text-xs font-semibold text-blue-200 hover:text-white transition-colors">
+              Finance / Customs oldal <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+        </div>
+
+        {/* Category distribution */}
+        <div className="p-5 rounded-2xl" style={cardBase}>
+          <SectionTitle sub="Termékkategóriák rendelési értéke és tonnája" accent="#8b5cf6">📦 Termékkategória bontás</SectionTitle>
+          {catData.length > 0 ? (
+            <div className="space-y-2.5 mt-1">
+              {catData.slice(0, 6).map((c, i) => {
+                const pct = catData[0].value > 0 ? (c.value / catData[0].value) * 100 : 0;
+                return (
+                  <div key={c.name}>
+                    <div className="flex items-center justify-between text-xs mb-1">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: COLORS[i % COLORS.length] }} />
+                        <span className="font-semibold text-slate-700 truncate max-w-[140px]">{c.name}</span>
+                      </div>
+                      <span className="text-slate-400 text-[11px] whitespace-nowrap">
+                        {fmt(c.tons, 1)} t &nbsp;·&nbsp; <span className="font-semibold text-slate-600">{fmt(c.value, 0)} EUR</span>
+                      </span>
+                    </div>
+                    <div className="h-2 rounded-full bg-slate-100 overflow-hidden">
+                      <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, background: COLORS[i % COLORS.length] }} />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : <div className="h-32 flex items-center justify-center text-sm text-slate-400">Nincs rendelési sor</div>}
+        </div>
+      </div>
+
+      <SectionDivider label="Fuvarok & Rendelések" />
+
       {/* ── SECTION 1: FUVAROK ─────────────────────────────────── */}
       <div>
-        <SectionTitle sub="Összes kamion és státusz áttekintés">🚛 Fuvarok (Trucks)</SectionTitle>
+        <SectionTitle sub="Összes kamion és státusz áttekintés" accent="#3B6CF4">🚛 Fuvarok (Trucks)</SectionTitle>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
           <KpiCard label="Nyitott fuvar" value={openTrucks.length} sub="Előjegyzett + Megrakott" icon={Truck} accent="#3B6CF4" link="Logistics" />
           <KpiCard label="Megrakott" value={trucks.filter(t=>t.status==="loaded").length} sub="Úton lévő" icon={Package} accent="#f59e0b" link="Logistics" />
