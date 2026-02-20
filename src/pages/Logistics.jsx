@@ -22,11 +22,19 @@ const STATUS_TABS = [
 
 const STATUS_LABELS = {
   booked: "Előjegyzett",
+  scheduled: "Ütemezett",
   loaded: "Megrakott",
+  in_transit: "Úton",
+  customs: "Vámon",
+  transit: "Tranzit",
+  arrived: "Megérkezett",
+  arrived_onsite: "Telephelyen",
+  arrived_offsite: "Off-site",
   closed: "Lezárt",
   cancelled: "Törölve",
 };
 
+// Badge colors for status dropdown
 const STATUS_COLORS = {
   booked: "bg-slate-100 text-slate-600",
   scheduled: "bg-blue-100 text-blue-700",
@@ -39,6 +47,21 @@ const STATUS_COLORS = {
   arrived_offsite: "bg-cyan-100 text-cyan-700",
   closed: "bg-green-100 text-green-700",
   cancelled: "bg-red-100 text-red-600",
+};
+
+// Full row background colors per status
+const ROW_BG = {
+  booked: "",
+  scheduled: "bg-blue-50/60",
+  loaded: "bg-orange-50/70",
+  in_transit: "bg-amber-50/70",
+  customs: "bg-purple-50/70",
+  transit: "bg-indigo-50/60",
+  arrived: "bg-teal-50/70",
+  arrived_onsite: "bg-emerald-50/70",
+  arrived_offsite: "bg-cyan-50/60",
+  closed: "bg-green-50/60",
+  cancelled: "bg-red-50/50 opacity-70",
 };
 
 export default function Logistics() {
