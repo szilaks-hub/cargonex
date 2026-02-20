@@ -11,31 +11,38 @@ const fmt2 = (n) =>
 
 const fmtEur = (n) => `${fmt2(n)} EUR`;
 
-export default function OrderbookDapCalc({ byCategory, trucks, openOrderIds }) {
-  // Global cost inputs (per ton defaults, user can override)
+export default function OrderbookDapCalc({ byCategory, trucks, orderIds, openOrderIds }) {
+  // Support both prop names for backwards compat
+  const ids = orderIds || openOrderIds || [];
+
   const [freightPerTon, setFreightPerTon] = useState("");
   const [customsPerTruck, setCustomsPerTruck] = useState("");
   const [truckCapacity, setTruckCapacity] = useState("24");
   const [otherPerTon, setOtherPerTon] = useState("");
 
-  // Derive average freight from truck data if available
+  // Derive REAL averages from actual truck data
   const avgFreightFromTrucks = useMemo(() => {
     const relevant = trucks.filter(
-      (t) => openOrderIds.includes(t.orderbook_id) && t.freight_eur_per_ton_snapshot > 0
+      (t) => ids.includes(t.orderbook_id) && (t.freight_eur_per_ton_snapshot > 0 || t.freight_total_snapshot > 0)
     );
     if (!relevant.length) return null;
-    const sum = relevant.reduce((s, t) => s + (t.freight_eur_per_ton_snapshot || 0), 0);
-    return sum / relevant.length;
-  }, [trucks, openOrderIds]);
+    const withSnapshot = relevant.filter(t => t.freight_eur_per_ton_snapshot > 0);
+    if (withSnapshot.length) {
+      return withSnapshot.reduce((s, t) => s + t.freight_eur_per_ton_snapshot, 0) / withSnapshot.length;
+    }
+    // fallback: total / load
+    const withTotal = relevant.filter(t => t.freight_total_snapshot > 0 && t.freight_load_tons_snapshot > 0);
+    if (!withTotal.length) return null;
+    return withTotal.reduce((s, t) => s + (t.freight_total_snapshot / t.freight_load_tons_snapshot), 0) / withTotal.length;
+  }, [trucks, ids]);
 
   const avgCustomsFromTrucks = useMemo(() => {
     const relevant = trucks.filter(
-      (t) => openOrderIds.includes(t.orderbook_id) && t.customs_agent_fee > 0
+      (t) => ids.includes(t.orderbook_id) && t.customs_agent_fee > 0
     );
     if (!relevant.length) return null;
-    const sum = relevant.reduce((s, t) => s + (t.customs_agent_fee || 0), 0);
-    return sum / relevant.length;
-  }, [trucks, openOrderIds]);
+    return relevant.reduce((s, t) => s + (t.customs_agent_fee || 0), 0) / relevant.length;
+  }, [trucks, ids]);
 
   const cap = parseFloat(truckCapacity) || 24;
   const freightEurTon = parseFloat(freightPerTon) || avgFreightFromTrucks || 0;
