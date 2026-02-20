@@ -5,12 +5,15 @@ import PageHeader from "@/components/ui/PageHeader";
 import DataTable from "@/components/ui/DataTable";
 import StatusBadge from "@/components/ui/StatusBadge";
 import TruckCustomsDetail from "../components/finance/TruckCustomsDetail";
+import MrnStatistics from "../components/finance/MrnStatistics";
 import { Input } from "@/components/ui/input";
-import { Search } from "lucide-react";
+import { Search, BarChart2, List } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export default function Finance() {
   const [selectedTruck, setSelectedTruck] = useState(null);
   const [search, setSearch] = useState("");
+  const [tab, setTab] = useState("list"); // "list" | "stats"
   const qc = useQueryClient();
 
   const { data: trucks = [], isLoading } = useQuery({
@@ -32,18 +35,21 @@ export default function Finance() {
       (t.truck_number || "").toLowerCase().includes(s) ||
       (t.product_name || "").toLowerCase().includes(s) ||
       (t.carrier_name || "").toLowerCase().includes(s) ||
-      (t.mrn_number || "").toLowerCase().includes(s)
+      (t.mrn_number || "").toLowerCase().includes(s) ||
+      (t.supplier_invoice_number || "").toLowerCase().includes(s)
     );
   }, [eligibleTrucks, search]);
 
   const columns = [
-    { header: "Truck #", render: (r) => r.truck_number || `T-${r.id?.slice(0, 6)}` },
-    { header: "Product", key: "product_name" },
-    { header: "Actual (t)", render: (r) => r.actual_weight_tons?.toFixed(2) || "-" },
-    { header: "Carrier", key: "carrier_name", render: (r) => r.carrier_name || "-" },
-    { header: "MRN", key: "mrn_number", render: (r) => r.mrn_number || "-" },
-    { header: "Customs Value", render: (r) => r.calculated_customs_value?.toLocaleString() || "-" },
-    { header: "Status", render: (r) => <StatusBadge status={r.status} /> },
+    { header: "Rendszám", render: (r) => r.truck_number || `T-${r.id?.slice(0, 6)}` },
+    { header: "Termék", key: "product_name" },
+    { header: "Tény. (t)", render: (r) => r.actual_weight_tons?.toFixed(2) || "-" },
+    { header: "Fuvarozó", key: "carrier_name", render: (r) => r.carrier_name || "-" },
+    { header: "Eladó számlaszám", render: (r) => r.supplier_invoice_number || "-" },
+    { header: "MRN szám", render: (r) => r.mrn_number || "-" },
+    { header: "MRN dátum", render: (r) => r.mrn_date || "-" },
+    { header: "Végösszeg (HUF)", render: (r) => r.total_base ? Number(r.total_base).toLocaleString("hu-HU") : "-" },
+    { header: "Státusz", render: (r) => <StatusBadge status={r.status} /> },
   ];
 
   if (selectedTruck) {
@@ -61,17 +67,38 @@ export default function Finance() {
 
   return (
     <div className="space-y-4">
-      <PageHeader title="Finance / Customs / AEO" subtitle="Customs clearance workflow / Vámkezelés" />
-      <div className="relative max-w-md">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8b949e]" />
-        <Input
-          className="pl-9 bg-[#1a1e23] border-[#2d333b] text-[#e6edf3]"
-          placeholder="Search truck, product, MRN..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
+      <div className="flex items-start justify-between gap-4 flex-wrap">
+        <PageHeader title="Finance / Customs / AEO" subtitle="Customs clearance workflow / Vámkezelés" />
+        <div className="flex items-center gap-1 rounded-lg p-1" style={{ background: "#e4e7ec" }}>
+          <Button size="sm" variant="ghost" onClick={() => setTab("list")}
+            className={`gap-1.5 text-xs h-7 px-3 ${tab === "list" ? "bg-white shadow-sm text-slate-800" : "text-slate-500"}`}>
+            <List className="w-3.5 h-3.5" /> Lista
+          </Button>
+          <Button size="sm" variant="ghost" onClick={() => setTab("stats")}
+            className={`gap-1.5 text-xs h-7 px-3 ${tab === "stats" ? "bg-white shadow-sm text-slate-800" : "text-slate-500"}`}>
+            <BarChart2 className="w-3.5 h-3.5" /> MRN Statisztika
+          </Button>
+        </div>
       </div>
-      <DataTable columns={columns} data={filtered} isLoading={isLoading} onRowClick={(r) => setSelectedTruck(r)} />
+
+      {tab === "list" && (
+        <>
+          <div className="relative max-w-md">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <Input
+              className="pl-9"
+              placeholder="Keresés: rendszám, termék, MRN, számlaszám..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+          <DataTable columns={columns} data={filtered} isLoading={isLoading} onRowClick={(r) => setSelectedTruck(r)} />
+        </>
+      )}
+
+      {tab === "stats" && (
+        <MrnStatistics trucks={eligibleTrucks} />
+      )}
     </div>
   );
 }
