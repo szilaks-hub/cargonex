@@ -228,6 +228,24 @@ export default function FreightSheets() {
             )}
           </div>
 
+          {/* Country filter */}
+          {allCountries.length > 0 && (
+            <div className="flex items-center gap-2 flex-wrap mb-3">
+              <span className="text-xs font-semibold text-slate-500">Ország:</span>
+              <button
+                onClick={() => setFilterCountry("")}
+                className={`px-3 py-1 rounded-full text-xs font-semibold border transition-all ${!filterCountry ? "bg-blue-600 text-white border-blue-600" : "border-slate-200 text-slate-500 hover:border-blue-400"}`}
+              >Összes</button>
+              {allCountries.map(c => (
+                <button
+                  key={c}
+                  onClick={() => setFilterCountry(filterCountry === c ? "" : c)}
+                  className={`px-3 py-1 rounded-full text-xs font-semibold border transition-all ${filterCountry === c ? "bg-blue-600 text-white border-blue-600" : "border-slate-200 text-slate-500 hover:border-blue-400"}`}
+                >{c}</button>
+              ))}
+            </div>
+          )}
+
           {showForm && (
             <FreightSheetForm
               item={editItem}
