@@ -204,10 +204,24 @@ export default function TruckForm({ item, onClose, onSaved, defaultOrderbookId, 
                 <SelectTrigger className={inp}>
                   <SelectValue placeholder="Válassz nyitott rendelést..." />
                 </SelectTrigger>
-                <SelectContent className="bg-white border-[#c6ccda]">
-                  {orderbooks.map((o) => (
-                    <SelectItem key={o.id} value={o.id}>
-                      {o.supplier_order_no ? `${o.supplier_order_no} (${o.order_no})` : o.order_no} – {o.supplier_name}
+                <SelectContent className="bg-white border-[#c6ccda] max-h-72">
+                  {orderbooks.map((o, idx) => (
+                    <SelectItem key={o.id} value={o.id} className={idx % 2 === 0 ? "bg-white" : "bg-slate-50/80"}>
+                      <div className="flex flex-col py-0.5 gap-0.5">
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold text-slate-900 text-sm leading-tight">
+                            {o.supplier_order_no || <span className="italic text-slate-400 font-normal">–</span>}
+                          </span>
+                          <span className="text-[10px] font-mono text-slate-400 bg-slate-100 rounded px-1">{o.order_no}</span>
+                          {o.customs_required && <span className="text-[9px] font-bold text-orange-600 bg-orange-50 rounded px-1">VÁM</span>}
+                        </div>
+                        <div className="flex items-center gap-2 text-xs text-slate-500">
+                          <span className="font-medium text-slate-600">{o.supplier_name}</span>
+                          {o.supplier_site_name && <span>· {o.supplier_site_name}</span>}
+                          {o.order_date && <span>· {o.order_date}</span>}
+                          {o.incoterms_type && <span className="text-blue-600 font-semibold">{o.incoterms_type}</span>}
+                        </div>
+                      </div>
                     </SelectItem>
                   ))}
                 </SelectContent>
