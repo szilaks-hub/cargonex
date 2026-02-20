@@ -102,8 +102,8 @@ function SummaryPanel({ title, orderIds, lines, trucks, allOrders, badge }) {
   const closedTrucks = relevantTrucks.filter(t => t.status === "closed");
 
   const byCategory = useMemo(
-    () => buildByCategory(filteredLines, activeTrucks, closedTrucks),
-    [filteredLines.length, activeTrucks.length, closedTrucks.length]
+    () => buildByCategory(filteredLines, relevantTrucks),
+    [filteredLines.length, relevantTrucks.length]
   );
 
   const totals = useMemo(() => byCategory.reduce((acc, c) => ({
