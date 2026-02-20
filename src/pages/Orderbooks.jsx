@@ -78,10 +78,11 @@ export default function OrderbooksPage() {
       />
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="bg-slate-100">
+        <TabsList className="bg-slate-100 flex-wrap h-auto">
           <TabsTrigger value="open">Open ({openOrders.length})</TabsTrigger>
           <TabsTrigger value="closed">Closed ({closedOrders.length})</TabsTrigger>
           <TabsTrigger value="summary">📊 Összesítő</TabsTrigger>
+          <TabsTrigger value="familytree">🌳 Rendelés &amp; Kamionok</TabsTrigger>
         </TabsList>
 
         <TabsContent value="open" className="mt-4 space-y-4">
