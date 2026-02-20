@@ -207,6 +207,8 @@ export default function TruckForm({ item, onClose, onSaved, defaultOrderbookId, 
               {selectedOrderbook && (
                 <div className="mt-1.5 p-2 bg-blue-50 rounded text-xs text-blue-800 space-y-0.5">
                   <div><span className="font-semibold">Incoterms:</span> {selectedOrderbook.incoterms_type} {selectedOrderbook.incoterms_place}</div>
+                  {selectedOrderbook.destination_country && <div><span className="font-semibold">Célország:</span> {selectedOrderbook.destination_country}</div>}
+                  {selectedOrderbook.preferred_carrier_name && <div><span className="font-semibold">Fuvarozó:</span> {selectedOrderbook.preferred_carrier_name}</div>}
                   {selectedOrderbook.customs_required && <div className="text-orange-700 font-semibold">⚠ Vámkezelés szükséges</div>}
                   {orderbookLines.length > 0 && (
                     <div className="flex flex-wrap gap-2 mt-1">
