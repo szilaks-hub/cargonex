@@ -97,8 +97,10 @@ export default function FreightSheetAnalysis() {
         });
       });
     });
-    return rows.sort((a, b) => a.countryName.localeCompare(b.countryName) || a.city.localeCompare(b.city));
-  }, [byCountry, pp, cu, ot, of_, wh, prof, filterCountry]);
+    return rows
+      .filter(r => !filterCarrier || r.carrier === filterCarrier)
+      .sort((a, b) => a.countryName.localeCompare(b.countryName) || a.city.localeCompare(b.city));
+  }, [byCountry, pp, cu, ot, of_, wh, prof, filterCountry, filterCarrier]);
 
   const countries = [...new Set(Object.keys(byCountry))].sort();
   const hasSimulation = pp > 0 || cu > 0 || ot > 0 || of_ > 0 || wh > 0;
