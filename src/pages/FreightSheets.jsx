@@ -16,6 +16,7 @@ export default function FreightSheets() {
   const [editItem, setEditItem] = useState(null);
   const [selectedSheet, setSelectedSheet] = useState(null);
   const [showArchived, setShowArchived] = useState(false);
+  const [filterCountry, setFilterCountry] = useState("");
   const [user, setUser] = useState(null);
   const qc = useQueryClient();
 
