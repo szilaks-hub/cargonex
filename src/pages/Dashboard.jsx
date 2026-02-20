@@ -62,11 +62,26 @@ function KpiCard({ label, value, sub, icon: Icon, accent, link, trend }) {
   return link ? <Link to={createPageUrl(link)}>{inner}</Link> : inner;
 }
 
-function SectionTitle({ children, sub }) {
+function SectionTitle({ children, sub, accent = "#3B6CF4" }) {
   return (
-    <div className="mb-3">
-      <h2 className="text-sm font-bold text-slate-700 uppercase tracking-widest">{children}</h2>
-      {sub && <p className="text-xs text-slate-400 mt-0.5">{sub}</p>}
+    <div className="mb-4">
+      <div className="flex items-center gap-3">
+        <div className="w-1 h-7 rounded-full flex-shrink-0" style={{ background: `linear-gradient(180deg, ${accent}, ${accent}88)` }} />
+        <div>
+          <h2 className="text-sm font-bold text-slate-700 uppercase tracking-widest leading-none">{children}</h2>
+          {sub && <p className="text-xs text-slate-400 mt-0.5">{sub}</p>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SectionDivider({ label }) {
+  return (
+    <div className="flex items-center gap-3 my-2">
+      <div className="flex-1 h-px bg-gradient-to-r from-slate-200 to-transparent" />
+      {label && <span className="text-[10px] font-bold text-slate-300 uppercase tracking-widest whitespace-nowrap">{label}</span>}
+      <div className="flex-1 h-px bg-gradient-to-l from-slate-200 to-transparent" />
     </div>
   );
 }
