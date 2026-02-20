@@ -139,8 +139,88 @@ export default function OrderbooksPage() {
   );
 }
 
+// Row color palette options
+const ROW_COLORS = [
+  { key: "", label: "—", bg: "", border: "" },
+  { key: "blue",   label: "Kék",    bg: "bg-blue-50",   border: "border-l-4 border-l-blue-400" },
+  { key: "green",  label: "Zöld",   bg: "bg-green-50",  border: "border-l-4 border-l-emerald-400" },
+  { key: "yellow", label: "Sárga",  bg: "bg-yellow-50", border: "border-l-4 border-l-yellow-400" },
+  { key: "orange", label: "Narancs",bg: "bg-orange-50", border: "border-l-4 border-l-orange-400" },
+  { key: "red",    label: "Piros",  bg: "bg-red-50",    border: "border-l-4 border-l-red-400" },
+  { key: "purple", label: "Lila",   bg: "bg-purple-50", border: "border-l-4 border-l-purple-400" },
+  { key: "pink",   label: "Rózsaszín", bg: "bg-pink-50",border: "border-l-4 border-l-pink-400" },
+  { key: "teal",   label: "Türkiz", bg: "bg-teal-50",   border: "border-l-4 border-l-teal-400" },
+];
+
+function ColorDot({ colorKey, onClick }) {
+  const c = ROW_COLORS.find(r => r.key === colorKey) || ROW_COLORS[0];
+  const dotColors = {
+    "": "bg-slate-200",
+    blue: "bg-blue-400", green: "bg-emerald-400", yellow: "bg-yellow-400",
+    orange: "bg-orange-400", red: "bg-red-400", purple: "bg-purple-400",
+    pink: "bg-pink-400", teal: "bg-teal-400"
+  };
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="relative">
+      <button
+        onClick={(e) => { e.stopPropagation(); setOpen(o => !o); }}
+        className={`w-4 h-4 rounded-full border border-white shadow ${dotColors[colorKey] || "bg-slate-200"} hover:scale-110 transition-transform`}
+        title="Sor szín"
+      />
+      {open && (
+        <div className="absolute left-0 top-6 z-50 bg-white border border-slate-200 rounded-lg shadow-lg p-2 flex flex-wrap gap-1.5 w-36"
+          onClick={e => e.stopPropagation()}>
+          {ROW_COLORS.map(r => (
+            <button
+              key={r.key}
+              title={r.label}
+              onClick={() => { onClick(r.key); setOpen(false); }}
+              className={`w-5 h-5 rounded-full border-2 ${dotColors[r.key] || "bg-slate-200"} ${r.key === colorKey ? 'border-slate-700 scale-110' : 'border-white'} hover:scale-110 transition-transform`}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function OrderbooksList({ orders, lines, onSelect, onDelete, isClosed }) {
   const [expandedId, setExpandedId] = useState(null);
+  const [sortedOrders, setSortedOrders] = useState(null);
+  const [dragIdx, setDragIdx] = useState(null);
+  const [dragOverIdx, setDragOverIdx] = useState(null);
+  const qc = useQueryClient();
+
+  // Use local sorted state if set, else use prop orders
+  const displayOrders = sortedOrders || orders;
+
+  // Sync when orders prop changes (e.g., after refetch)
+  React.useEffect(() => { setSortedOrders(null); }, [orders]);
+
+  const handleDragStart = (idx) => setDragIdx(idx);
+  const handleDragOver = (e, idx) => { e.preventDefault(); setDragOverIdx(idx); };
+  const handleDrop = async (e, dropIdx) => {
+    e.preventDefault();
+    if (dragIdx === null || dragIdx === dropIdx) { setDragIdx(null); setDragOverIdx(null); return; }
+    const newOrder = [...displayOrders];
+    const [moved] = newOrder.splice(dragIdx, 1);
+    newOrder.splice(dropIdx, 0, moved);
+    setSortedOrders(newOrder);
+    setDragIdx(null); setDragOverIdx(null);
+    // Persist sort_order
+    for (let i = 0; i < newOrder.length; i++) {
+      if (newOrder[i].sort_order !== i) {
+        base44.entities.Orderbook.update(newOrder[i].id, { sort_order: i });
+      }
+    }
+  };
+  const handleDragEnd = () => { setDragIdx(null); setDragOverIdx(null); };
+
+  const handleColorChange = async (order, colorKey) => {
+    await base44.entities.Orderbook.update(order.id, { row_color: colorKey });
+    qc.invalidateQueries({ queryKey: ['orderbooks'] });
+  };
 
   if (!orders || orders.length === 0) {
     return <div className="text-center py-8 text-slate-500">No orders</div>;
@@ -152,6 +232,7 @@ function OrderbooksList({ orders, lines, onSelect, onDelete, isClosed }) {
         <table className="w-full text-sm">
           <thead className="bg-slate-50 border-b">
             <tr className="text-left text-xs font-semibold text-slate-600">
+              <th className="py-3 px-2 w-8"></th>
               <th className="py-3 px-4">Bész. rendelésszám</th>
               <th className="py-3 px-4">Belső szám</th>
               <th className="py-3 px-4">Beszállító</th>
@@ -164,7 +245,7 @@ function OrderbooksList({ orders, lines, onSelect, onDelete, isClosed }) {
             </tr>
           </thead>
           <tbody>
-            {orders.map(order => {
+            {displayOrders.map((order, idx) => {
               const orderLines = lines.filter(l => l.orderbook_id === order.id);
               const plannedTons = orderLines.reduce((s, l) => s + (l.planned_quantity_tons || 0), 0);
               const allocatedTons = orderLines.reduce((s, l) => s + (l.allocated_quantity_tons || 0), 0);
@@ -172,10 +253,31 @@ function OrderbooksList({ orders, lines, onSelect, onDelete, isClosed }) {
               const isExpanded = expandedId === order.id;
               const remainingTons = plannedTons - allocatedTons;
               const allocPct = plannedTons > 0 ? Math.round((allocatedTons / plannedTons) * 100) : 0;
+              const colorDef = ROW_COLORS.find(r => r.key === order.row_color) || ROW_COLORS[0];
+              const isDragging = dragIdx === idx;
+              const isDragOver = dragOverIdx === idx;
               
               return (
                 <React.Fragment key={order.id}>
-                  <tr className={`border-b hover:bg-slate-50 ${isExpanded ? 'bg-blue-50/40' : ''}`}>
+                  <tr
+                    draggable
+                    onDragStart={() => handleDragStart(idx)}
+                    onDragOver={(e) => handleDragOver(e, idx)}
+                    onDrop={(e) => handleDrop(e, idx)}
+                    onDragEnd={handleDragEnd}
+                    className={`border-b transition-all
+                      ${colorDef.bg} ${colorDef.border}
+                      ${isDragging ? 'opacity-40' : ''}
+                      ${isDragOver ? 'border-t-2 border-t-blue-400' : ''}
+                      ${isExpanded ? 'brightness-95' : 'hover:brightness-95'}
+                    `}
+                  >
+                    <td className="py-3 px-2 text-slate-300 cursor-grab active:cursor-grabbing">
+                      <div className="flex items-center gap-1">
+                        <GripVertical className="w-3.5 h-3.5" />
+                        <ColorDot colorKey={order.row_color || ""} onClick={(c) => handleColorChange(order, c)} />
+                      </div>
+                    </td>
                     <td className="py-3 px-4 font-bold text-slate-900">
                       {order.supplier_order_no || <span className="text-slate-400 font-normal italic">—</span>}
                     </td>
@@ -198,24 +300,26 @@ function OrderbooksList({ orders, lines, onSelect, onDelete, isClosed }) {
                         <Badge className="bg-orange-100 text-orange-800 text-xs">Igen</Badge>
                       )}
                     </td>
-                    <td className="py-3 px-4 text-right flex items-center justify-end gap-1">
-                      {orderLines.length > 0 && (
-                        <button
-                          onClick={() => setExpandedId(isExpanded ? null : order.id)}
-                          className="text-slate-400 hover:text-slate-700 p-1 rounded"
-                          title="Termékkörök mutatása"
-                        >
-                          <ChevronDown className={`w-4 h-4 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
-                        </button>
-                      )}
-                      <Button size="sm" variant="ghost" className="text-blue-600" onClick={() => onSelect(order.id)}>
-                        <Eye className="w-4 h-4" />
-                      </Button>
+                    <td className="py-3 px-4 text-right">
+                      <div className="flex items-center justify-end gap-1">
+                        {orderLines.length > 0 && (
+                          <button
+                            onClick={() => setExpandedId(isExpanded ? null : order.id)}
+                            className="text-slate-400 hover:text-slate-700 p-1 rounded"
+                            title="Termékkörök mutatása"
+                          >
+                            <ChevronDown className={`w-4 h-4 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                          </button>
+                        )}
+                        <Button size="sm" variant="ghost" className="text-blue-600" onClick={() => onSelect(order.id)}>
+                          <Eye className="w-4 h-4" />
+                        </Button>
+                      </div>
                     </td>
                   </tr>
                   {isExpanded && (
-                    <tr className="border-b bg-slate-50/70">
-                      <td colSpan="9" className="px-6 py-3">
+                    <tr className={`border-b ${colorDef.bg} opacity-90`}>
+                      <td colSpan="10" className="px-6 py-3">
                         <div className="space-y-2">
                           <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Termékkörök összesítése</div>
                           {orderLines.map(line => {
@@ -250,7 +354,6 @@ function OrderbooksList({ orders, lines, onSelect, onDelete, isClosed }) {
                               </div>
                             );
                           })}
-                          {/* Total row */}
                           <div className="flex items-center gap-3 pt-2 border-t border-slate-200">
                             <div className="w-36 text-xs font-bold text-slate-600 uppercase">Összesen</div>
                             <div className="flex-1">
