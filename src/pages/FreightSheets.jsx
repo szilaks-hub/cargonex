@@ -6,8 +6,10 @@ import DataTable from "@/components/ui/DataTable";
 import StatusBadge from "@/components/ui/StatusBadge";
 import FreightSheetForm from "@/components/freightsheet/FreightSheetForm";
 import FreightSheetDetail from "@/components/freightsheet/FreightSheetDetail";
+import FreightSheetAnalysis from "@/components/freightsheet/FreightSheetAnalysis";
 import { Button } from "@/components/ui/button";
-import { FileText, Copy, Archive, CheckCircle2, Eye } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { FileText, Copy, Archive, CheckCircle2, Eye, BarChart2 } from "lucide-react";
 
 export default function FreightSheets() {
   const [showForm, setShowForm] = useState(false);
