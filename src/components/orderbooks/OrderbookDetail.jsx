@@ -60,6 +60,11 @@ export default function OrderbookDetail({ orderId, onClose, onUpdated }) {
     queryFn: () => base44.entities.Partner.filter({ roles: 'customs_agent' }),
   });
 
+  const { data: carriers = [] } = useQuery({
+    queryKey: ['carriers'],
+    queryFn: () => base44.entities.Partner.filter({ roles: 'carrier' }),
+  });
+
   // Initialize form from orderbook; also sync remote changes when not dirty
   const [isDirty, setIsDirty] = useState(false);
 
