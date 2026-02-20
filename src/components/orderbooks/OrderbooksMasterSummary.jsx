@@ -216,11 +216,11 @@ function SummaryPanel({ title, orderIds, lines, trucks, allOrders, badge }) {
         </div>
       </Card>
 
-      {/* DAP Calculator */}
-      <OrderbookDapCalc byCategory={byCategory} trucks={trucks} orderIds={orderIds} />
-
-      {/* Detailed report */}
+      {/* Detailed report — first, most important */}
       <OrderbookReport orders={filteredOrders} lines={filteredLines} trucks={relevantTrucks} title={title} />
+
+      {/* DAP Calculator — at the bottom */}
+      <OrderbookDapCalc byCategory={byCategory} trucks={trucks} orderIds={orderIds} />
     </div>
   );
 }
