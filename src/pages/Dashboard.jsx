@@ -338,7 +338,7 @@ export default function Dashboard() {
 
         {/* Country bar */}
         <div className="p-5 rounded-2xl" style={cardBase}>
-          <SectionTitle sub="Célország szerinti fuvarok">Célország bontás</SectionTitle>
+          <SectionTitle sub="Célország szerinti fuvarok" accent="#f59e0b">Célország bontás</SectionTitle>
           {countryData.length > 0 ? (
             <ResponsiveContainer width="100%" height={230}>
               <BarChart data={countryData} barCategoryGap="35%" layout="vertical">
