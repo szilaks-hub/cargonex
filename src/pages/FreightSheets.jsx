@@ -96,7 +96,10 @@ export default function FreightSheets() {
     { header: "Carrier / Fuvarozó", render: r => (
       <div>
         <div className="font-semibold text-slate-800">{r.carrier_name || "—"}</div>
-        {r.sheet_number && <div className="text-xs text-slate-400 font-mono">{r.sheet_number}</div>}
+        <div className="flex items-center gap-1.5 flex-wrap mt-0.5">
+          {r.sheet_number && <span className="text-xs text-slate-400 font-mono">{r.sheet_number}</span>}
+          {r.alias && <span className="text-[10px] font-bold bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded uppercase tracking-wide">{r.alias}</span>}
+        </div>
       </div>
     )},
     { header: "Célország", render: r => (
