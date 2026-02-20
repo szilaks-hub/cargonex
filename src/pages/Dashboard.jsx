@@ -107,12 +107,15 @@ export default function Dashboard() {
   // ── Orderbook stats ─────────────────────────────────────────────
   const openOrderbooks = orderbooks.filter(o => o.status === "open");
   const closedOrderbooks = orderbooks.filter(o => o.status === "closed");
-  const totalOrderValueEur = orderbookLines.reduce((s, l) => s + (l.line_value_eur || 0), 0);
+  const openOrderbookIds = new Set(openOrderbooks.map(o => o.id));
+  // Only count lines belonging to OPEN orderbooks (same logic as Orderbooks page)
+  const openLines = orderbookLines.filter(l => openOrderbookIds.has(l.orderbook_id));
+  const totalOrderValueEur = openLines.reduce((s, l) => s + (l.line_value_eur || 0), 0);
   const avgPricePerTon = useMemo(() => {
-    const totalTons = orderbookLines.reduce((s, l) => s + (l.planned_quantity_tons || 0), 0);
-    const totalVal = orderbookLines.reduce((s, l) => s + (l.line_value_eur || 0), 0);
+    const totalTons = openLines.reduce((s, l) => s + (l.planned_quantity_tons || 0), 0);
+    const totalVal = openLines.reduce((s, l) => s + (l.line_value_eur || 0), 0);
     return totalTons > 0 ? totalVal / totalTons : 0;
-  }, [orderbookLines]);
+  }, [openLines]);
 
   // ── Supplier/carrier/customs agent counts ───────────────────────
   const suppliers = partners.filter(p => p.roles?.includes("supplier"));
