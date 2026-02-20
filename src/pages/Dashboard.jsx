@@ -291,9 +291,11 @@ export default function Dashboard() {
         </div>
       </div>
 
+      <SectionDivider label="Rendszer adatok" />
+
       {/* ── SECTION 3: PARTNER & RENDSZER STATS ───────────────── */}
       <div>
-        <SectionTitle sub="Partnerek, fuvarlapok, termékkategóriák">📋 Rendszer adatok</SectionTitle>
+        <SectionTitle sub="Partnerek, fuvarlapok, termékkategóriák" accent="#22c55e">🗂️ Rendszer adatok</SectionTitle>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
           <KpiCard label="Szállítók" value={suppliers.length} sub="Aktív partnerek" icon={Users} accent="#3B6CF4" link="Partners" />
           <KpiCard label="Fuvarozók" value={carriers.length} sub="Aktív fuvarozók" icon={Truck} accent="#f59e0b" link="Partners" />
