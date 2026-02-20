@@ -46,8 +46,8 @@ export default function TruckCustomsDetail({ truck, onBack, onUpdated }) {
   const customsAgentFeeHuf = customsAgentFeeEur * exchangeRate;
 
   const totalBase = invoiceHuf + foreignFreightHuf + domesticFreightHuf + customsAgentFeeHuf;
-  // Indicative VAT: total / 1.27 then * 0.27 (i.e. total - total/1.27) – OR just total * 0.27 / 1.27
-  const indicativeVat = totalBase / 1.27;
+  // Tájékoztató ÁFA = végösszeg * 27%
+  const indicativeVat = totalBase * 0.27;
 
   // MRN comparison
   const mrnDeclared = Number(form.mrn_declared_amount) || 0;
