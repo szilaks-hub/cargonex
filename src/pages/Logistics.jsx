@@ -120,10 +120,10 @@ export default function Logistics() {
 
       {/* Summary Cards */}
       {!showForm && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
           {[
             { key: "booked", label: "Előjegyzett", color: "bg-slate-100 text-slate-700" },
-            { key: "loaded", label: "Megrakott", color: "bg-amber-50 text-amber-700" },
+            { key: "loaded", label: "Megrakott", color: "bg-orange-50 text-orange-700" },
             { key: "closed", label: "Lezárt", color: "bg-green-50 text-green-700" },
             { key: "cancelled", label: "Törölve", color: "bg-red-50 text-red-500" },
           ].map(s => (
@@ -136,6 +136,11 @@ export default function Logistics() {
               <div className="text-2xl font-bold">{stats[s.key] || 0}</div>
             </Card>
           ))}
+          <Card className="p-3 bg-indigo-50 text-indigo-700">
+            <div className="text-xs font-medium">Tranzit (TR)</div>
+            <div className="text-2xl font-bold">{trucks.filter(t => t.transit).length}</div>
+            <div className="text-[10px] text-indigo-400 mt-0.5">összes fuvarból</div>
+          </Card>
         </div>
       )}
 
