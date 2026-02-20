@@ -435,7 +435,7 @@ export default function Dashboard() {
       {/* ── SECTION 7: RECENT TRUCKS TABLE ────────────────────── */}
       <div className="p-5 rounded-2xl" style={cardBase}>
         <div className="flex items-center justify-between mb-3">
-          <SectionTitle sub="Legutóbbi fuvarok">Legutóbbi fuvarok</SectionTitle>
+          <SectionTitle sub="Legutóbbi fuvarok" accent="#3B6CF4">Legutóbbi fuvarok</SectionTitle>
           <Link to={createPageUrl("Logistics")} className="text-xs font-semibold text-blue-500 hover:underline flex items-center gap-1">
             Összes <ArrowRight className="w-3 h-3" />
           </Link>
