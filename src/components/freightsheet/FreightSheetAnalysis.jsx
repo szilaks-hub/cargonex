@@ -190,15 +190,35 @@ export default function FreightSheetAnalysis() {
             <span className="text-xs font-semibold text-slate-600">Fuvarozó:</span>
             <div className="flex flex-wrap gap-1.5">
               <button
-                onClick={() => setFilterCarrier("")}
+                onClick={() => { setFilterCarrier(""); setFilterOrigin(""); }}
                 className={`px-3 py-1 rounded-full text-xs font-semibold border transition-all ${!filterCarrier ? "bg-emerald-600 text-white border-emerald-600" : "border-slate-200 text-slate-500 hover:border-emerald-400"}`}
               >Összes</button>
               {carriers.map(c => (
                 <button
                   key={c}
-                  onClick={() => setFilterCarrier(filterCarrier === c ? "" : c)}
+                  onClick={() => { setFilterCarrier(filterCarrier === c ? "" : c); setFilterOrigin(""); }}
                   className={`px-3 py-1 rounded-full text-xs font-semibold border transition-all ${filterCarrier === c ? "bg-emerald-600 text-white border-emerald-600" : "border-slate-200 text-slate-500 hover:border-emerald-400"}`}
                 >{c}</button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Origin site filter — only visible when a carrier is selected and has multiple origins */}
+        {filterCarrier && originSites.length > 1 && (
+          <div className="px-5 py-3 border-b bg-white flex items-center gap-3 flex-wrap">
+            <span className="text-xs font-semibold text-slate-600">Rakodási helyszín:</span>
+            <div className="flex flex-wrap gap-1.5">
+              <button
+                onClick={() => setFilterOrigin("")}
+                className={`px-3 py-1 rounded-full text-xs font-semibold border transition-all ${!filterOrigin ? "bg-violet-600 text-white border-violet-600" : "border-slate-200 text-slate-500 hover:border-violet-400"}`}
+              >Összes</button>
+              {originSites.map(s => (
+                <button
+                  key={s}
+                  onClick={() => setFilterOrigin(filterOrigin === s ? "" : s)}
+                  className={`px-3 py-1 rounded-full text-xs font-semibold border transition-all ${filterOrigin === s ? "bg-violet-600 text-white border-violet-600" : "border-slate-200 text-slate-500 hover:border-violet-400"}`}
+                >{s}</button>
               ))}
             </div>
           </div>
