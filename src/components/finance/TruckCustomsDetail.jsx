@@ -210,7 +210,11 @@ export default function TruckCustomsDetail({ truck, onBack, onUpdated }) {
               <Input type="number" step="0.01" className="mt-1 bg-slate-50" placeholder="pl. 400" value={form.exchange_rate} onChange={(e) => set("exchange_rate", e.target.value)} disabled={isClosed} />
             </div>
             <div>
-              <Label className="text-slate-500 text-xs">Freight Invoice # *</Label>
+              <Label className="text-slate-500 text-xs">Eladó számlaszáma *</Label>
+              <Input className={`mt-1 ${!form.supplier_invoice_number && !isClosed ? "border-orange-300 bg-orange-50" : "bg-slate-50"}`} value={form.supplier_invoice_number} onChange={(e) => set("supplier_invoice_number", e.target.value)} disabled={isClosed} placeholder="pl. INV-2024-001" />
+            </div>
+            <div>
+              <Label className="text-slate-500 text-xs">Fuvar számla (Freight Invoice #) *</Label>
               <Input className={`mt-1 ${!form.freight_invoice_number && !isClosed ? "border-orange-300 bg-orange-50" : "bg-slate-50"}`} value={form.freight_invoice_number} onChange={(e) => set("freight_invoice_number", e.target.value)} disabled={isClosed} />
             </div>
             <div>
