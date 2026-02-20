@@ -100,8 +100,9 @@ export default function FreightSheetAnalysis() {
     });
     return rows
       .filter(r => !filterCarrier || r.carrier === filterCarrier)
+      .filter(r => !filterOrigin || r.originSite === filterOrigin)
       .sort((a, b) => a.countryName.localeCompare(b.countryName) || a.city.localeCompare(b.city));
-  }, [byCountry, pp, cu, ot, of_, wh, prof, filterCountry, filterCarrier]);
+  }, [byCountry, pp, cu, ot, of_, wh, prof, filterCountry, filterCarrier, filterOrigin]);
 
   const countries = [...new Set(Object.keys(byCountry))].sort();
   const carriers = [...new Set(
