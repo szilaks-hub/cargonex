@@ -197,47 +197,60 @@ export default function FreightSheets() {
         addLabel="Új lap"
       />
 
-      {/* Status legend + show archived toggle */}
-      <div className="flex items-center justify-between flex-wrap gap-2">
-        <div className="flex gap-3 flex-wrap text-xs text-slate-500">
-          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-yellow-400 inline-block" /> Draft – szerkeszthető, aktiválható</span>
-          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-green-500 inline-block" /> Active – módosítás = Új verzió</span>
-          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-slate-400 inline-block" /> Archived – csak olvasható</span>
-        </div>
-        {isAdmin && (
-          <button
-            onClick={() => setShowArchived(v => !v)}
-            className={`text-xs px-3 py-1.5 rounded-lg border transition-colors ${showArchived ? "bg-slate-200 border-slate-300 text-slate-700" : "bg-white border-slate-200 text-slate-500 hover:bg-slate-50"}`}
-          >
-            {showArchived ? "🗂 Archivált elrejtése" : "🗂 Archivált megjelenítése"}
-          </button>
-        )}
-      </div>
+      <Tabs defaultValue="sheets">
+        <TabsList className="bg-slate-100">
+          <TabsTrigger value="sheets"><FileText className="w-3.5 h-3.5 mr-1.5" />Fuvarozási lapok</TabsTrigger>
+          <TabsTrigger value="analysis"><BarChart2 className="w-3.5 h-3.5 mr-1.5" />Kimutatás & Szimuláció</TabsTrigger>
+        </TabsList>
 
-      {showForm && (
-        <FreightSheetForm
-          item={editItem}
-          onClose={() => { setShowForm(false); setEditItem(null); }}
-          onSaved={() => {
-            qc.invalidateQueries({ queryKey: ["freightSheets"] });
-            setShowForm(false);
-            setEditItem(null);
-          }}
-        />
-      )}
-
-      <DataTable
-        columns={columns}
-        data={sortedSheets}
-        isLoading={isLoading}
-        onRowClick={r => setSelectedSheet(r)}
-        emptyMessage={
-          <div className="flex flex-col items-center gap-2 py-8 text-slate-400">
-            <FileText className="w-8 h-8 opacity-30" />
-            <p className="text-sm">Még nincs fuvarozási lap. Hozz létre egyet!</p>
+        <TabsContent value="sheets" className="mt-4">
+          {/* Status legend + show archived toggle */}
+          <div className="flex items-center justify-between flex-wrap gap-2 mb-3">
+            <div className="flex gap-3 flex-wrap text-xs text-slate-500">
+              <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-yellow-400 inline-block" /> Draft – szerkeszthető, aktiválható</span>
+              <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-green-500 inline-block" /> Active – módosítás = Új verzió</span>
+              <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-slate-400 inline-block" /> Archived – csak olvasható</span>
+            </div>
+            {isAdmin && (
+              <button
+                onClick={() => setShowArchived(v => !v)}
+                className={`text-xs px-3 py-1.5 rounded-lg border transition-colors ${showArchived ? "bg-slate-200 border-slate-300 text-slate-700" : "bg-white border-slate-200 text-slate-500 hover:bg-slate-50"}`}
+              >
+                {showArchived ? "🗂 Archivált elrejtése" : "🗂 Archivált megjelenítése"}
+              </button>
+            )}
           </div>
-        }
-      />
+
+          {showForm && (
+            <FreightSheetForm
+              item={editItem}
+              onClose={() => { setShowForm(false); setEditItem(null); }}
+              onSaved={() => {
+                qc.invalidateQueries({ queryKey: ["freightSheets"] });
+                setShowForm(false);
+                setEditItem(null);
+              }}
+            />
+          )}
+
+          <DataTable
+            columns={columns}
+            data={sortedSheets}
+            isLoading={isLoading}
+            onRowClick={r => setSelectedSheet(r)}
+            emptyMessage={
+              <div className="flex flex-col items-center gap-2 py-8 text-slate-400">
+                <FileText className="w-8 h-8 opacity-30" />
+                <p className="text-sm">Még nincs fuvarozási lap. Hozz létre egyet!</p>
+              </div>
+            }
+          />
+        </TabsContent>
+
+        <TabsContent value="analysis" className="mt-4">
+          <FreightSheetAnalysis />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
