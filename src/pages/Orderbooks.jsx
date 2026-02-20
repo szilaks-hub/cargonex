@@ -80,6 +80,7 @@ export default function OrderbooksPage() {
         <TabsList className="bg-slate-100">
           <TabsTrigger value="open">Open ({openOrders.length})</TabsTrigger>
           <TabsTrigger value="closed">Closed ({closedOrders.length})</TabsTrigger>
+          <TabsTrigger value="summary">📊 Összesítő</TabsTrigger>
         </TabsList>
 
         <TabsContent value="open" className="mt-4 space-y-4">
