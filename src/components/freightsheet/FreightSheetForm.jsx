@@ -21,6 +21,7 @@ export default function FreightSheetForm({ item, onClose, onSaved, forceDraft = 
     sheet_number: forceDraft ? "" : item.sheet_number,
   } : {
     sheet_number: "",
+    alias: "",
     carrier_id: "", carrier_name: "",
     supplier_id: "", supplier_name: "",
     supplier_site_id: "", supplier_site_name: "",
