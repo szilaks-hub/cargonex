@@ -260,6 +260,13 @@ export default function FreightSheetAnalysis() {
                         </span>
                       </td>
                     )}
+                    {prof > 0 && (
+                      <td className="px-4 py-2.5 text-right">
+                        <span className="font-bold text-green-800 bg-green-100 px-2 py-0.5 rounded">
+                          {fmt2(r.profitAmt)} EUR/t
+                        </span>
+                      </td>
+                    )}
                   </>}
                 </tr>
               ))}
