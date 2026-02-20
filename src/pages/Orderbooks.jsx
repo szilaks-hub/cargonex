@@ -116,6 +116,10 @@ export default function OrderbooksPage() {
         <TabsContent value="closed" className="mt-4">
           <OrderbooksList orders={closedOrders} lines={lines} onSelect={setSelectedOrderId} isClosed />
         </TabsContent>
+
+        <TabsContent value="summary" className="mt-4">
+          <OrderbooksMasterSummary orders={orders} lines={lines} />
+        </TabsContent>
       </Tabs>
 
       {selectedOrderId && (
