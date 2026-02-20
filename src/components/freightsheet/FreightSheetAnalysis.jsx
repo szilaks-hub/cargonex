@@ -103,6 +103,12 @@ export default function FreightSheetAnalysis() {
   }, [byCountry, pp, cu, ot, of_, wh, prof, filterCountry, filterCarrier]);
 
   const countries = [...new Set(Object.keys(byCountry))].sort();
+  const carriers = [...new Set(
+    lines.map(line => {
+      const sheet = sheets.find(s => s.id === line.sheet_id);
+      return sheet?.status === "active" ? sheet.carrier_name : null;
+    }).filter(Boolean)
+  )].sort();
   const hasSimulation = pp > 0 || cu > 0 || ot > 0 || of_ > 0 || wh > 0;
 
   const handlePrint = () => window.print();
