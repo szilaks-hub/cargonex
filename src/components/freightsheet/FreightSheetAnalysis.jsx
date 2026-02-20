@@ -30,6 +30,7 @@ export default function FreightSheetAnalysis() {
   const [profitPct, setProfitPct] = useState("");
   const [filterCountry, setFilterCountry] = useState("");
   const [filterCarrier, setFilterCarrier] = useState("");
+  const [filterOrigin, setFilterOrigin] = useState("");
 
   const { data: sheets = [] } = useQuery({
     queryKey: ["freightSheets"],
