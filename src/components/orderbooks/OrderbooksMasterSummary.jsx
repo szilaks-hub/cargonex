@@ -204,6 +204,9 @@ export default function OrderbooksMasterSummary({ orders, lines }) {
           </div>
         </div>
       </Card>
+
+      {/* DAP Calculator */}
+      <OrderbookDapCalc byCategory={byCategory} trucks={trucks} openOrderIds={openOrderIds} />
     </div>
   );
 }
