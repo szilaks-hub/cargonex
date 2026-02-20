@@ -4,6 +4,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import PageHeader from "@/components/ui/PageHeader";
 import TruckForm from "@/components/logistics/TruckForm";
 import ShipmentMap from "@/components/logistics/ShipmentMap";
+import ShipmentStats from "@/components/logistics/ShipmentStats";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
