@@ -411,7 +411,7 @@ export default function Dashboard() {
 
         {/* County breakdown HU */}
         <div className="p-5 rounded-2xl" style={cardBase}>
-          <SectionTitle sub="Magyar célmegyék – aktív és lezárt fuvarok">Megye bontás (HU)</SectionTitle>
+          <SectionTitle sub="Magyar célmegyék – aktív és lezárt fuvarok" accent="#06b6d4">Megye bontás (HU)</SectionTitle>
           {countyData.length > 0 ? (
             <ResponsiveContainer width="100%" height={220}>
               <BarChart data={countyData} barCategoryGap="25%">
