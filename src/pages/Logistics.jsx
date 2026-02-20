@@ -62,9 +62,16 @@ export default function Logistics() {
   });
 
   const handleAdvanceStatus = async (truck, newStatus) => {
-    await base44.entities.Truck.update(truck.id, { status: newStatus });
-    qc.invalidateQueries({ queryKey: ["trucks"] });
-    toast.success(`Státusz: ${STATUS_LABELS[newStatus] || newStatus}`);
+    if (newStatus === "finance_control") {
+      // Set to finance_control AND closed so it appears in Finance page
+      await base44.entities.Truck.update(truck.id, { status: "finance_control", closed_date: new Date().toISOString().split("T")[0] });
+      qc.invalidateQueries({ queryKey: ["trucks"] });
+      toast.success("Pénzügyi kontrol – átkerült a Finance/Customs ellenőrzésre");
+    } else {
+      await base44.entities.Truck.update(truck.id, { status: newStatus });
+      qc.invalidateQueries({ queryKey: ["trucks"] });
+      toast.success(`Státusz: ${STATUS_LABELS[newStatus] || newStatus}`);
+    }
   };
 
   const handleToggleTransit = async (truck) => {
