@@ -79,14 +79,22 @@ export default function TruckForm({ item, onClose, onSaved, defaultOrderbookId, 
         updates.customs_agent_name = ob.customs_agent_name || "";
         if (ob.customs_fee_eur_per_truck) updates.customs_agent_fee = ob.customs_fee_eur_per_truck;
       }
-      // Auto-fill preferred carrier
-      if (ob.preferred_carrier_id && !form.carrier_id) {
-        updates.carrier_id = ob.preferred_carrier_id;
-        updates.carrier_name = ob.preferred_carrier_name || "";
+      // Auto-fill destination country (use first country from list, or legacy)
+      const firstCountry = ob.destination_countries?.[0] || ob.destination_country;
+      if (firstCountry && !form.destination_country) {
+        updates.destination_country = firstCountry;
       }
-      // Auto-fill destination country
-      if (ob.destination_country && !form.destination_country) {
-        updates.destination_country = ob.destination_country;
+      // Auto-fill preferred carrier from carrier_assignments (match by country) or legacy
+      if (!form.carrier_id) {
+        const targetCountry = updates.destination_country || form.destination_country;
+        const assignment = ob.carrier_assignments?.find(a => a.country === targetCountry);
+        if (assignment?.carrier_id) {
+          updates.carrier_id = assignment.carrier_id;
+          updates.carrier_name = assignment.carrier_name || "";
+        } else if (ob.preferred_carrier_id) {
+          updates.carrier_id = ob.preferred_carrier_id;
+          updates.carrier_name = ob.preferred_carrier_name || "";
+        }
       }
       if (Object.keys(updates).length > 0) {
         setForm(f => ({ ...f, ...updates }));
