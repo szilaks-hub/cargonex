@@ -110,6 +110,16 @@ export default function FreightSheetAnalysis() {
       return sheet?.status === "active" ? sheet.carrier_name : null;
     }).filter(Boolean)
   )].sort();
+
+  // Origin sites for selected carrier
+  const originSites = useMemo(() => {
+    if (!filterCarrier) return [];
+    return [...new Set(
+      activeSheets
+        .filter(s => s.carrier_name === filterCarrier && s.supplier_site_name)
+        .map(s => s.supplier_site_name)
+    )].sort();
+  }, [activeSheets, filterCarrier]);
   const hasSimulation = pp > 0 || cu > 0 || ot > 0 || of_ > 0 || wh > 0;
 
   const handlePrint = () => window.print();
