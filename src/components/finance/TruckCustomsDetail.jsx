@@ -15,6 +15,7 @@ export default function TruckCustomsDetail({ truck, onBack, onUpdated }) {
     hs_code_verified: truck.hs_code_verified || false,
     invoice_checked: truck.invoice_checked || false,
     checklist_notes: truck.checklist_notes || "",
+    supplier_invoice_number: truck.supplier_invoice_number || "",
     freight_invoice_number: truck.freight_invoice_number || "",
     mrn_number: truck.mrn_number || "",
     mrn_date: truck.mrn_date || "",
