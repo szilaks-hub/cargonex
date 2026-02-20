@@ -122,6 +122,10 @@ export default function OrderbooksPage() {
         <TabsContent value="summary" className="mt-4">
           <OrderbooksMasterSummary orders={orders} lines={lines} />
         </TabsContent>
+
+        <TabsContent value="familytree" className="mt-4">
+          <OrderbookFamilyTree orders={[...openOrders, ...closedOrders]} lines={lines} />
+        </TabsContent>
       </Tabs>
 
       {selectedOrderId && (
