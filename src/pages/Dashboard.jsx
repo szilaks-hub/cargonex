@@ -430,6 +430,8 @@ export default function Dashboard() {
 
 
 
+      <SectionDivider label="Legutóbbi aktivitás" />
+
       {/* ── SECTION 7: RECENT TRUCKS TABLE ────────────────────── */}
       <div className="p-5 rounded-2xl" style={cardBase}>
         <div className="flex items-center justify-between mb-3">
