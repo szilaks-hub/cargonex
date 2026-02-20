@@ -160,7 +160,14 @@ export default function Logistics() {
       )}
 
       {view === "map" ? (
-        <ShipmentMap trucks={trucks} />
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <div className="lg:col-span-2">
+            <ShipmentMap trucks={trucks} />
+          </div>
+          <div className="lg:col-span-1">
+            <ShipmentStats trucks={trucks} />
+          </div>
+        </div>
       ) : (
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="bg-slate-100 flex-wrap h-auto gap-0.5 p-1">
