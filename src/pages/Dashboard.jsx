@@ -353,7 +353,7 @@ export default function Dashboard() {
 
         {/* Carrier breakdown */}
         <div className="p-5 rounded-2xl" style={cardBase}>
-          <SectionTitle sub="Fuvarozó szerint">Fuvarozó bontás</SectionTitle>
+          <SectionTitle sub="Fuvarozó szerint" accent="#22c55e">Fuvarozó bontás</SectionTitle>
           {carrierData.length > 0 ? (
             <>
               <ResponsiveContainer width="100%" height={190}>
