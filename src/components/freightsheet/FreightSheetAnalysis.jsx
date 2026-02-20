@@ -221,6 +221,7 @@ export default function FreightSheetAnalysis() {
                 {hasSimulation && <>
                   <th className="text-right px-4 py-2.5 text-slate-500 font-semibold">Bekerülési ár</th>
                   {prof > 0 && <th className="text-right px-4 py-2.5 text-emerald-600 font-semibold">Eladási ár</th>}
+                  {prof > 0 && <th className="text-right px-4 py-2.5 text-green-700 font-semibold">Haszon (EUR/t)</th>}
                 </>}
               </tr>
             </thead>
