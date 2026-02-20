@@ -18,10 +18,10 @@ export default function Finance() {
     queryFn: () => base44.entities.Truck.list("-created_date"),
   });
 
-  // Only show loaded+ trucks
+  // Show finance_control and closed trucks
   const eligibleTrucks = useMemo(() => {
     return trucks.filter((t) =>
-      ["loaded", "in_transit", "customs", "closed"].includes(t.status)
+      ["loaded", "finance_control", "closed"].includes(t.status)
     );
   }, [trucks]);
 
