@@ -192,60 +192,59 @@ export default function Logistics() {
   );
 }
 
-function TruckTable({ trucks, isLoading, onEdit, onAdvance, onToggleTransit, statusLabels, statusColors }) {
+function TruckTable({ trucks, isLoading, onEdit, onAdvance, statusLabels, statusColors }) {
   if (isLoading) return <div className="text-center py-8 text-slate-400">Betöltés...</div>;
   if (!trucks || trucks.length === 0) return <div className="text-center py-8 text-slate-400">Nincs adat / No data</div>;
 
   return (
     <Card className="overflow-hidden">
       <div className="overflow-x-auto">
-        <table className="w-full text-sm">
+        <table className="w-full" style={{ fontSize: "0.82rem" }}>
           <thead className="bg-slate-50 border-b">
-            <tr className="text-left text-xs font-semibold text-slate-600">
-              <th className="py-3 px-4">Rendszám</th>
-              <th className="py-3 px-4">Rakodás dátuma</th>
-              <th className="py-3 px-4">Rendelés</th>
-              <th className="py-3 px-4">Termék</th>
-              <th className="py-3 px-4 text-right">Tervezett (t)</th>
-              <th className="py-3 px-4 text-right">Tényleges (t)</th>
-              <th className="py-3 px-4">Fuvarozó</th>
-              <th className="py-3 px-4">Célállomás</th>
-              <th className="py-3 px-4">Státusz</th>
-              <th className="py-3 px-4 text-center">TR</th>
-              <th className="py-3 px-4 text-right"></th>
+            <tr className="text-left text-[11px] font-semibold text-slate-500 uppercase tracking-wide">
+              <th className="py-2 px-3">Rendszám</th>
+              <th className="py-2 px-3">Rakodás</th>
+              <th className="py-2 px-3">Rendelés</th>
+              <th className="py-2 px-3">Termék</th>
+              <th className="py-2 px-3 text-right">Terv. (t)</th>
+              <th className="py-2 px-3 text-right">Tény. (t)</th>
+              <th className="py-2 px-3">Fuvarozó</th>
+              <th className="py-2 px-3">Célállomás</th>
+              <th className="py-2 px-3">Státusz</th>
             </tr>
           </thead>
           <tbody>
-            {trucks.map(r => (
-              <tr key={r.id} className="border-b hover:bg-slate-50 cursor-pointer" onClick={() => onEdit(r)}>
-                <td className="py-3 px-4 font-semibold text-slate-800">
-                  {r.truck_number || <span className="text-slate-400 italic text-xs">Nincs rendszám</span>}
-                </td>
-                <td className="py-3 px-4 text-slate-600">{r.expected_loading_date || r.loading_date || "—"}</td>
-                <td className="py-3 px-4">
-                  <div className="text-xs font-medium text-blue-700">{r.orderbook_no || "—"}</div>
-                </td>
-                <td className="py-3 px-4 text-slate-700 text-xs max-w-[8rem] truncate">{r.product_name || "—"}</td>
-                <td className="py-3 px-4 text-right font-semibold text-slate-800">{r.planned_quantity_tons?.toFixed(2) || "—"}</td>
-                <td className="py-3 px-4 text-right text-slate-600">{r.actual_weight_tons?.toFixed(2) || "—"}</td>
-                <td className="py-3 px-4 text-slate-700 text-xs">{r.carrier_name || "—"}</td>
-                <td className="py-3 px-4 text-slate-600 text-xs">
-                  {r.destination_country}{r.destination_city ? ` · ${r.destination_city}` : ""}
-                </td>
-                <td className="py-3 px-4" onClick={e => e.stopPropagation()}>
-                  <StatusDropdown truck={r} onAdvance={onAdvance} statusLabels={statusLabels} statusColors={statusColors} />
-                </td>
-                <td className="py-3 px-4 text-center" onClick={e => e.stopPropagation()}>
-                  <input
-                    type="checkbox"
-                    checked={r.transit || false}
-                    onChange={() => onToggleTransit(r)}
-                    className="w-4 h-4 accent-blue-600 cursor-pointer"
-                  />
-                </td>
-                <td className="py-3 px-4"></td>
-              </tr>
-            ))}
+            {trucks.map(r => {
+              const rowBg = ROW_BG[r.status] || "";
+              return (
+                <tr
+                  key={r.id}
+                  className={`border-b cursor-pointer transition-colors hover:brightness-95 ${rowBg}`}
+                  onClick={() => onEdit(r)}
+                >
+                  <td className="py-2 px-3 font-semibold text-slate-800 whitespace-nowrap">
+                    {r.truck_number
+                      ? <span>{r.truck_number}{r.transit && <span className="ml-1 text-[9px] font-bold text-indigo-600 bg-indigo-100 rounded px-1">TR</span>}</span>
+                      : <span className="text-slate-400 italic text-xs">—{r.transit && <span className="ml-1 text-[9px] font-bold text-indigo-600 bg-indigo-100 rounded px-1">TR</span>}</span>
+                    }
+                  </td>
+                  <td className="py-2 px-3 text-slate-600 whitespace-nowrap">{r.expected_loading_date || r.loading_date || "—"}</td>
+                  <td className="py-2 px-3 whitespace-nowrap">
+                    <span className="text-xs font-medium text-blue-700">{r.orderbook_no || "—"}</span>
+                  </td>
+                  <td className="py-2 px-3 text-slate-700 max-w-[9rem] truncate">{r.product_name || "—"}</td>
+                  <td className="py-2 px-3 text-right font-semibold text-slate-800 whitespace-nowrap">{r.planned_quantity_tons?.toFixed(2) || "—"}</td>
+                  <td className="py-2 px-3 text-right text-slate-600 whitespace-nowrap">{r.actual_weight_tons?.toFixed(2) || "—"}</td>
+                  <td className="py-2 px-3 text-slate-700 max-w-[8rem] truncate">{r.carrier_name || "—"}</td>
+                  <td className="py-2 px-3 text-slate-600 whitespace-nowrap">
+                    {r.destination_country}{r.destination_city ? ` · ${r.destination_city}` : ""}
+                  </td>
+                  <td className="py-2 px-3" onClick={e => e.stopPropagation()}>
+                    <StatusDropdown truck={r} onAdvance={onAdvance} statusLabels={statusLabels} statusColors={statusColors} />
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
