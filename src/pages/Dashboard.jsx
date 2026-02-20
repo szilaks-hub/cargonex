@@ -124,8 +124,8 @@ export default function Dashboard() {
   const activeFreightSheets = freightSheets.filter(s => s.status === "active");
 
   // ── Total allocated tons in open orderbooks ─────────────────────
-  const allocatedTons = orderbookLines.reduce((s, l) => s + (l.allocated_quantity_tons || 0), 0);
-  const plannedTons = orderbookLines.reduce((s, l) => s + (l.planned_quantity_tons || 0), 0);
+  const allocatedTons = openLines.reduce((s, l) => s + (l.allocated_quantity_tons || 0), 0);
+  const plannedTons = openLines.reduce((s, l) => s + (l.planned_quantity_tons || 0), 0);
   const waitingTons = plannedTons - allocatedTons;
 
   // ── Status breakdown for pie ────────────────────────────────────
