@@ -9,6 +9,7 @@ import { Plus, Eye, Trash2, ChevronDown } from "lucide-react";
 import { toast } from "sonner";
 import OrderbookDetail from "@/components/orderbooks/OrderbookDetail";
 import OrderbooksMasterSummary from "@/components/orderbooks/OrderbooksMasterSummary";
+import OrderbookFamilyTree from "@/components/orderbooks/OrderbookFamilyTree";
 import PageHeader from "@/components/ui/PageHeader";
 
 export default function OrderbooksPage() {
