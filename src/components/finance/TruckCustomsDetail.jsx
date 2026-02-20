@@ -69,8 +69,8 @@ export default function TruckCustomsDetail({ truck, onBack, onUpdated }) {
 
   const isClosed = truck.status === "closed";
 
-  // Can close: freight invoice + mrn + exchange rate must be filled
-  const canClose = form.freight_invoice_number?.trim() && form.mrn_number?.trim() && exchangeRate > 0;
+  // Can close: supplier invoice + freight invoice + mrn + exchange rate must be filled
+  const canClose = form.supplier_invoice_number?.trim() && form.freight_invoice_number?.trim() && form.mrn_number?.trim() && exchangeRate > 0;
 
   const handleSave = async () => {
     setSaving(true);
