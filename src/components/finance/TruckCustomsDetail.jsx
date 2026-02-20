@@ -289,8 +289,8 @@ export default function TruckCustomsDetail({ truck, onBack, onUpdated }) {
           {/* Indicative VAT */}
           <div className={`flex items-center justify-between py-3 rounded-lg px-3 border-2 ${mrnStatus === "match" ? "bg-green-50 border-green-300" : mrnStatus === "warn" ? "bg-orange-50 border-orange-300" : mrnStatus === "error" ? "bg-red-50 border-red-300" : "bg-amber-50 border-amber-200"}`}>
             <div>
-              <span className="font-bold text-slate-700 text-base">Tájékoztató ÁFA (total ÷ 1,27)</span>
-              <span className="text-slate-400 text-xs ml-2">{fmt(totalBase, 0)} ÷ 1,27</span>
+              <span className="font-bold text-slate-700 text-base">Tájékoztató ÁFA (total × 27%)</span>
+              <span className="text-slate-400 text-xs ml-2">{fmt(totalBase, 0)} × 27%</span>
             </div>
             <div className="flex items-center gap-3">
               <span className="font-bold text-orange-600 text-lg">{fmt(indicativeVat, 0)} HUF</span>
