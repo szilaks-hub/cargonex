@@ -281,7 +281,7 @@ export default function Dashboard() {
 
       {/* ── SECTION 2: RENDELÉSEK ──────────────────────────────── */}
       <div>
-        <SectionTitle sub="Rendelések, értékek és átlagárak">📦 Rendelések (Orderbooks)</SectionTitle>
+        <SectionTitle sub="Rendelések, értékek és átlagárak" accent="#f59e0b">📋 Rendelések (Orderbooks)</SectionTitle>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
           <KpiCard label="Nyitott rendelés" value={openOrderbooks.length} sub={`${closedOrderbooks.length} lezárt`} icon={FileText} accent="#3B6CF4" link="Orderbooks" />
           <KpiCard label="Összes rendelt (t)" value={fmt(plannedTons, 1)} sub="Tervezett" icon={Box} accent="#f59e0b" />
