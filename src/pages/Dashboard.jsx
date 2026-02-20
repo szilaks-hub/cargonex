@@ -382,7 +382,7 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Monthly trend */}
         <div className="p-5 rounded-2xl" style={cardBase}>
-          <SectionTitle sub="Lezárt fuvarok havonta (darab + tonna)">Havi teljesítmény</SectionTitle>
+          <SectionTitle sub="Lezárt fuvarok havonta (darab + tonna)" accent="#e05a2b">Havi teljesítmény</SectionTitle>
           {monthlyData.length > 0 ? (
             <ResponsiveContainer width="100%" height={220}>
               <AreaChart data={monthlyData}>
