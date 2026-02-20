@@ -17,20 +17,15 @@ const STATUS_TABS = [
   { key: "all", label: "Összes" },
   { key: "booked", label: "Előjegyzett" },
   { key: "loaded", label: "Megrakott" },
+  { key: "finance_control", label: "Pénzügyi kontrol" },
   { key: "closed", label: "Lezárt" },
   { key: "cancelled", label: "Törölve" },
 ];
 
 const STATUS_LABELS = {
   booked: "Előjegyzett",
-  scheduled: "Ütemezett",
   loaded: "Megrakott",
-  in_transit: "Úton",
-  customs: "Vámon",
-  transit: "Tranzit",
-  arrived: "Megérkezett",
-  arrived_onsite: "Telephelyen",
-  arrived_offsite: "Off-site",
+  finance_control: "Pénzügyi kontrol",
   closed: "Lezárt",
   cancelled: "Törölve",
 };
@@ -38,14 +33,8 @@ const STATUS_LABELS = {
 // Badge colors for status dropdown
 const STATUS_COLORS = {
   booked: "bg-slate-100 text-slate-600",
-  scheduled: "bg-blue-100 text-blue-700",
   loaded: "bg-orange-100 text-orange-700",
-  in_transit: "bg-amber-100 text-amber-700",
-  customs: "bg-purple-100 text-purple-700",
-  transit: "bg-indigo-100 text-indigo-700",
-  arrived: "bg-teal-100 text-teal-700",
-  arrived_onsite: "bg-emerald-100 text-emerald-700",
-  arrived_offsite: "bg-cyan-100 text-cyan-700",
+  finance_control: "bg-yellow-100 text-yellow-700",
   closed: "bg-green-100 text-green-700",
   cancelled: "bg-red-100 text-red-600",
 };
@@ -53,14 +42,8 @@ const STATUS_COLORS = {
 // Full row background colors per status
 const ROW_BG = {
   booked: "",
-  scheduled: "bg-blue-50/60",
   loaded: "bg-orange-50/70",
-  in_transit: "bg-amber-50/70",
-  customs: "bg-purple-50/70",
-  transit: "bg-indigo-50/60",
-  arrived: "bg-teal-50/70",
-  arrived_onsite: "bg-emerald-50/70",
-  arrived_offsite: "bg-cyan-50/60",
+  finance_control: "bg-yellow-50/80",
   closed: "bg-green-50/60",
   cancelled: "bg-red-50/50 opacity-70",
 };
