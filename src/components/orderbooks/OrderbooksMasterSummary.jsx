@@ -21,16 +21,15 @@ const fmtInt = (n) =>
 
 const fmtEur = (n) => `${fmtInt(n)} EUR`;
 
-function buildByCategory(filteredLines, activeTrucks, closedTrucks) {
+function buildByCategory(filteredLines, allTrucks) {
+  // Build per-category truck allocation based on truck items or product matching
+  // Key fix: calculate booked/delivered per category from actual truck data, not proportional share
   const map = {};
-  const totalOrdered = filteredLines.reduce((s, l) => s + (l.planned_quantity_tons || 0), 0);
-  const totalActiveWeight = activeTrucks.reduce((s, t) => s + (t.planned_quantity_tons || 0), 0);
-  const totalDelivered = closedTrucks.reduce((s, t) => s + (t.actual_weight_tons || t.planned_quantity_tons || 0), 0);
 
   filteredLines.forEach(line => {
     const key = line.category_name || "Egyéb";
     if (!map[key]) {
-      map[key] = { category: key, orderedTons: 0, orderValue: 0, prices: [], orderIds: new Set() };
+      map[key] = { category: key, orderedTons: 0, orderValue: 0, prices: [], orderIds: new Set(), bookedTons: 0, deliveredTons: 0 };
     }
     map[key].orderedTons += line.planned_quantity_tons || 0;
     map[key].orderValue += line.line_value_eur || 0;
@@ -38,17 +37,57 @@ function buildByCategory(filteredLines, activeTrucks, closedTrucks) {
     map[key].orderIds.add(line.orderbook_id);
   });
 
+  // For each truck, try to match to a category via items array or product_name
+  // Then add to booked or delivered per category
+  const ACTIVE_STATUSES_LOCAL = ["booked", "scheduled", "loaded", "in_transit", "customs", "transit", "arrived", "arrived_onsite", "arrived_offsite"];
+  allTrucks.forEach(truck => {
+    if (truck.status === "cancelled") return;
+    const isDelivered = truck.status === "closed";
+    const isActive = ACTIVE_STATUSES_LOCAL.includes(truck.status);
+
+    // Try to match via items array first
+    if (truck.items && truck.items.length > 0) {
+      truck.items.forEach(item => {
+        const catName = item.category_name || item.product_name;
+        if (catName && map[catName]) {
+          const tons = isDelivered
+            ? (item.actual_weight_tons || item.planned_quantity_tons || 0)
+            : (item.planned_quantity_tons || 0);
+          if (isDelivered) map[catName].deliveredTons += tons;
+          else if (isActive) map[catName].bookedTons += tons;
+        }
+      });
+    } else {
+      // Fallback: single product truck — try to match category by product_name or category_name
+      const catName = truck.category_name || truck.product_category_name;
+      const tons = isDelivered
+        ? (truck.actual_weight_tons || truck.planned_quantity_tons || 0)
+        : (truck.planned_quantity_tons || 0);
+
+      if (catName && map[catName]) {
+        if (isDelivered) map[catName].deliveredTons += tons;
+        else if (isActive) map[catName].bookedTons += tons;
+      } else {
+        // Last resort: distribute proportionally only if we can't match
+        const keys = Object.keys(map);
+        if (keys.length === 1) {
+          const k = keys[0];
+          if (isDelivered) map[k].deliveredTons += tons;
+          else if (isActive) map[k].bookedTons += tons;
+        }
+        // If multiple categories and no match, skip (don't invent data)
+      }
+    }
+  });
+
   return Object.values(map).map(cat => {
-    const share = totalOrdered > 0 ? cat.orderedTons / totalOrdered : 0;
-    const bookedTons = totalActiveWeight * share;
-    const deliveredTons = totalDelivered * share;
-    const freeTons = Math.max(0, cat.orderedTons - bookedTons - deliveredTons);
     const avgPrice = cat.prices.length > 0 ? cat.prices.reduce((a, b) => a + b, 0) / cat.prices.length : 0;
+    const freeTons = Math.max(0, cat.orderedTons - cat.bookedTons - cat.deliveredTons);
     return {
       ...cat,
-      bookedTons, deliveredTons, freeTons,
-      bookedValue: bookedTons * avgPrice,
-      deliveredValue: deliveredTons * avgPrice,
+      freeTons,
+      bookedValue: cat.bookedTons * avgPrice,
+      deliveredValue: cat.deliveredTons * avgPrice,
       freeValue: freeTons * avgPrice,
       avgPrice,
       orderCount: cat.orderIds.size,
