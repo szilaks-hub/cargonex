@@ -67,14 +67,29 @@ export default function TruckForm({ item, onClose, onSaved, defaultOrderbookId, 
 
   const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
 
-  // Auto-fill customs agent + fee from orderbook (on load for existing items too)
+  // Auto-fill from orderbook: customs agent + preferred carrier + destination country
   useEffect(() => {
     if (form.orderbook_id && orderbooks.length > 0) {
       const ob = orderbooks.find(o => o.id === form.orderbook_id);
-      if (ob && ob.customs_required && ob.customs_agent_id && !form.customs_agent_id) {
-        set("customs_agent_id", ob.customs_agent_id);
-        set("customs_agent_name", ob.customs_agent_name || "");
-        if (ob.customs_fee_eur_per_truck) set("customs_agent_fee", ob.customs_fee_eur_per_truck);
+      if (!ob) return;
+      const updates = {};
+      // Auto-fill customs agent
+      if (ob.customs_required && ob.customs_agent_id && !form.customs_agent_id) {
+        updates.customs_agent_id = ob.customs_agent_id;
+        updates.customs_agent_name = ob.customs_agent_name || "";
+        if (ob.customs_fee_eur_per_truck) updates.customs_agent_fee = ob.customs_fee_eur_per_truck;
+      }
+      // Auto-fill preferred carrier
+      if (ob.preferred_carrier_id && !form.carrier_id) {
+        updates.carrier_id = ob.preferred_carrier_id;
+        updates.carrier_name = ob.preferred_carrier_name || "";
+      }
+      // Auto-fill destination country
+      if (ob.destination_country && !form.destination_country) {
+        updates.destination_country = ob.destination_country;
+      }
+      if (Object.keys(updates).length > 0) {
+        setForm(f => ({ ...f, ...updates }));
       }
     }
   }, [form.orderbook_id, orderbooks]);
