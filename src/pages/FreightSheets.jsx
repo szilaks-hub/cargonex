@@ -86,7 +86,10 @@ export default function FreightSheets() {
   };
 
   const statusOrder = { active: 0, draft: 1, archived: 2 };
-  const filteredSheets = showArchived ? sheets : sheets.filter(s => s.status !== "archived");
+  const allCountries = [...new Set(sheets.map(s => s.destination_country).filter(Boolean))].sort();
+  const filteredSheets = sheets
+    .filter(s => showArchived || s.status !== "archived")
+    .filter(s => !filterCountry || s.destination_country === filterCountry);
   const sortedSheets = [...filteredSheets].sort((a, b) => (statusOrder[a.status] ?? 3) - (statusOrder[b.status] ?? 3));
 
   const columns = [
