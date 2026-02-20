@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import OrderbookDapCalc from "./OrderbookDapCalc";
-import OrderbookReport from "./OrderbookReport";
+import OrderbookReport from "./OrderbookReport.jsx";
 
 const ACTIVE_STATUSES = ["booked", "scheduled", "loaded", "in_transit", "customs", "transit", "arrived", "arrived_onsite", "arrived_offsite"];
 
