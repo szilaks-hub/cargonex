@@ -425,44 +425,13 @@ export default function OrderbookDetail({ orderId, onClose, onUpdated }) {
               </div>
             </div>
 
-            {/* Preferred Carrier + Destination Country */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="text-xs font-medium text-slate-600 mb-1 block">Célország (szállítmány)</label>
-                {isEditable ? (
-                  <Select value={form.destination_country || ""} onValueChange={(v) => {
-                    // When country changes, reset carrier if no matching sheet
-                    handleFormChange({ destination_country: v });
-                  }}>
-                    <SelectTrigger className="bg-white"><SelectValue placeholder="Válassz célországot..." /></SelectTrigger>
-                    <SelectContent>
-                      {["HU","DE","AT","SK","RO","HR","SI","PL","CZ","FR","IT","NL","BE","BG","RS","UA","TR"].map(c => (
-                        <SelectItem key={c} value={c}>{c}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                ) : (
-                  <div className="px-3 py-2 bg-white rounded border border-slate-300 text-slate-800">{form.destination_country || '—'}</div>
-                )}
-              </div>
-              <div>
-                <label className="text-xs font-medium text-slate-600 mb-1 block">Előnyben részesített fuvarozó</label>
-                {isEditable ? (
-                  <Select value={form.preferred_carrier_id || ""} onValueChange={(v) => {
-                    const c = carriers.find(c => c.id === v);
-                    handleFormChange({ preferred_carrier_id: v || null, preferred_carrier_name: c?.name || "" });
-                  }}>
-                    <SelectTrigger className="bg-white"><SelectValue placeholder="Válassz fuvarozót..." /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="_none">— Nincs megadva —</SelectItem>
-                      {carriers.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                ) : (
-                  <div className="px-3 py-2 bg-white rounded border border-slate-300 text-slate-800">{form.preferred_carrier_name || '—'}</div>
-                )}
-              </div>
-            </div>
+            {/* Destination Countries + Carrier Assignments */}
+            <CarrierAssignmentEditor
+              form={form}
+              carriers={carriers}
+              isEditable={isEditable}
+              onChange={handleFormChange}
+            />
 
             {/* Notes */}
             <div>
