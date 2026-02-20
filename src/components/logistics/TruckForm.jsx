@@ -127,6 +127,19 @@ export default function TruckForm({ item, onClose, onSaved, defaultOrderbookId, 
     (!form.destination_country || s.destination_country === form.destination_country)
   );
 
+  // Auto-select freight sheet when carrier + destination country are set and there's exactly one match (or any match)
+  useEffect(() => {
+    if (!form.carrier_id || !form.destination_country) return;
+    if (form.applied_freight_sheet_id) return; // already selected
+    if (filteredSheets.length === 1) {
+      set("applied_freight_sheet_id", filteredSheets[0].id);
+    } else if (filteredSheets.length > 1) {
+      // Auto-select the most recent (latest valid_from) one
+      const sorted = [...filteredSheets].sort((a, b) => (b.valid_from || "").localeCompare(a.valid_from || ""));
+      set("applied_freight_sheet_id", sorted[0].id);
+    }
+  }, [form.carrier_id, form.destination_country, filteredSheets.length]);
+
   // Category IDs allowed from orderbook
   const allowedCategoryIds = orderbookLines.map(l => l.category_id);
   // Products filtered to allowed categories
