@@ -79,9 +79,9 @@ function SectionTitle({ children, sub, accent = "#3B6CF4" }) {
 function SectionDivider({ label }) {
   return (
     <div className="flex items-center gap-3 my-2">
-      <div className="flex-1 h-px bg-gradient-to-r from-slate-200 to-transparent" />
-      {label && <span className="text-[10px] font-bold text-slate-300 uppercase tracking-widest whitespace-nowrap">{label}</span>}
-      <div className="flex-1 h-px bg-gradient-to-l from-slate-200 to-transparent" />
+      <div className="flex-1 h-px bg-gradient-to-r from-red-300/60 to-transparent" />
+      {label && <span className="text-[10px] font-bold text-red-300/80 uppercase tracking-widest whitespace-nowrap">{label}</span>}
+      <div className="flex-1 h-px bg-gradient-to-l from-red-300/60 to-transparent" />
     </div>
   );
 }
