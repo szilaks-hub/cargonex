@@ -180,7 +180,6 @@ export default function Logistics() {
                 isLoading={isLoading}
                 onEdit={(r) => { setEditItem(r); setShowForm(true); }}
                 onAdvance={handleAdvanceStatus}
-                onToggleTransit={handleToggleTransit}
                 statusLabels={STATUS_LABELS}
                 statusColors={STATUS_COLORS}
               />
