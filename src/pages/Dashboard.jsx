@@ -177,9 +177,9 @@ export default function Dashboard() {
   });
   const carrierData = Object.entries(carrierMap).sort((a,b)=>b[1]-a[1]).slice(0,8).map(([name,value])=>({name,value}));
 
-  // ── Orderbook category distribution ────────────────────────────
+  // ── Orderbook category distribution (open orders only) ─────────
   const catMap = {};
-  orderbookLines.forEach(l => {
+  openLines.forEach(l => {
     const name = l.category_name || "Egyéb";
     if (!catMap[name]) catMap[name] = { name, tons: 0, value: 0 };
     catMap[name].tons += l.planned_quantity_tons || 0;
