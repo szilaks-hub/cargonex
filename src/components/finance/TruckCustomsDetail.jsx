@@ -314,7 +314,7 @@ export default function TruckCustomsDetail({ truck, onBack, onUpdated }) {
           {!canClose && (
             <p className="text-xs text-orange-600 flex items-center gap-1">
               <AlertCircle className="w-3.5 h-3.5" />
-              Lezáráshoz szükséges: Freight Invoice #, MRN szám, árfolyam
+              Lezáráshoz szükséges: Eladó számlaszáma, Fuvar számla, MRN szám, árfolyam
             </p>
           )}
           <div className="flex gap-2 ml-auto">
