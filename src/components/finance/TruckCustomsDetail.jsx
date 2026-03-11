@@ -5,9 +5,19 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, Lock, Save, CheckCircle2, AlertCircle, XCircle, Printer } from "lucide-react";
+import { ArrowLeft, Lock, Save, CheckCircle2, AlertCircle, XCircle, Printer, Trash2 } from "lucide-react";
 import StatusBadge from "@/components/ui/StatusBadge";
 import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export default function TruckCustomsDetail({ truck, onBack, onUpdated }) {
   const [form, setForm] = useState({
@@ -29,6 +39,8 @@ export default function TruckCustomsDetail({ truck, onBack, onUpdated }) {
   });
   const [saving, setSaving] = useState(false);
   const [showPrint, setShowPrint] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteKey, setDeleteKey] = useState("");
 
   const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
 
@@ -103,6 +115,17 @@ export default function TruckCustomsDetail({ truck, onBack, onUpdated }) {
   const handlePrint = () => {
     setShowPrint(true);
     setTimeout(() => window.print(), 100);
+  };
+
+  const handleDelete = async () => {
+    if (deleteKey !== "1985") {
+      toast.error("Helytelen mesterkulcs!");
+      return;
+    }
+    await base44.entities.Truck.delete(truck.id);
+    toast.success("Törölve");
+    setShowDeleteConfirm(false);
+    onUpdated();
   };
 
   const handleClose = async () => {
@@ -539,6 +562,9 @@ export default function TruckCustomsDetail({ truck, onBack, onUpdated }) {
             </p>
           )}
           <div className="flex gap-2 ml-auto">
+            <Button variant="outline" onClick={() => setShowDeleteConfirm(true)} className="gap-2 text-red-600 hover:text-red-700 hover:bg-red-50">
+              <Trash2 className="w-4 h-4" /> Törlés
+            </Button>
             <Button variant="outline" onClick={handlePrint} className="gap-2">
               <Printer className="w-4 h-4" /> Nyomtatás
             </Button>
@@ -561,6 +587,34 @@ export default function TruckCustomsDetail({ truck, onBack, onUpdated }) {
           <span className="text-sm font-medium">Ez a fuvar le van zárva és véglegesítve.</span>
         </div>
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Biztosan törlöd ezt a fuvarrekordot?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Ez a művelet nem visszavonható. Add meg a mesterkulcsot a törlés megerősítéséhez.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="py-4">
+            <Label className="text-sm text-slate-600">Mesterkulcs</Label>
+            <Input
+              type="password"
+              placeholder="Írd be a mesterkulcsot"
+              value={deleteKey}
+              onChange={(e) => setDeleteKey(e.target.value)}
+              className="mt-2"
+            />
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setDeleteKey("")}>Mégse</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} className="bg-red-600 hover:bg-red-700">
+              Törlés
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
