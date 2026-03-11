@@ -160,6 +160,11 @@ export default function OrderbookDetail({ orderId, onClose, onUpdated, trucks = 
   const plannedTons = lines.reduce((s, l) => s + (l.planned_quantity_tons || 0), 0);
   const allocatedTons = lines.reduce((s, l) => s + (l.allocated_quantity_tons || 0), 0);
   const valueEUR = lines.reduce((s, l) => s + (l.line_value_eur || 0), 0);
+  const remainingTons = plannedTons - allocatedTons;
+  
+  // Estimate trucks needed (assuming 24t average capacity)
+  const avgTruckCapacity = 24;
+  const estimatedTrucksNeeded = remainingTons > 0 ? Math.ceil(remainingTons / avgTruckCapacity) : 0;
   // Customs fee is now per-truck (fixed EUR/truck), shown separately in summary
   const customsFeePerTruck = form.customs_required ? (form.customs_fee_eur_per_truck || 0) : 0;
   const otherFees = form.other_fees || [];
@@ -663,6 +668,43 @@ export default function OrderbookDetail({ orderId, onClose, onUpdated, trucks = 
               </div>
             )}
           </div>
+
+          {/* Capacity Summary */}
+          {lines.length > 0 && (
+            <div className={`p-4 rounded-lg border-2 ${remainingTons > 0 ? 'bg-blue-50 border-blue-300' : 'bg-emerald-50 border-emerald-300'}`}>
+              <div className="flex items-center justify-between mb-3">
+                <h4 className="font-semibold text-slate-800">Kapacitás összefoglaló</h4>
+                <div className="flex items-center gap-3 text-sm">
+                  <div className="flex items-center gap-2">
+                    <span className="text-slate-500">Tervezett:</span>
+                    <span className="font-bold text-slate-800">{plannedTons.toFixed(2)} t</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-slate-500">Allokált:</span>
+                    <span className="font-bold text-blue-700">{allocatedTons.toFixed(2)} t</span>
+                  </div>
+                  <div className={`flex items-center gap-2 px-3 py-1 rounded-lg ${remainingTons > 0 ? 'bg-blue-100' : 'bg-emerald-100'}`}>
+                    <span className="text-slate-600 font-medium">Hátra:</span>
+                    <span className={`font-bold ${remainingTons > 0 ? 'text-blue-700' : 'text-emerald-700'}`}>
+                      {remainingTons.toFixed(2)} t
+                    </span>
+                  </div>
+                </div>
+              </div>
+              {remainingTons > 0 && (
+                <div className="flex items-center justify-between p-3 bg-white rounded-lg border border-blue-200">
+                  <div className="flex items-center gap-2">
+                    <span className="text-2xl">🚛</span>
+                    <div>
+                      <div className="text-xs text-slate-500">Becsült fuvarok száma</div>
+                      <div className="text-sm font-medium text-slate-700">(24 t/kamion átlag alapján)</div>
+                    </div>
+                  </div>
+                  <div className="text-3xl font-bold text-blue-700">{estimatedTrucksNeeded}</div>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Summary Card */}
           <OrderbookSummaryTable lines={lines} orderbookId={orderId} currency={form.currency || 'EUR'} />

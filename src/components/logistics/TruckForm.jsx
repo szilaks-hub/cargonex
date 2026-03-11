@@ -149,7 +149,25 @@ export default function TruckForm({ item, onClose, onSaved, defaultOrderbookId, 
 
   const selectedOrderbook = orderbooks.find(o => o.id === form.orderbook_id);
 
+  // Calculate remaining capacity and validate truck allocation
+  const totalOrderbookCapacity = orderbookLines.reduce((sum, line) => sum + (line.planned_quantity_tons || 0), 0);
+  const totalAllocated = orderbookLines.reduce((sum, line) => sum + (line.allocated_quantity_tons || 0), 0);
+  const remainingCapacity = totalOrderbookCapacity - totalAllocated;
+  const plannedTons = parseFloat(form.planned_quantity_tons) || 0;
+  
+  // Estimate trucks needed (assuming 24t average capacity)
+  const avgTruckCapacity = 24;
+  const estimatedTrucksNeeded = remainingCapacity > 0 ? Math.ceil(remainingCapacity / avgTruckCapacity) : 0;
+  
+  // Check if planned tons exceed remaining capacity
+  const willExceedCapacity = plannedTons > remainingCapacity;
+
   const handleSave = async () => {
+    // Validate capacity before saving
+    if (form.orderbook_id && willExceedCapacity && !item?.id) {
+      toast.error(`Túllépés! Csak ${remainingCapacity.toFixed(2)} t szabad még ezen a rendelésen. (Tervezett: ${plannedTons.toFixed(2)} t)`);
+      return;
+    }
     setSaving(true);
     const data = {
       ...form,
@@ -240,13 +258,49 @@ export default function TruckForm({ item, onClose, onSaved, defaultOrderbookId, 
                 </SelectContent>
               </Select>
               {selectedOrderbook && (
-                <div className="mt-1.5 p-2 bg-blue-50 rounded text-xs text-blue-800 space-y-0.5">
-                  <div><span className="font-semibold">Incoterms:</span> {selectedOrderbook.incoterms_type} {selectedOrderbook.incoterms_place}</div>
-                  {selectedOrderbook.destination_country && <div><span className="font-semibold">Célország:</span> {selectedOrderbook.destination_country}</div>}
-                  {selectedOrderbook.preferred_carrier_name && <div><span className="font-semibold">Fuvarozó:</span> {selectedOrderbook.preferred_carrier_name}</div>}
-                  {selectedOrderbook.customs_required && <div className="text-orange-700 font-semibold">⚠ Vámkezelés szükséges</div>}
+                <div className="mt-1.5 space-y-2">
+                  <div className="p-2 bg-blue-50 rounded text-xs text-blue-800 space-y-0.5">
+                    <div><span className="font-semibold">Incoterms:</span> {selectedOrderbook.incoterms_type} {selectedOrderbook.incoterms_place}</div>
+                    {selectedOrderbook.destination_country && <div><span className="font-semibold">Célország:</span> {selectedOrderbook.destination_country}</div>}
+                    {selectedOrderbook.preferred_carrier_name && <div><span className="font-semibold">Fuvarozó:</span> {selectedOrderbook.preferred_carrier_name}</div>}
+                    {selectedOrderbook.customs_required && <div className="text-orange-700 font-semibold">⚠ Vámkezelés szükséges</div>}
+                  </div>
+                  
+                  {/* Capacity & Truck Estimation */}
+                  <div className={`p-3 rounded-lg border-2 ${willExceedCapacity ? 'bg-red-50 border-red-300' : 'bg-emerald-50 border-emerald-300'}`}>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-xs font-bold text-slate-700">📦 Rendelés kapacitás</span>
+                      <span className="text-xs font-mono bg-white rounded px-2 py-0.5 border">
+                        {totalAllocated.toFixed(1)} / {totalOrderbookCapacity.toFixed(1)} t
+                      </span>
+                    </div>
+                    <div className={`text-sm font-bold ${willExceedCapacity ? 'text-red-700' : 'text-emerald-700'}`}>
+                      {remainingCapacity > 0 ? (
+                        <>Szabad: {remainingCapacity.toFixed(2)} t</>
+                      ) : (
+                        <>Teljesítve! Nincs szabad kapacitás.</>
+                      )}
+                    </div>
+                    {remainingCapacity > 0 && (
+                      <div className="mt-2 pt-2 border-t border-slate-200 text-xs text-slate-600">
+                        <div className="flex items-center justify-between">
+                          <span>🚛 Becsült fuvarok:</span>
+                          <span className="font-bold text-blue-700">{estimatedTrucksNeeded} kamion</span>
+                        </div>
+                        <div className="text-[10px] text-slate-400 mt-0.5">
+                          (24 t/kamion átlag alapján)
+                        </div>
+                      </div>
+                    )}
+                    {willExceedCapacity && (
+                      <div className="mt-2 pt-2 border-t border-red-200 text-xs font-semibold text-red-700">
+                        ⚠️ Figyelem: A tervezett {plannedTons.toFixed(2)} t túllépi a szabad kapacitást!
+                      </div>
+                    )}
+                  </div>
+
                   {orderbookLines.length > 0 && (
-                    <div className="flex flex-wrap gap-2 mt-1">
+                    <div className="flex flex-wrap gap-2">
                       {orderbookLines.map(l => (
                         <span key={l.id} className="bg-white border border-blue-200 rounded px-2 py-0.5 text-[10px] text-blue-800">
                           <span className="font-semibold">{l.category_name}</span>
