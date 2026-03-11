@@ -227,7 +227,7 @@ export default function TruckForm({ item, onClose, onSaved, defaultOrderbookId, 
     // Denormalize supplier data from orderbook for Finance/Customs
     const supplier_name = selectedOrderbook?.supplier_name || "";
     const supplier_site_name = selectedOrderbook?.supplier_site_name || "";
-    const origin_country = sites.find(s => s.id === selectedOrderbook?.supplier_site_id)?.country || "";
+    const origin_country = locations.find(s => s.id === selectedOrderbook?.supplier_site_id)?.country || "";
     
     const data = {
       ...form,
