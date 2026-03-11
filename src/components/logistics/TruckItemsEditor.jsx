@@ -52,13 +52,6 @@ export default function TruckItemsEditor({ items, allowedProducts, categories, o
 
   return (
     <div className="space-y-2">
-      <div className="flex items-center justify-between mb-1">
-        <Label className="text-slate-600 text-xs font-semibold">Termékek a kamionon</Label>
-        <Button type="button" size="sm" variant="outline" onClick={handleAdd}
-          className="h-7 text-xs gap-1 border-blue-300 text-blue-700 hover:bg-blue-50">
-          <Plus className="w-3.5 h-3.5" /> Termék hozzáadása
-        </Button>
-      </div>
 
       {items.length === 0 && (
         <div className="text-xs text-slate-400 border border-dashed border-slate-200 rounded-lg p-4 text-center">
