@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, Lock, Save, CheckCircle2, AlertCircle, XCircle, Printer, Trash2 } from "lucide-react";
+import { ArrowLeft, Lock, Save, CheckCircle2, AlertCircle, XCircle, Printer, Trash2, FileEdit } from "lucide-react";
 import StatusBadge from "@/components/ui/StatusBadge";
 import { toast } from "sonner";
 import {
@@ -43,6 +43,8 @@ export default function TruckCustomsDetail({ truck, onBack, onUpdated }) {
   const [deleteKey, setDeleteKey] = useState("");
   const [showReopenConfirm, setShowReopenConfirm] = useState(false);
   const [reopenKey, setReopenKey] = useState("");
+  const [showAmendmentDialog, setShowAmendmentDialog] = useState(false);
+  const [amendmentKey, setAmendmentKey] = useState("");
 
   const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
 
@@ -139,6 +141,19 @@ export default function TruckCustomsDetail({ truck, onBack, onUpdated }) {
     toast.success("Fuvar újranyitva");
     setShowReopenConfirm(false);
     setReopenKey("");
+    onUpdated();
+  };
+
+  const handleAmendment = async () => {
+    if (amendmentKey !== "1985") {
+      toast.error("Helytelen mesterkulcs!");
+      return;
+    }
+    await base44.entities.Truck.update(truck.id, { amendment_requested: true });
+    toast.success("Javítási kérelem aktiválva");
+    setShowAmendmentDialog(false);
+    setAmendmentKey("");
+    setForm((f) => ({ ...f, amendment_requested: true }));
     onUpdated();
   };
 
@@ -576,6 +591,9 @@ export default function TruckCustomsDetail({ truck, onBack, onUpdated }) {
             </p>
           )}
           <div className="flex gap-2 ml-auto">
+            <Button variant="outline" onClick={() => setShowAmendmentDialog(true)} className="gap-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50">
+              <FileEdit className="w-4 h-4" /> Javítás
+            </Button>
             {truck.status !== "closed" && (
               <Button variant="outline" onClick={() => setShowDeleteConfirm(true)} className="gap-2 text-red-600 hover:text-red-700 hover:bg-red-50">
                 <Trash2 className="w-4 h-4" /> Törlés
@@ -608,14 +626,24 @@ export default function TruckCustomsDetail({ truck, onBack, onUpdated }) {
             <CheckCircle2 className="w-5 h-5 text-green-600" />
             <span className="text-sm font-medium">Ez a fuvar le van zárva és véglegesítve.</span>
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setShowReopenConfirm(true)}
-            className="gap-2 text-amber-600 hover:text-amber-700 hover:bg-amber-50"
-          >
-            <Lock className="w-4 h-4" /> Újranyitás
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowAmendmentDialog(true)}
+              className="gap-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+            >
+              <FileEdit className="w-4 h-4" /> Javítás
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowReopenConfirm(true)}
+              className="gap-2 text-amber-600 hover:text-amber-700 hover:bg-amber-50"
+            >
+              <Lock className="w-4 h-4" /> Újranyitás
+            </Button>
+          </div>
         </div>
       )}
 
@@ -670,6 +698,34 @@ export default function TruckCustomsDetail({ truck, onBack, onUpdated }) {
             <AlertDialogCancel onClick={() => setReopenKey("")}>Mégse</AlertDialogCancel>
             <AlertDialogAction onClick={handleReopen} className="bg-amber-600 hover:bg-amber-700">
               Újranyitás
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Amendment Request Dialog */}
+      <AlertDialog open={showAmendmentDialog} onOpenChange={setShowAmendmentDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Javítási kérelem aktiválása</AlertDialogTitle>
+            <AlertDialogDescription>
+              Ez aktiválja a módosítási kérelem státuszt és feloldja a 2. MRN mezőket. Add meg a mesterkulcsot a megerősítéshez.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="py-4">
+            <Label className="text-sm text-slate-600">Mesterkulcs</Label>
+            <Input
+              type="password"
+              placeholder="Írd be a mesterkulcsot"
+              value={amendmentKey}
+              onChange={(e) => setAmendmentKey(e.target.value)}
+              className="mt-2"
+            />
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setAmendmentKey("")}>Mégse</AlertDialogCancel>
+            <AlertDialogAction onClick={handleAmendment} className="bg-blue-600 hover:bg-blue-700">
+              Javítás aktiválása
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
