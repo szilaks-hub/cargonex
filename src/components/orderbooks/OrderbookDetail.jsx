@@ -7,11 +7,22 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { X, Copy, Trash2, Check, AlertCircle, Edit2, Plus } from "lucide-react";
+import { X, Copy, Trash2, Check, AlertCircle, Edit2, Plus, FileEdit } from "lucide-react";
 import OrderbookTrucksSidebar from "./OrderbookTrucksSidebar";
 import OrderbookSummaryTable from "./OrderbookSummaryTable";
 import CarrierAssignmentEditor from "./CarrierAssignmentEditor";
 import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Label } from "@/components/ui/label";
 
 const INCOTERMS = ['EXW', 'FCA', 'CPT', 'CIP', 'DAP', 'DPU', 'DDP', 'FAS', 'FOB', 'CFR', 'CIF'];
 
@@ -22,6 +33,10 @@ export default function OrderbookDetail({ orderId, onClose, onUpdated }) {
   const [newLineForm, setNewLineForm] = useState({});
   const [confirmDialog, setConfirmDialog] = useState(null);
   const [saved, setSaved] = useState(false);
+  const [showAmendmentDialog, setShowAmendmentDialog] = useState(false);
+  const [amendmentKey, setAmendmentKey] = useState("");
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [deleteKey, setDeleteKey] = useState("");
   const saveTimerRef = useRef(null);
   const qc = useQueryClient();
 
@@ -198,13 +213,36 @@ export default function OrderbookDetail({ orderId, onClose, onUpdated }) {
   };
 
   const handleDeleteOrder = async () => {
+    if (deleteKey !== "1985") {
+      toast.error("Helytelen mesterkulcs!");
+      return;
+    }
     try {
       for (const line of lines) await base44.entities.OrderbookLine.delete(line.id);
       await base44.entities.Orderbook.delete(orderId);
       qc.invalidateQueries({ queryKey: ['orderbooks'] });
       toast.success('Order deleted');
-      setConfirmDialog(null);
+      setShowDeleteDialog(false);
+      setDeleteKey("");
       onClose?.();
+    } catch (error) {
+      toast.error(error.message);
+    }
+  };
+
+  const handleAmendment = async () => {
+    if (amendmentKey !== "1985") {
+      toast.error("Helytelen mesterkulcs!");
+      return;
+    }
+    try {
+      await base44.entities.Orderbook.update(orderId, { status: 'open' });
+      setForm({ ...form, status: 'open' });
+      qc.invalidateQueries({ queryKey: ['orderbooks'] });
+      toast.success('Javítás aktiválva - rendelés újranyitva');
+      setShowAmendmentDialog(false);
+      setAmendmentKey("");
+      onUpdated?.();
     } catch (error) {
       toast.error(error.message);
     }
@@ -621,10 +659,23 @@ export default function OrderbookDetail({ orderId, onClose, onUpdated }) {
 
           {/* Action Buttons */}
           <div className="flex justify-between items-center gap-2 pt-4 border-t">
-            <div>
-              {isDraft && (
-                <Button variant="destructive" size="sm" onClick={() => setConfirmDialog({ action: 'delete' })}>Delete</Button>
-              )}
+            <div className="flex gap-2">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => setShowAmendmentDialog(true)}
+                className="gap-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+              >
+                <FileEdit className="w-4 h-4" /> Javítás
+              </Button>
+              <Button 
+                variant="destructive" 
+                size="sm" 
+                onClick={() => setShowDeleteDialog(true)}
+                className="gap-2"
+              >
+                <Trash2 className="w-4 h-4" /> Törlés
+              </Button>
             </div>
             <div className="flex gap-2">
               {isOpen && (
@@ -664,13 +715,11 @@ export default function OrderbookDetail({ orderId, onClose, onUpdated }) {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <AlertCircle className="w-5 h-5 text-orange-500" />
-              {confirmDialog?.action === 'delete' && 'Delete Order?'}
               {confirmDialog?.action === 'close' && 'Close Order?'}
               {confirmDialog?.action === 'reopen' && 'Reopen Order?'}
             </DialogTitle>
           </DialogHeader>
           <p className="text-sm text-slate-600">
-            {confirmDialog?.action === 'delete' && 'This cannot be undone. All lines will be deleted.'}
             {confirmDialog?.action === 'close' && 'Order will move to Closed status.'}
             {confirmDialog?.action === 'reopen' && 'Order will return to Open status.'}
           </p>
@@ -678,10 +727,9 @@ export default function OrderbookDetail({ orderId, onClose, onUpdated }) {
             <Button variant="outline" size="sm" onClick={() => setConfirmDialog(null)}>Cancel</Button>
             <Button
               size="sm"
-              className={confirmDialog?.action === 'delete' ? 'bg-red-600 hover:bg-red-700 text-white' : 'bg-blue-600 hover:bg-blue-700 text-white'}
+              className="bg-blue-600 hover:bg-blue-700 text-white"
               onClick={() => {
-                if (confirmDialog?.action === 'delete') handleDeleteOrder();
-                else if (confirmDialog?.action === 'close') handleCloseOrder();
+                if (confirmDialog?.action === 'close') handleCloseOrder();
                 else if (confirmDialog?.action === 'reopen') handleReopenOrder();
               }}
             >
@@ -690,6 +738,62 @@ export default function OrderbookDetail({ orderId, onClose, onUpdated }) {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Amendment Request Dialog */}
+      <AlertDialog open={showAmendmentDialog} onOpenChange={setShowAmendmentDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Javítási kérelem aktiválása</AlertDialogTitle>
+            <AlertDialogDescription>
+              Ez újranyitja a rendelést szerkesztés céljából. Add meg a mesterkulcsot a megerősítéshez.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="py-4">
+            <Label className="text-sm text-slate-600">Mesterkulcs</Label>
+            <Input
+              type="password"
+              placeholder="Írd be a mesterkulcsot"
+              value={amendmentKey}
+              onChange={(e) => setAmendmentKey(e.target.value)}
+              className="mt-2"
+            />
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setAmendmentKey("")}>Mégse</AlertDialogCancel>
+            <AlertDialogAction onClick={handleAmendment} className="bg-blue-600 hover:bg-blue-700">
+              Javítás aktiválása
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Biztosan törlöd ezt a rendelést?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Ez a művelet nem visszavonható. Minden sor törlésre kerül. Add meg a mesterkulcsot a törlés megerősítéséhez.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="py-4">
+            <Label className="text-sm text-slate-600">Mesterkulcs</Label>
+            <Input
+              type="password"
+              placeholder="Írd be a mesterkulcsot"
+              value={deleteKey}
+              onChange={(e) => setDeleteKey(e.target.value)}
+              className="mt-2"
+            />
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setDeleteKey("")}>Mégse</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteOrder} className="bg-red-600 hover:bg-red-700">
+              Törlés
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
