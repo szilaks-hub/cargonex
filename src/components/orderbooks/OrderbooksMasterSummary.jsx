@@ -44,38 +44,43 @@ function buildByCategory(filteredLines, allTrucks) {
     if (truck.status === "cancelled") return;
     const isDelivered = truck.status === "closed";
     const isActive = ACTIVE_STATUSES_LOCAL.includes(truck.status);
+    
+    // Use actual weight for loaded/closed, planned for booked
+    const truckTotalTons = (truck.status === 'loaded' || truck.status === 'closed') && truck.actual_weight_tons
+      ? truck.actual_weight_tons
+      : truck.planned_quantity_tons || 0;
 
     // Try to match via items array first
     if (truck.items && truck.items.length > 0) {
+      const itemsPlannedSum = truck.items.reduce((s, i) => s + (i.planned_quantity_tons || 0), 0);
+      
       truck.items.forEach(item => {
         const catName = item.category_name || item.product_name;
         if (catName && map[catName]) {
-          const tons = isDelivered
-            ? (item.actual_weight_tons || item.planned_quantity_tons || 0)
-            : (item.planned_quantity_tons || 0);
+          // Allocate truck's total weight proportionally to items
+          const itemRatio = itemsPlannedSum > 0 ? (item.planned_quantity_tons || 0) / itemsPlannedSum : 0;
+          const tons = truckTotalTons * itemRatio;
+          
           if (isDelivered) map[catName].deliveredTons += tons;
           else if (isActive) map[catName].bookedTons += tons;
         }
       });
     } else {
-      // Fallback: single product truck — try to match category by product_name or category_name
-      const catName = truck.category_name || truck.product_category_name;
-      const tons = isDelivered
-        ? (truck.actual_weight_tons || truck.planned_quantity_tons || 0)
-        : (truck.planned_quantity_tons || 0);
+      // Fallback: single product truck — try to match category by product_name
+      const catName = truck.product_name;
 
       if (catName && map[catName]) {
-        if (isDelivered) map[catName].deliveredTons += tons;
-        else if (isActive) map[catName].bookedTons += tons;
+        if (isDelivered) map[catName].deliveredTons += truckTotalTons;
+        else if (isActive) map[catName].bookedTons += truckTotalTons;
       } else {
-        // Last resort: distribute proportionally only if we can't match
+        // Last resort: distribute to the only category if there's just one
         const keys = Object.keys(map);
         if (keys.length === 1) {
           const k = keys[0];
-          if (isDelivered) map[k].deliveredTons += tons;
-          else if (isActive) map[k].bookedTons += tons;
+          if (isDelivered) map[k].deliveredTons += truckTotalTons;
+          else if (isActive) map[k].bookedTons += truckTotalTons;
         }
-        // If multiple categories and no match, skip (don't invent data)
+        // If multiple categories and no match, skip
       }
     }
   });
