@@ -44,6 +44,7 @@ export default function OrderbooksPage() {
   const { data: trucks = [] } = useQuery({
     queryKey: ['trucks'],
     queryFn: () => base44.entities.Truck.list(),
+    refetchInterval: 2000, // Auto-refresh trucks for real-time allocation updates
   });
 
   const allSuppliers = [...new Set(orders.filter(o => o.supplier_id).map(o => ({ id: o.supplier_id, name: o.supplier_name })))];
@@ -214,11 +215,11 @@ export default function OrderbooksPage() {
               </Card>
             </div>
           )}
-          <OrderbooksList orders={openOrders} lines={lines} onSelect={setSelectedOrderId} onDelete={() => qc.invalidateQueries({ queryKey: ['orderbooks'] })} />
+          <OrderbooksList orders={openOrders} lines={lines} trucks={trucks} onSelect={setSelectedOrderId} onDelete={() => qc.invalidateQueries({ queryKey: ['orderbooks'] })} />
         </TabsContent>
 
         <TabsContent value="closed" className="mt-4">
-          <OrderbooksList orders={closedOrders} lines={lines} onSelect={setSelectedOrderId} isClosed />
+          <OrderbooksList orders={closedOrders} lines={lines} trucks={trucks} onSelect={setSelectedOrderId} isClosed />
         </TabsContent>
 
         <TabsContent value="summary" className="mt-4">
@@ -288,7 +289,7 @@ function ColorDot({ colorKey, onClick }) {
   );
 }
 
-function OrderbooksList({ orders, lines, onSelect, onDelete, isClosed }) {
+function OrderbooksList({ orders, lines, trucks = [], onSelect, onDelete, isClosed }) {
   const [expandedId, setExpandedId] = useState(null);
   const [sortedOrders, setSortedOrders] = useState(null);
   const [dragIdx, setDragIdx] = useState(null);
@@ -421,10 +422,12 @@ function OrderbooksList({ orders, lines, onSelect, onDelete, isClosed }) {
                     </td>
                   </tr>
                   {isExpanded && (
-                    <tr className={`border-b ${colorDef.bg} opacity-90`}>
-                      <td colSpan="10" className="px-6 py-3">
-                        <div className="space-y-2">
-                          <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Termékkörök összesítése</div>
+                   <tr className={`border-b ${colorDef.bg} opacity-90`}>
+                     <td colSpan="10" className="px-6 py-3">
+                       <div className="space-y-4">
+                         {/* Termékkörök összesítése */}
+                         <div className="space-y-2">
+                           <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Termékkörök összesítése</div>
                           {orderLines.map(line => {
                             const pct = line.planned_quantity_tons > 0
                               ? Math.round(((line.allocated_quantity_tons || 0) / line.planned_quantity_tons) * 100)
@@ -477,6 +480,44 @@ function OrderbooksList({ orders, lines, onSelect, onDelete, isClosed }) {
                               {(valueEUR / 1000).toFixed(1)} k EUR
                             </div>
                           </div>
+                          
+                          {/* Előjegyzett kamionok */}
+                          {(() => {
+                            const orderTrucks = trucks.filter(t => t.orderbook_id === order.id && t.status !== 'cancelled');
+                            if (orderTrucks.length === 0) return null;
+                            return (
+                              <div className="space-y-2 pt-3 border-t border-slate-200">
+                                <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
+                                  🚛 Előjegyzett kamionok ({orderTrucks.length})
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+                                  {orderTrucks.map(t => (
+                                    <div key={t.id} className="bg-white rounded-lg border border-slate-200 p-2.5 text-xs">
+                                      <div className="flex items-center justify-between mb-1">
+                                        <span className="font-bold text-slate-800">{t.truck_number || '—'}</span>
+                                        <Badge className={
+                                          t.status === 'booked' ? 'bg-slate-100 text-slate-700' :
+                                          t.status === 'loaded' ? 'bg-orange-100 text-orange-700' :
+                                          t.status === 'closed' ? 'bg-emerald-100 text-emerald-700' :
+                                          'bg-slate-100 text-slate-600'
+                                        }>
+                                          {t.status === 'booked' ? 'Előjegyzett' : 
+                                           t.status === 'loaded' ? 'Megrakott' : 
+                                           t.status === 'closed' ? 'Lezárt' : t.status}
+                                        </Badge>
+                                      </div>
+                                      <div className="text-slate-600 space-y-0.5">
+                                        <div>📦 {t.planned_quantity_tons || 0} t</div>
+                                        <div>🚚 {t.carrier_name || '—'}</div>
+                                        <div>📅 {t.expected_loading_date || t.loading_date || '—'}</div>
+                                        {t.destination_city && <div>📍 {t.destination_country} · {t.destination_city}</div>}
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            );
+                          })()}
                         </div>
                       </td>
                     </tr>
