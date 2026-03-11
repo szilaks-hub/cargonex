@@ -184,36 +184,36 @@ export default function Dashboard() {
   const totalGoodsEur = closedTrucks.reduce((s,t) => s + (t.goods_value||0), 0);
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-7">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-slate-900">Dashboard</h1>
-          <p className="text-sm mt-1 text-slate-500">Áttekintés és statisztikák</p>
+          <h1 className="text-3xl font-bold text-slate-900">Dashboard</h1>
+          <p className="text-base mt-2 text-slate-600">Logistics & Shipment Overview</p>
         </div>
       </div>
 
       {/* Top Stats Grid */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-white p-5 rounded-lg border border-slate-200/60">
-          <div className="text-xs font-medium text-slate-500 mb-2">Nyitott fuvar</div>
-          <div className="text-3xl font-semibold text-slate-900">{openTrucks.length}</div>
-          <div className="text-xs text-slate-400 mt-1">kamion úton</div>
+        <div className="bg-gradient-to-br from-blue-500 to-blue-600 p-6 rounded-xl shadow-lg border border-blue-400/20">
+          <div className="text-xs font-semibold text-blue-100 mb-2 uppercase tracking-wide">Nyitott fuvar</div>
+          <div className="text-4xl font-bold text-white mb-1">{openTrucks.length}</div>
+          <div className="text-sm text-blue-100">kamion úton</div>
         </div>
-        <div className="bg-white p-5 rounded-lg border border-slate-200/60">
-          <div className="text-xs font-medium text-slate-500 mb-2">Pénzügyi kontrol</div>
-          <div className="text-3xl font-semibold text-orange-600">{financeControl.length}</div>
-          <div className="text-xs text-slate-400 mt-1">vámkezelés alatt</div>
+        <div className="bg-gradient-to-br from-orange-500 to-orange-600 p-6 rounded-xl shadow-lg border border-orange-400/20">
+          <div className="text-xs font-semibold text-orange-100 mb-2 uppercase tracking-wide">Pénzügyi kontrol</div>
+          <div className="text-4xl font-bold text-white mb-1">{financeControl.length}</div>
+          <div className="text-sm text-orange-100">vámkezelés alatt</div>
         </div>
-        <div className="bg-white p-5 rounded-lg border border-slate-200/60">
-          <div className="text-xs font-medium text-slate-500 mb-2">Nyitott rendelés</div>
-          <div className="text-3xl font-semibold text-slate-900">{openOrderbooks.length}</div>
-          <div className="text-xs text-slate-400 mt-1">aktív rendelés</div>
+        <div className="bg-gradient-to-br from-purple-500 to-purple-600 p-6 rounded-xl shadow-lg border border-purple-400/20">
+          <div className="text-xs font-semibold text-purple-100 mb-2 uppercase tracking-wide">Nyitott rendelés</div>
+          <div className="text-4xl font-bold text-white mb-1">{openOrderbooks.length}</div>
+          <div className="text-sm text-purple-100">aktív rendelés</div>
         </div>
-        <div className="bg-white p-5 rounded-lg border border-slate-200/60">
-          <div className="text-xs font-medium text-slate-500 mb-2">Összes érték</div>
-          <div className="text-3xl font-semibold text-emerald-600">{totalOrderValueEur > 0 ? (totalOrderValueEur/1000).toFixed(0) : "0"}<span className="text-lg ml-1">k€</span></div>
-          <div className="text-xs text-slate-400 mt-1">rendelési érték</div>
+        <div className="bg-gradient-to-br from-emerald-500 to-emerald-600 p-6 rounded-xl shadow-lg border border-emerald-400/20">
+          <div className="text-xs font-semibold text-emerald-100 mb-2 uppercase tracking-wide">Összes érték</div>
+          <div className="text-4xl font-bold text-white mb-1">{totalOrderValueEur > 0 ? (totalOrderValueEur/1000).toFixed(0) : "0"}<span className="text-2xl ml-1">k€</span></div>
+          <div className="text-sm text-emerald-100">rendelési érték</div>
         </div>
       </div>
 
@@ -251,8 +251,11 @@ export default function Dashboard() {
         </div>
 
         {/* Country bar */}
-        <div className="bg-white p-6 rounded-lg border border-slate-200/60">
-          <h3 className="text-sm font-semibold text-slate-900 mb-4">Célország bontás</h3>
+        <div className="bg-gradient-to-br from-orange-50 to-orange-100 p-6 rounded-xl shadow-md border border-orange-200">
+          <h3 className="text-base font-bold text-slate-800 mb-4 flex items-center gap-2">
+            <div className="w-2 h-6 bg-orange-500 rounded-full"></div>
+            Célország bontás
+          </h3>
           {countryData.length > 0 ? (
             <ResponsiveContainer width="100%" height={230}>
               <BarChart data={countryData} barCategoryGap="35%" layout="vertical">
@@ -266,8 +269,11 @@ export default function Dashboard() {
         </div>
 
         {/* Carrier breakdown */}
-        <div className="bg-white p-6 rounded-lg border border-slate-200/60">
-          <h3 className="text-sm font-semibold text-slate-900 mb-4">Fuvarozók</h3>
+        <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 p-6 rounded-xl shadow-md border border-emerald-200">
+          <h3 className="text-base font-bold text-slate-800 mb-4 flex items-center gap-2">
+            <div className="w-2 h-6 bg-emerald-500 rounded-full"></div>
+            Fuvarozók
+          </h3>
           {carrierData.length > 0 ? (
             <>
               <ResponsiveContainer width="100%" height={190}>
@@ -292,10 +298,13 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         {/* Monthly trend */}
-        <div className="bg-white p-6 rounded-lg border border-slate-200/60">
-          <h3 className="text-sm font-semibold text-slate-900 mb-4">Havi teljesítmény</h3>
+        <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-6 rounded-xl shadow-md border border-purple-200">
+          <h3 className="text-base font-bold text-slate-800 mb-4 flex items-center gap-2">
+            <div className="w-2 h-6 bg-purple-500 rounded-full"></div>
+            Havi teljesítmény
+          </h3>
           {monthlyData.length > 0 ? (
             <ResponsiveContainer width="100%" height={220}>
               <AreaChart data={monthlyData}>
@@ -323,8 +332,11 @@ export default function Dashboard() {
         </div>
 
         {/* County breakdown HU */}
-        <div className="bg-white p-6 rounded-lg border border-slate-200/60">
-          <h3 className="text-sm font-semibold text-slate-900 mb-4">Megye bontás (HU)</h3>
+        <div className="bg-gradient-to-br from-cyan-50 to-cyan-100 p-6 rounded-xl shadow-md border border-cyan-200">
+          <h3 className="text-base font-bold text-slate-800 mb-4 flex items-center gap-2">
+            <div className="w-2 h-6 bg-cyan-500 rounded-full"></div>
+            Megye bontás (HU)
+          </h3>
           {countyData.length > 0 ? (
             <ResponsiveContainer width="100%" height={220}>
               <BarChart data={countyData} barCategoryGap="25%">
@@ -344,9 +356,12 @@ export default function Dashboard() {
 
 
       {/* Recent Trucks */}
-      <div className="bg-white p-6 rounded-lg border border-slate-200/60">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-semibold text-slate-900">Legutóbbi fuvarok</h3>
+      <div className="bg-gradient-to-br from-indigo-50 to-indigo-100 p-6 rounded-xl shadow-md border border-indigo-200">
+        <div className="flex items-center justify-between mb-5">
+          <h3 className="text-base font-bold text-slate-800 flex items-center gap-2">
+            <div className="w-2 h-6 bg-indigo-500 rounded-full"></div>
+            Legutóbbi fuvarok
+          </h3>
           <Link to={createPageUrl("Logistics")} className="text-xs font-medium text-blue-600 hover:text-blue-700 flex items-center gap-1">
             Összes <ArrowRight className="w-3.5 h-3.5" />
           </Link>
