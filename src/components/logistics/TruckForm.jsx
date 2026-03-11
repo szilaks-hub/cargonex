@@ -380,7 +380,17 @@ export default function TruckForm({ item, onClose, onSaved, defaultOrderbookId, 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <Label className={lbl}>Összes tervezett súly (t)</Label>
-                  <Input type="number" className={`${inp} font-bold text-lg bg-white`} value={form.planned_quantity_tons} onChange={(e) => set("planned_quantity_tons", e.target.value)} />
+                  <Input 
+                    type="number" 
+                    className={`${inp} font-bold text-lg ${willExceedCapacity ? 'border-red-500 border-2' : 'bg-white'}`} 
+                    value={form.planned_quantity_tons} 
+                    onChange={(e) => set("planned_quantity_tons", e.target.value)} 
+                  />
+                  {willExceedCapacity && (
+                    <p className="text-xs text-red-600 font-semibold mt-1">
+                      ⚠️ Túllépés! Max {remainingCapacity.toFixed(2)} t szabad
+                    </p>
+                  )}
                 </div>
                 <div>
                   <Label className={lbl}>Tervezett rakodási dátum *</Label>
