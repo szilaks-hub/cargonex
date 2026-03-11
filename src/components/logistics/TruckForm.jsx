@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -21,6 +21,7 @@ const STATUS_LABELS = {
 const COUNTRIES = ["HU", "DE", "AT", "SK", "RO", "HR", "SI", "PL", "CZ", "FR", "IT", "NL", "BE", "BG", "RS", "UA", "TR"];
 
 export default function TruckForm({ item, onClose, onSaved, defaultOrderbookId, defaultOrderNo }) {
+  const queryClient = useQueryClient();
   const [tab, setTab] = useState("order");
   const [form, setForm] = useState(() => {
     if (item) return { ...item, items: item.items || [] };
