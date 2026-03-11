@@ -223,6 +223,12 @@ export default function TruckForm({ item, onClose, onSaved, defaultOrderbookId, 
       return;
     }
     setSaving(true);
+    
+    // Denormalize supplier data from orderbook for Finance/Customs
+    const supplier_name = selectedOrderbook?.supplier_name || "";
+    const supplier_site_name = selectedOrderbook?.supplier_site_name || "";
+    const origin_country = sites.find(s => s.id === selectedOrderbook?.supplier_site_id)?.country || "";
+    
     const data = {
       ...form,
       loading_date: finalLoadingDate,
@@ -234,6 +240,9 @@ export default function TruckForm({ item, onClose, onSaved, defaultOrderbookId, 
       freight_eur_per_ton_snapshot: Number(form.freight_eur_per_ton_snapshot) || 0,
       customs_agent_fee: Number(form.customs_agent_fee) || 0,
       purchase_price: Number(form.purchase_price) || 0,
+      supplier_name,
+      supplier_site_name,
+      origin_country,
     };
     if (item?.id) await base44.entities.Truck.update(item.id, data);
     else await base44.entities.Truck.create(data);
