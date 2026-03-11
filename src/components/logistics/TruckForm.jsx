@@ -170,13 +170,13 @@ export default function TruckForm({ item, onClose, onSaved, defaultOrderbookId, 
       _totalCapacity: totalCapacity,
       _allocatedTons: allocatedTons,
       _remainingCapacity: remaining,
-      _hasCapacity: remaining > 0.1, // At least 0.1t must be available
     };
   });
 
   // Filter: only show orderbooks with available capacity (or currently selected one for editing)
+  // RELAXED: Allow orderbooks with at least 0.01t remaining OR if it's currently selected
   const availableOrderbooks = orderbooksWithCapacity.filter(ob => 
-    ob._hasCapacity || ob.id === form.orderbook_id
+    ob._remainingCapacity >= 0.01 || ob.id === form.orderbook_id
   );
 
   const selectedOrderbook = orderbooksWithCapacity.find(o => o.id === form.orderbook_id);
