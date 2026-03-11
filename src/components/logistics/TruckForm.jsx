@@ -236,6 +236,13 @@ export default function TruckForm({ item, onClose, onSaved, defaultOrderbookId, 
     };
     if (item?.id) await base44.entities.Truck.update(item.id, data);
     else await base44.entities.Truck.create(data);
+    
+    // Invalidate queries - including orderbook data so capacity updates immediately
+    queryClient.invalidateQueries({ queryKey: ["trucks"] });
+    queryClient.invalidateQueries({ queryKey: ["all-trucks-for-capacity"] });
+    queryClient.invalidateQueries({ queryKey: ["orderbook-lines"] });
+    queryClient.invalidateQueries({ queryKey: ["orderbooks"] });
+    
     setSaving(false);
     onSaved();
   };
