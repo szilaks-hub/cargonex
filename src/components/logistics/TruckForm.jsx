@@ -152,7 +152,12 @@ export default function TruckForm({ item, onClose, onSaved, defaultOrderbookId, 
   // Calculate remaining capacity and validate truck allocation
   const totalOrderbookCapacity = orderbookLines.reduce((sum, line) => sum + (line.planned_quantity_tons || 0), 0);
   const totalAllocated = orderbookLines.reduce((sum, line) => sum + (line.allocated_quantity_tons || 0), 0);
-  const remainingCapacity = totalOrderbookCapacity - totalAllocated;
+  
+  // If editing existing truck, exclude its current planned tonnage from allocated
+  const currentTruckTonnage = item?.id && item.planned_quantity_tons ? parseFloat(item.planned_quantity_tons) : 0;
+  const effectiveAllocated = totalAllocated - currentTruckTonnage;
+  
+  const remainingCapacity = totalOrderbookCapacity - effectiveAllocated;
   const plannedTons = parseFloat(form.planned_quantity_tons) || 0;
   
   // Estimate trucks needed (assuming 24t average capacity)
@@ -160,12 +165,14 @@ export default function TruckForm({ item, onClose, onSaved, defaultOrderbookId, 
   const estimatedTrucksNeeded = remainingCapacity > 0 ? Math.ceil(remainingCapacity / avgTruckCapacity) : 0;
   
   // Check if planned tons exceed remaining capacity
-  const willExceedCapacity = plannedTons > remainingCapacity;
+  const willExceedCapacity = plannedTons > remainingCapacity && plannedTons > 0;
 
   const handleSave = async () => {
-    // Validate capacity before saving
-    if (form.orderbook_id && willExceedCapacity && !item?.id) {
-      toast.error(`Túllépés! Csak ${remainingCapacity.toFixed(2)} t szabad még ezen a rendelésen. (Tervezett: ${plannedTons.toFixed(2)} t)`);
+    // Validate capacity before saving (for both new and edited trucks)
+    if (form.orderbook_id && willExceedCapacity) {
+      toast.error(`⛔ Túllépés! Csak ${remainingCapacity.toFixed(2)} t szabad még ezen a rendelésen. (Próbált hozzáadni: ${plannedTons.toFixed(2)} t)`, {
+        duration: 5000,
+      });
       return;
     }
     setSaving(true);
