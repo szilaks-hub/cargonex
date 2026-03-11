@@ -5,6 +5,8 @@ import { Printer } from "lucide-react";
 export default function OrderbookReport({ orderbook, lines, trucks, onClose }) {
   const printRef = useRef();
 
+  if (!orderbook) return null;
+
   const handlePrint = () => {
     const printContent = printRef.current;
     const printWindow = window.open('', '', 'width=800,height=600');
