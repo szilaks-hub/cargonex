@@ -17,9 +17,9 @@ const COLORS = ["#3B6CF4", "#f59e0b", "#22c55e", "#e05a2b", "#8b5cf6", "#06b6d4"
 
 const cardBase = {
   background: "#fff",
-  border: "1px solid #E8ECF4",
-  borderRadius: "16px",
-  boxShadow: "0 2px 12px rgba(15,23,60,0.06)",
+  border: "1px solid #e2e8f0",
+  borderRadius: "12px",
+  boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
 };
 
 const fmt = (n, d = 0) =>
@@ -43,15 +43,12 @@ const CustomTooltip = ({ active, payload, label }) => {
 
 function KpiCard({ label, value, sub, icon: Icon, accent, link, trend }) {
   const inner = (
-    <div className="p-4 rounded-2xl flex flex-col gap-2 h-full transition-all hover:shadow-md cursor-pointer" style={cardBase}>
+    <div className="p-4 rounded-xl flex flex-col gap-2 h-full transition-all hover:shadow-lg hover:-translate-y-0.5 cursor-pointer border border-slate-100" style={{ background: "#fff" }}>
       <div className="flex items-center justify-between">
-        <span className="text-xs font-semibold text-slate-400 leading-tight">{label}</span>
-        <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: accent + "22" }}>
-          <Icon className="w-4 h-4" style={{ color: accent }} />
-        </div>
+        <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wide leading-tight">{label}</span>
       </div>
-      <div className="text-2xl font-bold text-slate-800 leading-none">{value}</div>
-      {sub && <div className="text-[11px] text-slate-400">{sub}</div>}
+      <div className="text-2xl font-bold text-slate-900 leading-none">{value}</div>
+      {sub && <div className="text-[11px] text-slate-400 mt-0.5">{sub}</div>}
       {trend !== undefined && (
         <div className={`text-[11px] font-semibold flex items-center gap-0.5 ${trend >= 0 ? "text-emerald-500" : "text-red-400"}`}>
           <TrendingUp className="w-3 h-3" /> {trend >= 0 ? "+" : ""}{trend}%
@@ -65,12 +62,9 @@ function KpiCard({ label, value, sub, icon: Icon, accent, link, trend }) {
 function SectionTitle({ children, sub, accent = "#3B6CF4" }) {
   return (
     <div className="mb-4">
-      <div className="flex items-center gap-3">
-        <div className="w-1 h-7 rounded-full flex-shrink-0" style={{ background: `linear-gradient(180deg, ${accent}, ${accent}88)` }} />
-        <div>
-          <h2 className="text-sm font-bold text-slate-700 uppercase tracking-widest leading-none">{children}</h2>
-          {sub && <p className="text-xs text-slate-400 mt-0.5">{sub}</p>}
-        </div>
+      <div>
+        <h2 className="text-base font-bold text-slate-800 leading-none">{children}</h2>
+        {sub && <p className="text-xs text-slate-500 mt-1">{sub}</p>}
       </div>
     </div>
   );
@@ -78,10 +72,10 @@ function SectionTitle({ children, sub, accent = "#3B6CF4" }) {
 
 function SectionDivider({ label }) {
   return (
-    <div className="flex items-center gap-3 my-2">
-      <div className="flex-1 h-px bg-gradient-to-r from-red-300/60 to-transparent" />
-      {label && <span className="text-[10px] font-bold text-red-300/80 uppercase tracking-widest whitespace-nowrap">{label}</span>}
-      <div className="flex-1 h-px bg-gradient-to-l from-red-300/60 to-transparent" />
+    <div className="flex items-center gap-3 my-6">
+      <div className="flex-1 h-px bg-slate-200" />
+      {label && <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">{label}</span>}
+      <div className="flex-1 h-px bg-slate-200" />
     </div>
   );
 }
@@ -212,12 +206,12 @@ export default function Dashboard() {
       {/* ── SECTION 0: FINANCE + CATEGORIES (prominently at top) ─── */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Finance summary */}
-        <div className="p-5 rounded-2xl relative overflow-hidden" style={{ ...cardBase, background: "linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 60%, #3B6CF4 100%)" }}>
-          <div className="absolute inset-0 opacity-10" style={{ backgroundImage: "radial-gradient(circle at 80% 20%, #fff 0%, transparent 60%)" }} />
+        <div className="p-6 rounded-xl relative overflow-hidden border border-blue-200" style={{ background: "linear-gradient(135deg, #3B6CF4 0%, #2563eb 100%)" }}>
           <div className="relative">
-            <SectionTitle sub="Vám és pénzügyi összesítő" accent="#fff">
-              <span className="text-white">💰 Finance / Customs összesítő</span>
-            </SectionTitle>
+            <div className="mb-4">
+              <h2 className="text-lg font-bold text-white leading-none">Finance / Customs összesítő</h2>
+              <p className="text-xs text-blue-100 mt-1">Vám és pénzügyi összesítő</p>
+            </div>
             <div className="grid grid-cols-2 gap-3 mt-1">
               {[
                 { label: "MRN-re vár", value: mrnPending, colorBg: "rgba(234,179,8,0.25)", colorText: "#fde047", sub: "finance_control státusz" },
@@ -239,8 +233,11 @@ export default function Dashboard() {
         </div>
 
         {/* Category distribution */}
-        <div className="p-5 rounded-2xl" style={cardBase}>
-          <SectionTitle sub="Termékkategóriák rendelési értéke és tonnája" accent="#8b5cf6">📦 Termékkategória bontás</SectionTitle>
+        <div className="p-6 rounded-xl border border-slate-200" style={{ background: "#fff" }}>
+          <div className="mb-4">
+            <h2 className="text-lg font-bold text-slate-800 leading-none">Termékkategória bontás</h2>
+            <p className="text-xs text-slate-500 mt-1">Termékkategóriák rendelési értéke és tonnája</p>
+          </div>
           {catData.length > 0 ? (
             <div className="space-y-2.5 mt-1">
               {catData.slice(0, 6).map((c, i) => {
@@ -271,7 +268,10 @@ export default function Dashboard() {
 
       {/* ── SECTION 1: FUVAROK ─────────────────────────────────── */}
       <div>
-        <SectionTitle sub="Összes kamion és státusz áttekintés" accent="#3B6CF4">🚛 Fuvarok (Trucks)</SectionTitle>
+        <div className="mb-4">
+          <h2 className="text-lg font-bold text-slate-800 leading-none">Fuvarok (Trucks)</h2>
+          <p className="text-xs text-slate-500 mt-1">Összes kamion és státusz áttekintés</p>
+        </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
           <KpiCard label="Nyitott fuvar" value={openTrucks.length} sub="Előjegyzett + Megrakott" icon={Truck} accent="#3B6CF4" link="Logistics" />
           <KpiCard label="Megrakott" value={trucks.filter(t=>t.status==="loaded").length} sub="Úton lévő" icon={Package} accent="#f59e0b" link="Logistics" />
@@ -284,7 +284,10 @@ export default function Dashboard() {
 
       {/* ── SECTION 2: RENDELÉSEK ──────────────────────────────── */}
       <div>
-        <SectionTitle sub="Rendelések, értékek és átlagárak" accent="#f59e0b">📋 Rendelések (Orderbooks)</SectionTitle>
+        <div className="mb-4">
+          <h2 className="text-lg font-bold text-slate-800 leading-none">Rendelések (Orderbooks)</h2>
+          <p className="text-xs text-slate-500 mt-1">Rendelések, értékek és átlagárak</p>
+        </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
           <KpiCard label="Nyitott rendelés" value={openOrderbooks.length} sub={`${closedOrderbooks.length} lezárt`} icon={FileText} accent="#3B6CF4" link="Orderbooks" />
           <KpiCard label="Összes rendelt (t)" value={fmt(plannedTons, 1)} sub="Tervezett" icon={Box} accent="#f59e0b" />
@@ -298,7 +301,10 @@ export default function Dashboard() {
 
       {/* ── SECTION 3: PARTNER & RENDSZER STATS ───────────────── */}
       <div>
-        <SectionTitle sub="Partnerek, fuvarlapok, termékkategóriák" accent="#22c55e">🗂️ Rendszer adatok</SectionTitle>
+        <div className="mb-4">
+          <h2 className="text-lg font-bold text-slate-800 leading-none">Rendszer adatok</h2>
+          <p className="text-xs text-slate-500 mt-1">Partnerek, fuvarlapok, termékkategóriák</p>
+        </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
           <KpiCard label="Szállítók" value={suppliers.length} sub="Aktív partnerek" icon={Users} accent="#3B6CF4" link="Partners" />
           <KpiCard label="Fuvarozók" value={carriers.length} sub="Aktív fuvarozók" icon={Truck} accent="#f59e0b" link="Partners" />
@@ -314,8 +320,11 @@ export default function Dashboard() {
       {/* ── SECTION 4: CHARTS ROW 1 ───────────────────────────── */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Truck status donut */}
-        <div className="p-5 rounded-2xl" style={cardBase}>
-          <SectionTitle sub="Fuvarok státusz megoszlása" accent="#3B6CF4">Státusz megoszlás</SectionTitle>
+        <div className="p-6 rounded-xl border border-slate-200" style={{ background: "#fff" }}>
+          <div className="mb-4">
+            <h3 className="text-base font-bold text-slate-800 leading-none">Státusz megoszlás</h3>
+            <p className="text-xs text-slate-500 mt-1">Fuvarok státusz megoszlása</p>
+          </div>
           {statusData.length > 0 ? (
             <>
               <ResponsiveContainer width="100%" height={180}>
@@ -340,8 +349,11 @@ export default function Dashboard() {
         </div>
 
         {/* Country bar */}
-        <div className="p-5 rounded-2xl" style={cardBase}>
-          <SectionTitle sub="Célország szerinti fuvarok" accent="#f59e0b">Célország bontás</SectionTitle>
+        <div className="p-6 rounded-xl border border-slate-200" style={{ background: "#fff" }}>
+          <div className="mb-4">
+            <h3 className="text-base font-bold text-slate-800 leading-none">Célország bontás</h3>
+            <p className="text-xs text-slate-500 mt-1">Célország szerinti fuvarok</p>
+          </div>
           {countryData.length > 0 ? (
             <ResponsiveContainer width="100%" height={230}>
               <BarChart data={countryData} barCategoryGap="35%" layout="vertical">
@@ -355,8 +367,11 @@ export default function Dashboard() {
         </div>
 
         {/* Carrier breakdown */}
-        <div className="p-5 rounded-2xl" style={cardBase}>
-          <SectionTitle sub="Fuvarozó szerint" accent="#22c55e">Fuvarozó bontás</SectionTitle>
+        <div className="p-6 rounded-xl border border-slate-200" style={{ background: "#fff" }}>
+          <div className="mb-4">
+            <h3 className="text-base font-bold text-slate-800 leading-none">Fuvarozó bontás</h3>
+            <p className="text-xs text-slate-500 mt-1">Fuvarozó szerint</p>
+          </div>
           {carrierData.length > 0 ? (
             <>
               <ResponsiveContainer width="100%" height={190}>
@@ -384,8 +399,11 @@ export default function Dashboard() {
       {/* ── SECTION 5: CHARTS ROW 2 ───────────────────────────── */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Monthly trend */}
-        <div className="p-5 rounded-2xl" style={cardBase}>
-          <SectionTitle sub="Lezárt fuvarok havonta (darab + tonna)" accent="#e05a2b">Havi teljesítmény</SectionTitle>
+        <div className="p-6 rounded-xl border border-slate-200" style={{ background: "#fff" }}>
+          <div className="mb-4">
+            <h3 className="text-base font-bold text-slate-800 leading-none">Havi teljesítmény</h3>
+            <p className="text-xs text-slate-500 mt-1">Lezárt fuvarok havonta (darab + tonna)</p>
+          </div>
           {monthlyData.length > 0 ? (
             <ResponsiveContainer width="100%" height={220}>
               <AreaChart data={monthlyData}>
@@ -413,8 +431,11 @@ export default function Dashboard() {
         </div>
 
         {/* County breakdown HU */}
-        <div className="p-5 rounded-2xl" style={cardBase}>
-          <SectionTitle sub="Magyar célmegyék – aktív és lezárt fuvarok" accent="#06b6d4">Megye bontás (HU)</SectionTitle>
+        <div className="p-6 rounded-xl border border-slate-200" style={{ background: "#fff" }}>
+          <div className="mb-4">
+            <h3 className="text-base font-bold text-slate-800 leading-none">Megye bontás (HU)</h3>
+            <p className="text-xs text-slate-500 mt-1">Magyar célmegyék – aktív és lezárt fuvarok</p>
+          </div>
           {countyData.length > 0 ? (
             <ResponsiveContainer width="100%" height={220}>
               <BarChart data={countyData} barCategoryGap="25%">
@@ -436,10 +457,13 @@ export default function Dashboard() {
       <SectionDivider label="Legutóbbi aktivitás" />
 
       {/* ── SECTION 7: RECENT TRUCKS TABLE ────────────────────── */}
-      <div className="p-5 rounded-2xl" style={cardBase}>
-        <div className="flex items-center justify-between mb-3">
-          <SectionTitle sub="Legutóbbi fuvarok" accent="#3B6CF4">Legutóbbi fuvarok</SectionTitle>
-          <Link to={createPageUrl("Logistics")} className="text-xs font-semibold text-blue-500 hover:underline flex items-center gap-1">
+      <div className="p-6 rounded-xl border border-slate-200" style={{ background: "#fff" }}>
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h3 className="text-base font-bold text-slate-800 leading-none">Legutóbbi fuvarok</h3>
+            <p className="text-xs text-slate-500 mt-1">Legutóbbi fuvarok áttekintése</p>
+          </div>
+          <Link to={createPageUrl("Logistics")} className="text-xs font-semibold text-blue-600 hover:text-blue-700 flex items-center gap-1">
             Összes <ArrowRight className="w-3 h-3" />
           </Link>
         </div>
