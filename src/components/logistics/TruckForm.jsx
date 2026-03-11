@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { X, Save, Trash2, Package, Truck, MapPin, ShieldCheck } from "lucide-react";
+import { toast } from "sonner";
 import TruckItemsEditor from "./TruckItemsEditor";
 
 const STATUS_LABELS = {
@@ -296,7 +297,7 @@ export default function TruckForm({ item, onClose, onSaved, defaultOrderbookId, 
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-xs font-bold text-slate-700">📦 Rendelés kapacitás</span>
                       <span className="text-xs font-mono bg-white rounded px-2 py-0.5 border">
-                        {totalAllocated.toFixed(1)} / {totalOrderbookCapacity.toFixed(1)} t
+                        {effectiveAllocated.toFixed(1)} / {totalOrderbookCapacity.toFixed(1)} t
                       </span>
                     </div>
                     <div className={`text-sm font-bold ${willExceedCapacity ? 'text-red-700' : 'text-emerald-700'}`}>
