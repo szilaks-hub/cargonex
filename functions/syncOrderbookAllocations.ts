@@ -66,7 +66,12 @@ Deno.serve(async (req) => {
       }
 
       for (const { category_id, tons } of categoryTons) {
-        categoryAllocated[category_id] = (categoryAllocated[category_id] || 0) + tons;
+        // Use actual_weight_tons for loaded/closed trucks, planned for booked
+        const effectiveTons = (t.status === 'loaded' || t.status === 'closed') && t.actual_weight_tons
+          ? (t.actual_weight_tons / (t.planned_quantity_tons || 1)) * tons
+          : tons;
+        
+        categoryAllocated[category_id] = (categoryAllocated[category_id] || 0) + effectiveTons;
 
         if (t.status === 'closed') {
           const actualTons = t.actual_weight_tons || t.planned_quantity_tons || 0;
