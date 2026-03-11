@@ -205,8 +205,11 @@ export default function TruckForm({ item, onClose, onSaved, defaultOrderbookId, 
   const willExceedCapacity = plannedTons > remainingCapacity && plannedTons > 0;
 
   const handleSave = async () => {
+    // Determine the loading date to use
+    const finalLoadingDate = form.expected_loading_date || form.actual_loading_date || form.loading_date;
+    
     // Validate required fields
-    if (!form.expected_loading_date && !form.loading_date) {
+    if (!finalLoadingDate) {
       toast.error('⚠️ Tervezett rakodási dátum kötelező!');
       return;
     }
@@ -221,7 +224,7 @@ export default function TruckForm({ item, onClose, onSaved, defaultOrderbookId, 
     setSaving(true);
     const data = {
       ...form,
-      loading_date: form.expected_loading_date || form.actual_loading_date || form.loading_date,
+      loading_date: finalLoadingDate,
       planned_quantity_tons: Number(form.planned_quantity_tons) || 0,
       actual_weight_tons: Number(form.actual_weight_tons) || 0,
       freight_domestic_leg_snapshot: Number(form.freight_domestic_leg_snapshot) || 0,
