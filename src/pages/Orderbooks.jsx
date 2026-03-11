@@ -428,7 +428,7 @@ function OrderbooksList({ orders, lines, trucks = [], onSelect, onDelete, isClos
                          {/* Termékkörök összesítése */}
                          <div className="space-y-2">
                            <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Termékkörök összesítése</div>
-                          {orderLines.map(line => {
+                           {orderLines.map(line => {
                             const pct = line.planned_quantity_tons > 0
                               ? Math.round(((line.allocated_quantity_tons || 0) / line.planned_quantity_tons) * 100)
                               : 0;
@@ -477,12 +477,13 @@ function OrderbooksList({ orders, lines, trucks = [], onSelect, onDelete, isClos
                               </div>
                             </div>
                             <div className="text-right text-xs font-semibold text-slate-700 w-24">
-                              {(valueEUR / 1000).toFixed(1)} k EUR
+                             {(valueEUR / 1000).toFixed(1)} k EUR
                             </div>
-                          </div>
-                          
-                          {/* Előjegyzett kamionok */}
-                          {(() => {
+                            </div>
+                            </div>
+
+                            {/* Előjegyzett kamionok */}
+                            {(() => {
                             const orderTrucks = trucks.filter(t => t.orderbook_id === order.id && t.status !== 'cancelled');
                             if (orderTrucks.length === 0) return null;
                             return (
