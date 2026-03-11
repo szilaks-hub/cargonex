@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, Lock, Save, CheckCircle2, AlertCircle, XCircle } from "lucide-react";
+import { ArrowLeft, Lock, Save, CheckCircle2, AlertCircle, XCircle, Printer } from "lucide-react";
 import StatusBadge from "@/components/ui/StatusBadge";
 import { toast } from "sonner";
 
@@ -23,8 +23,12 @@ export default function TruckCustomsDetail({ truck, onBack, onUpdated }) {
     declared_vat: truck.declared_vat || "",
     exchange_rate: truck.exchange_rate || "",
     actual_weight_tons: truck.actual_weight_tons || "",
+    amendment_requested: truck.amendment_requested || false,
+    mrn_number_2: truck.mrn_number_2 || "",
+    mrn_date_2: truck.mrn_date_2 || "",
   });
   const [saving, setSaving] = useState(false);
+  const [showPrint, setShowPrint] = useState(false);
 
   const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
 
@@ -45,6 +49,12 @@ export default function TruckCustomsDetail({ truck, onBack, onUpdated }) {
   const foreignFreightHuf = foreignFreightEur * exchangeRate;
   const domesticFreightHuf = domesticFreightEur * exchangeRate;
   const customsAgentFeeHuf = customsAgentFeeEur * exchangeRate;
+
+  // Combined totals
+  const totalFreightEur = foreignFreightEur + domesticFreightEur;
+  const totalFreightHuf = foreignFreightHuf + domesticFreightHuf;
+  const domesticAndCustomsEur = domesticFreightEur + customsAgentFeeEur;
+  const domesticAndCustomsHuf = domesticFreightHuf + customsAgentFeeHuf;
 
   const totalBase = invoiceHuf + foreignFreightHuf + domesticFreightHuf + customsAgentFeeHuf;
   // Tájékoztató ÁFA = végösszeg * 27%
@@ -75,7 +85,6 @@ export default function TruckCustomsDetail({ truck, onBack, onUpdated }) {
   const handleSave = async () => {
     setSaving(true);
     await base44.entities.Truck.update(truck.id, {
-      supplier_invoice_number: form.supplier_invoice_number,
       ...form,
       actual_weight_tons: Number(form.actual_weight_tons) || 0,
       declared_vat: Number(form.declared_vat) || 0,
@@ -89,6 +98,11 @@ export default function TruckCustomsDetail({ truck, onBack, onUpdated }) {
     setSaving(false);
     toast.success("Mentve");
     onUpdated();
+  };
+
+  const handlePrint = () => {
+    setShowPrint(true);
+    setTimeout(() => window.print(), 100);
   };
 
   const handleClose = async () => {
@@ -116,6 +130,143 @@ export default function TruckCustomsDetail({ truck, onBack, onUpdated }) {
   const fmt = (n, decimals = 0) =>
     n ? n.toLocaleString("hu-HU", { minimumFractionDigits: decimals, maximumFractionDigits: decimals }) : "0";
 
+  if (showPrint) {
+    return (
+      <div className="print-sheet bg-white p-8 max-w-4xl mx-auto" style={{ fontFamily: "Arial, sans-serif" }}>
+        <style>{`
+          @media print {
+            body * { visibility: hidden; }
+            .print-sheet, .print-sheet * { visibility: visible; }
+            .print-sheet { position: absolute; left: 0; top: 0; width: 100%; }
+            @page { margin: 1cm; }
+          }
+        `}</style>
+        <div className="text-center mb-6 pb-4 border-b-2 border-slate-300">
+          <h1 className="text-2xl font-bold text-slate-800">VÁMKEZELÉSI ELLENŐRZŐ ŰRLAP</h1>
+          <p className="text-sm text-slate-500 mt-1">Customs Clearance Control Form</p>
+        </div>
+
+        <div className="grid grid-cols-2 gap-6 mb-6">
+          <div>
+            <h3 className="font-bold text-sm text-slate-600 mb-2 border-b border-slate-200 pb-1">JÁRMŰ ADATOK / VEHICLE DATA</h3>
+            <table className="w-full text-sm">
+              <tbody>
+                <tr><td className="py-1 text-slate-500">Rendszám:</td><td className="font-semibold">{truck.truck_number || `T-${truck.id?.slice(0,6)}`}</td></tr>
+                <tr><td className="py-1 text-slate-500">Termék:</td><td className="font-semibold">{truck.product_name}</td></tr>
+                <tr><td className="py-1 text-slate-500">Tény. súly:</td><td className="font-semibold">{actualWeight} t ({(actualWeight * 1000).toFixed(0)} kg)</td></tr>
+                <tr><td className="py-1 text-slate-500">Paritás:</td><td className="font-semibold">{truck.incoterms_type || "FCA"}</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div>
+            <h3 className="font-bold text-sm text-slate-600 mb-2 border-b border-slate-200 pb-1">FELADÓ / SHIPPER</h3>
+            <table className="w-full text-sm">
+              <tbody>
+                <tr><td className="py-1 text-slate-500">Név:</td><td className="font-semibold">{truck.supplier_name || "—"}</td></tr>
+                <tr><td className="py-1 text-slate-500">Telephely:</td><td className="font-semibold">{truck.supplier_site_name || "—"}</td></tr>
+                <tr><td className="py-1 text-slate-500">Ország:</td><td className="font-semibold">{truck.origin_country || "—"}</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-6 mb-6">
+          <div>
+            <h3 className="font-bold text-sm text-slate-600 mb-2 border-b border-slate-200 pb-1">LOGISZTIKA / LOGISTICS</h3>
+            <table className="w-full text-sm">
+              <tbody>
+                <tr><td className="py-1 text-slate-500">Fuvarozó:</td><td className="font-semibold">{truck.carrier_name}</td></tr>
+                <tr><td className="py-1 text-slate-500">Vámügynök:</td><td className="font-semibold">{truck.customs_agent_name || "—"}</td></tr>
+                <tr><td className="py-1 text-slate-500">Célállomás:</td><td className="font-semibold">{[truck.destination_country, truck.destination_zip, truck.destination_city].filter(Boolean).join(" ")}</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div>
+            <h3 className="font-bold text-sm text-slate-600 mb-2 border-b border-slate-200 pb-1">SZÁMLÁK / INVOICES</h3>
+            <table className="w-full text-sm">
+              <tbody>
+                <tr><td className="py-1 text-slate-500">Eladó számla:</td><td className="font-semibold">{form.supplier_invoice_number || "—"}</td></tr>
+                <tr><td className="py-1 text-slate-500">Fuvar számla:</td><td className="font-semibold">{form.freight_invoice_number || "—"}</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div className="mb-6">
+          <h3 className="font-bold text-sm text-slate-600 mb-2 border-b border-slate-200 pb-1">ÁRAK ÉS KÖLTSÉGEK / PRICES & COSTS</h3>
+          <table className="w-full text-sm border border-slate-200">
+            <thead className="bg-slate-50">
+              <tr>
+                <th className="text-left py-2 px-3 border-b border-slate-200">Tétel</th>
+                <th className="text-right py-2 px-3 border-b border-slate-200">EUR</th>
+                <th className="text-right py-2 px-3 border-b border-slate-200">HUF</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td className="py-2 px-3 border-b border-slate-100">Vételár</td><td className="text-right py-2 px-3 border-b border-slate-100">{purchasePrice} EUR/t</td><td className="text-right py-2 px-3 border-b border-slate-100">{fmt(invoiceHuf)}</td></tr>
+              <tr><td className="py-2 px-3 border-b border-slate-100">Külföldi fuvar</td><td className="text-right py-2 px-3 border-b border-slate-100">{foreignFreightEur} EUR</td><td className="text-right py-2 px-3 border-b border-slate-100">{fmt(foreignFreightHuf)}</td></tr>
+              <tr><td className="py-2 px-3 border-b border-slate-100">Belföldi fuvar</td><td className="text-right py-2 px-3 border-b border-slate-100">{domesticFreightEur} EUR</td><td className="text-right py-2 px-3 border-b border-slate-100">{fmt(domesticFreightHuf)}</td></tr>
+              <tr><td className="py-2 px-3 border-b border-slate-100 font-semibold">Összes fuvar</td><td className="text-right py-2 px-3 border-b border-slate-100 font-semibold">{totalFreightEur.toFixed(2)} EUR</td><td className="text-right py-2 px-3 border-b border-slate-100 font-semibold">{fmt(totalFreightHuf)}</td></tr>
+              <tr><td className="py-2 px-3 border-b border-slate-100">Vámügynöki díj</td><td className="text-right py-2 px-3 border-b border-slate-100">{customsAgentFeeEur} EUR</td><td className="text-right py-2 px-3 border-b border-slate-100">{fmt(customsAgentFeeHuf)}</td></tr>
+              <tr className="bg-blue-50"><td className="py-2 px-3 border-b border-slate-200 font-semibold">Belföldi + vámkezelés</td><td className="text-right py-2 px-3 border-b border-slate-200 font-semibold">{domesticAndCustomsEur.toFixed(2)} EUR</td><td className="text-right py-2 px-3 border-b border-slate-200 font-semibold">{fmt(domesticAndCustomsHuf)}</td></tr>
+              <tr className="bg-slate-100"><td className="py-2 px-3 font-bold">VÉGÖSSZEG / TOTAL</td><td className="text-right py-2 px-3 font-bold">{(invoiceEur + totalFreightEur + customsAgentFeeEur).toFixed(2)} EUR</td><td className="text-right py-2 px-3 font-bold">{fmt(totalBase)}</td></tr>
+            </tbody>
+          </table>
+          <div className="text-right text-sm text-slate-500 mt-1">Árfolyam / Exchange Rate: {exchangeRate} HUF/EUR</div>
+        </div>
+
+        <div className="mb-6">
+          <h3 className="font-bold text-sm text-slate-600 mb-2 border-b border-slate-200 pb-1">MRN ADATOK / MRN DATA</h3>
+          <table className="w-full text-sm">
+            <tbody>
+              <tr><td className="py-1 text-slate-500 w-1/3">MRN szám:</td><td className="font-semibold">{form.mrn_number || "—"}</td></tr>
+              <tr><td className="py-1 text-slate-500">MRN dátum:</td><td className="font-semibold">{form.mrn_date || "—"}</td></tr>
+              {form.amendment_requested && (
+                <>
+                  <tr><td className="py-1 text-slate-500">MRN szám (2. módosítás):</td><td className="font-semibold">{form.mrn_number_2 || "—"}</td></tr>
+                  <tr><td className="py-1 text-slate-500">MRN dátum (2. módosítás):</td><td className="font-semibold">{form.mrn_date_2 || "—"}</td></tr>
+                </>
+              )}
+              <tr><td className="py-1 text-slate-500">MRN megállapított összeg:</td><td className="font-semibold">{fmt(mrnDeclared)} HUF</td></tr>
+              <tr><td className="py-1 text-slate-500">Számított ÁFA (27%):</td><td className="font-semibold">{fmt(indicativeVat)} HUF</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div className="mb-6">
+          <h3 className="font-bold text-sm text-slate-600 mb-2 border-b border-slate-200 pb-1">CHECKLIST</h3>
+          <div className="grid grid-cols-3 gap-3 text-sm">
+            <div className="flex items-center gap-2">
+              <input type="checkbox" checked={form.ekaer} readOnly className="w-4 h-4" />
+              <span>EKAER</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <input type="checkbox" checked={form.hs_code_verified} readOnly className="w-4 h-4" />
+              <span>VTSZ ellenőrizve</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <input type="checkbox" checked={form.invoice_checked} readOnly className="w-4 h-4" />
+              <span>Számla ellenőrizve</span>
+            </div>
+          </div>
+          {form.checklist_notes && (
+            <div className="mt-3 p-2 bg-slate-50 rounded text-sm">
+              <strong>Megjegyzés:</strong> {form.checklist_notes}
+            </div>
+          )}
+        </div>
+
+        <div className="text-center mt-8 pt-4 border-t-2 border-slate-300 text-xs text-slate-400">
+          Nyomtatva: {new Date().toLocaleDateString("hu-HU")} | CARGONEX © 2026
+        </div>
+
+        <div className="mt-4 text-center no-print">
+          <Button onClick={() => setShowPrint(false)} variant="outline">Vissza a szerkesztéshez</Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-5 max-w-5xl">
       {/* Header */}
@@ -134,43 +285,79 @@ export default function TruckCustomsDetail({ truck, onBack, onUpdated }) {
         </div>
       </div>
 
-      {/* === FELADÓ / RAKODÁSI ADATOK === */}
+      {/* === ÁTTEKINTÉS / OVERVIEW === */}
       <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
-        <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Feladó / Rakodási adatok</h3>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          <div>
-            <p className="text-xs text-slate-400">Fuvarozó</p>
-            <p className="text-sm font-semibold text-slate-800 mt-0.5">{truck.carrier_name || "—"}</p>
+        <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">Áttekintés / Overview</h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Left: Feladó */}
+          <div className="space-y-3">
+            <h4 className="text-xs font-semibold text-slate-500 border-b border-slate-200 pb-1">FELADÓ / SHIPPER</h4>
+            <div>
+              <p className="text-xs text-slate-400">Név</p>
+              <p className="text-sm font-semibold text-slate-800">{truck.supplier_name || "—"}</p>
+            </div>
+            <div>
+              <p className="text-xs text-slate-400">Telephely</p>
+              <p className="text-sm font-semibold text-slate-800">{truck.supplier_site_name || "—"}</p>
+            </div>
+            <div>
+              <p className="text-xs text-slate-400">Ország</p>
+              <p className="text-sm font-semibold text-slate-800">{truck.origin_country || "—"}</p>
+            </div>
           </div>
-          <div>
-            <p className="text-xs text-slate-400">Rakodási hely</p>
-            <p className="text-sm font-semibold text-slate-800 mt-0.5">{truck.loading_location_name || truck.origin_location_name || "—"}</p>
+
+          {/* Center: Logisztika */}
+          <div className="space-y-3">
+            <h4 className="text-xs font-semibold text-slate-500 border-b border-slate-200 pb-1">LOGISZTIKA</h4>
+            <div>
+              <p className="text-xs text-slate-400">Fuvarozó</p>
+              <p className="text-sm font-semibold text-slate-800">{truck.carrier_name || "—"}</p>
+            </div>
+            <div>
+              <p className="text-xs text-slate-400">Vámügynök</p>
+              <p className="text-sm font-semibold text-slate-800">{truck.customs_agent_name || "—"}</p>
+            </div>
+            <div>
+              <p className="text-xs text-slate-400">Célállomás</p>
+              <p className="text-sm font-semibold text-slate-800">
+                {[truck.destination_country, truck.destination_zip, truck.destination_city].filter(Boolean).join(" ")}
+              </p>
+            </div>
           </div>
-          <div>
-            <p className="text-xs text-slate-400">Vámügynök</p>
-            <p className="text-sm font-semibold text-slate-800 mt-0.5">{truck.customs_agent_name || "—"}</p>
-          </div>
-          <div>
-            <p className="text-xs text-slate-400">Célállomás</p>
-            <p className="text-sm font-semibold text-slate-800 mt-0.5">
-              {[truck.destination_country, truck.destination_zip, truck.destination_city].filter(Boolean).join(" ")}
-            </p>
-          </div>
-          <div>
-            <p className="text-xs text-slate-400">Vételár (EUR/t)</p>
-            <p className="text-sm font-semibold text-slate-800 mt-0.5">{purchasePrice ? `${purchasePrice} EUR/t` : "—"}</p>
-          </div>
-          <div>
-            <p className="text-xs text-slate-400">Külföldi fuvar (EUR)</p>
-            <p className="text-sm font-semibold text-slate-800 mt-0.5">{foreignFreightEur ? `${foreignFreightEur} EUR` : "—"}</p>
-          </div>
-          <div>
-            <p className="text-xs text-slate-400">Belföldi fuvar (EUR)</p>
-            <p className="text-sm font-semibold text-slate-800 mt-0.5">{domesticFreightEur ? `${domesticFreightEur} EUR` : "—"}</p>
-          </div>
-          <div>
-            <p className="text-xs text-slate-400">Vámügynöki díj (EUR)</p>
-            <p className="text-sm font-semibold text-slate-800 mt-0.5">{customsAgentFeeEur ? `${customsAgentFeeEur} EUR` : "—"}</p>
+
+          {/* Right: Árak & Költségek */}
+          <div className="space-y-3">
+            <h4 className="text-xs font-semibold text-slate-500 border-b border-slate-200 pb-1">ÁRAK & KÖLTSÉGEK</h4>
+            <div>
+              <p className="text-xs text-slate-400">Paritás</p>
+              <p className="text-sm font-semibold text-slate-800">{truck.incoterms_type || "FCA"}</p>
+            </div>
+            <div>
+              <p className="text-xs text-slate-400">Vételár</p>
+              <p className="text-sm font-semibold text-slate-800">{purchasePrice ? `${purchasePrice} EUR/t` : "—"}</p>
+            </div>
+            <div>
+              <p className="text-xs text-slate-400">Külföldi fuvar</p>
+              <p className="text-sm font-semibold text-slate-800">{foreignFreightEur ? `${foreignFreightEur} EUR` : "—"}</p>
+            </div>
+            <div>
+              <p className="text-xs text-slate-400">Belföldi fuvar</p>
+              <p className="text-sm font-semibold text-slate-800">{domesticFreightEur ? `${domesticFreightEur} EUR` : "—"}</p>
+            </div>
+            <div className="pt-2 border-t border-slate-200">
+              <p className="text-xs text-slate-400">Összes fuvar</p>
+              <p className="text-sm font-bold text-blue-700">{totalFreightEur.toFixed(2)} EUR</p>
+              {exchangeRate > 0 && <p className="text-xs text-slate-500">{fmt(totalFreightHuf)} HUF</p>}
+            </div>
+            <div>
+              <p className="text-xs text-slate-400">Vámügynöki díj</p>
+              <p className="text-sm font-semibold text-slate-800">{customsAgentFeeEur ? `${customsAgentFeeEur} EUR` : "—"}</p>
+            </div>
+            <div className="pt-2 border-t border-blue-200 bg-blue-50 -mx-3 px-3 py-2 rounded">
+              <p className="text-xs text-slate-500">Belföldi + vámkezelés</p>
+              <p className="text-sm font-bold text-blue-700">{domesticAndCustomsEur.toFixed(2)} EUR</p>
+              {exchangeRate > 0 && <p className="text-xs text-slate-600">{fmt(domesticAndCustomsHuf)} HUF</p>}
+            </div>
           </div>
         </div>
       </div>
@@ -205,10 +392,11 @@ export default function TruckCustomsDetail({ truck, onBack, onUpdated }) {
             <div>
               <Label className="text-slate-500 text-xs">Tény. súly (t)</Label>
               <Input type="number" className="mt-1 bg-slate-50" value={form.actual_weight_tons} onChange={(e) => set("actual_weight_tons", e.target.value)} disabled={isClosed} />
+              {actualWeight > 0 && <p className="text-xs text-slate-500 mt-1">{(actualWeight * 1000).toFixed(0)} kg</p>}
             </div>
             <div>
               <Label className="text-slate-500 text-xs">Árfolyam (EUR→HUF) *</Label>
-              <Input type="number" step="0.01" className="mt-1 bg-slate-50" placeholder="pl. 400" value={form.exchange_rate} onChange={(e) => set("exchange_rate", e.target.value)} disabled={isClosed} />
+              <Input type="number" step="0.01" className={`mt-1 ${!form.exchange_rate && !isClosed ? "border-orange-300 bg-orange-50" : "bg-amber-50 border-amber-300"}`} placeholder="pl. 400" value={form.exchange_rate} onChange={(e) => set("exchange_rate", e.target.value)} disabled={isClosed} />
             </div>
             <div>
               <Label className="text-slate-500 text-xs">Eladó számlaszáma *</Label>
@@ -241,6 +429,24 @@ export default function TruckCustomsDetail({ truck, onBack, onUpdated }) {
                 </div>
               )}
             </div>
+            <div className="col-span-2 pt-2 border-t border-slate-200">
+              <label className="flex items-center gap-3 cursor-pointer">
+                <Checkbox checked={form.amendment_requested} onCheckedChange={(v) => set("amendment_requested", v)} disabled={isClosed} />
+                <span className="text-sm font-medium text-slate-700">Módosítási kérelem benyújtva (2. MRN várható)</span>
+              </label>
+            </div>
+            {form.amendment_requested && (
+              <>
+                <div>
+                  <Label className="text-slate-500 text-xs">2. MRN szám</Label>
+                  <Input className="mt-1 bg-amber-50 border-amber-300" value={form.mrn_number_2} onChange={(e) => set("mrn_number_2", e.target.value)} disabled={isClosed} placeholder="Módosított MRN" />
+                </div>
+                <div>
+                  <Label className="text-slate-500 text-xs">2. MRN dátum</Label>
+                  <Input type="date" className="mt-1 bg-amber-50 border-amber-300" value={form.mrn_date_2} onChange={(e) => set("mrn_date_2", e.target.value)} disabled={isClosed} />
+                </div>
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -248,18 +454,23 @@ export default function TruckCustomsDetail({ truck, onBack, onUpdated }) {
       {/* === KALKULÁCIÓ === */}
       <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
         <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">Kalkuláció / Calculation</h3>
+        {exchangeRate === 0 && (
+          <div className="mb-4 p-3 bg-orange-50 border border-orange-300 rounded-lg flex items-center gap-2 text-sm text-orange-700">
+            <AlertCircle className="w-4 h-4" />
+            <span>Kérlek add meg az árfolyamot a kalkuláció megjelenítéséhez!</span>
+          </div>
+        )}
         <div className="space-y-2 text-sm">
           {/* Invoice line */}
           <div className="flex items-center justify-between py-2 border-b border-slate-100">
             <div>
-              <span className="font-medium text-slate-700">Számla összege (FCA)</span>
+              <span className="font-medium text-slate-700">Számla összege ({truck.incoterms_type || "FCA"})</span>
               <span className="text-slate-400 ml-2 text-xs">
-                {actualWeight} t × {purchasePrice} EUR = {fmt(invoiceEur, 2)} EUR
+                {actualWeight} t × {purchasePrice} EUR/t = {fmt(invoiceEur, 2)} EUR
               </span>
             </div>
             <div className="text-right">
               <div className="font-bold text-slate-800">{fmt(invoiceHuf, 0)} HUF</div>
-              {exchangeRate > 0 && <div className="text-xs text-slate-400">× {exchangeRate} = {fmt(invoiceHuf, 0)}</div>}
             </div>
           </div>
 
@@ -267,21 +478,28 @@ export default function TruckCustomsDetail({ truck, onBack, onUpdated }) {
           <div className="flex items-center justify-between py-2 border-b border-slate-100">
             <div>
               <span className="font-medium text-slate-700">Fuvar – külföldi szakasz</span>
-              <span className="text-slate-400 ml-2 text-xs">{foreignFreightEur} EUR × {exchangeRate || "?"}</span>
+              <span className="text-slate-400 ml-2 text-xs">{foreignFreightEur} EUR</span>
             </div>
             <div className="font-semibold text-slate-700">{fmt(foreignFreightHuf, 0)} HUF</div>
           </div>
           <div className="flex items-center justify-between py-2 border-b border-slate-100">
             <div>
               <span className="font-medium text-slate-700">Fuvar – belföldi szakasz</span>
-              <span className="text-slate-400 ml-2 text-xs">{domesticFreightEur} EUR × {exchangeRate || "?"}</span>
+              <span className="text-slate-400 ml-2 text-xs">{domesticFreightEur} EUR</span>
             </div>
             <div className="font-semibold text-slate-700">{fmt(domesticFreightHuf, 0)} HUF</div>
+          </div>
+          <div className="flex items-center justify-between py-2 border-b border-blue-200 bg-blue-50 -mx-3 px-3">
+            <div>
+              <span className="font-semibold text-blue-700">Belföldi fuvar + vámkezelés</span>
+              <span className="text-slate-500 ml-2 text-xs">{domesticAndCustomsEur.toFixed(2)} EUR</span>
+            </div>
+            <div className="font-bold text-blue-700">{fmt(domesticAndCustomsHuf, 0)} HUF</div>
           </div>
           <div className="flex items-center justify-between py-2 border-b border-slate-100">
             <div>
               <span className="font-medium text-slate-700">Vám (vámügynöki díj)</span>
-              <span className="text-slate-400 ml-2 text-xs">{customsAgentFeeEur} EUR × {exchangeRate || "?"}</span>
+              <span className="text-slate-400 ml-2 text-xs">{customsAgentFeeEur} EUR</span>
             </div>
             <div className="font-semibold text-slate-700">{fmt(customsAgentFeeHuf, 0)} HUF</div>
           </div>
@@ -289,7 +507,10 @@ export default function TruckCustomsDetail({ truck, onBack, onUpdated }) {
           {/* Total */}
           <div className="flex items-center justify-between py-3 bg-slate-50 rounded-lg px-3 mt-2">
             <span className="font-bold text-slate-800 text-base">Végösszeg / Total Base</span>
-            <span className="font-bold text-blue-700 text-lg">{fmt(totalBase, 0)} HUF</span>
+            <div className="text-right">
+              <div className="font-bold text-blue-700 text-lg">{fmt(totalBase, 0)} HUF</div>
+              <div className="text-xs text-slate-500">{(invoiceEur + totalFreightEur + customsAgentFeeEur).toFixed(2)} EUR</div>
+            </div>
           </div>
 
           {/* Indicative VAT */}
@@ -318,6 +539,9 @@ export default function TruckCustomsDetail({ truck, onBack, onUpdated }) {
             </p>
           )}
           <div className="flex gap-2 ml-auto">
+            <Button variant="outline" onClick={handlePrint} className="gap-2">
+              <Printer className="w-4 h-4" /> Nyomtatás
+            </Button>
             <Button variant="outline" onClick={handleSave} disabled={saving} className="gap-2">
               <Save className="w-4 h-4" /> Mentés
             </Button>
