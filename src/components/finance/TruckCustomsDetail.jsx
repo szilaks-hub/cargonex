@@ -41,6 +41,8 @@ export default function TruckCustomsDetail({ truck, onBack, onUpdated }) {
   const [showPrint, setShowPrint] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteKey, setDeleteKey] = useState("");
+  const [showReopenConfirm, setShowReopenConfirm] = useState(false);
+  const [reopenKey, setReopenKey] = useState("");
 
   const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
 
@@ -125,6 +127,18 @@ export default function TruckCustomsDetail({ truck, onBack, onUpdated }) {
     await base44.entities.Truck.delete(truck.id);
     toast.success("Törölve");
     setShowDeleteConfirm(false);
+    onUpdated();
+  };
+
+  const handleReopen = async () => {
+    if (reopenKey !== "1985") {
+      toast.error("Helytelen mesterkulcs!");
+      return;
+    }
+    await base44.entities.Truck.update(truck.id, { status: "finance_control" });
+    toast.success("Fuvar újranyitva");
+    setShowReopenConfirm(false);
+    setReopenKey("");
     onUpdated();
   };
 
@@ -562,9 +576,16 @@ export default function TruckCustomsDetail({ truck, onBack, onUpdated }) {
             </p>
           )}
           <div className="flex gap-2 ml-auto">
-            <Button variant="outline" onClick={() => setShowDeleteConfirm(true)} className="gap-2 text-red-600 hover:text-red-700 hover:bg-red-50">
-              <Trash2 className="w-4 h-4" /> Törlés
-            </Button>
+            {truck.status !== "closed" && (
+              <Button variant="outline" onClick={() => setShowDeleteConfirm(true)} className="gap-2 text-red-600 hover:text-red-700 hover:bg-red-50">
+                <Trash2 className="w-4 h-4" /> Törlés
+              </Button>
+            )}
+            {truck.status === "closed" && (
+              <Button variant="outline" onClick={() => setShowDeleteConfirm(true)} className="gap-2 text-red-600 hover:text-red-700 hover:bg-red-50">
+                <Trash2 className="w-4 h-4" /> Törlés (véglegesített)
+              </Button>
+            )}
             <Button variant="outline" onClick={handlePrint} className="gap-2">
               <Printer className="w-4 h-4" /> Nyomtatás
             </Button>
@@ -611,6 +632,34 @@ export default function TruckCustomsDetail({ truck, onBack, onUpdated }) {
             <AlertDialogCancel onClick={() => setDeleteKey("")}>Mégse</AlertDialogCancel>
             <AlertDialogAction onClick={handleDelete} className="bg-red-600 hover:bg-red-700">
               Törlés
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Reopen Confirmation Dialog */}
+      <AlertDialog open={showReopenConfirm} onOpenChange={setShowReopenConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Fuvar újranyitása</AlertDialogTitle>
+            <AlertDialogDescription>
+              Ez újra szerkeszthetővé teszi a véglegesített fuvarrekordot. Add meg a mesterkulcsot a megerősítéshez.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="py-4">
+            <Label className="text-sm text-slate-600">Mesterkulcs</Label>
+            <Input
+              type="password"
+              placeholder="Írd be a mesterkulcsot"
+              value={reopenKey}
+              onChange={(e) => setReopenKey(e.target.value)}
+              className="mt-2"
+            />
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setReopenKey("")}>Mégse</AlertDialogCancel>
+            <AlertDialogAction onClick={handleReopen} className="bg-amber-600 hover:bg-amber-700">
+              Újranyitás
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
