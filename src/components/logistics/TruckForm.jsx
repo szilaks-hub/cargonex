@@ -48,10 +48,10 @@ export default function TruckForm({ item, onClose, onSaved, defaultOrderbookId, 
   const { data: partners = [] } = useQuery({ queryKey: ["partners"], queryFn: () => base44.entities.Partner.list() });
   const { data: locations = [] } = useQuery({ queryKey: ["allLocations"], queryFn: () => base44.entities.PartnerLocation.list() });
   const { data: orderbooks = [] } = useQuery({ queryKey: ["orderbooks-list"], queryFn: () => base44.entities.Orderbook.filter({ status: "open" }) });
+  // Fetch ALL orderbook lines to calculate capacity for all orderbooks
   const { data: orderbookLines = [] } = useQuery({
-    queryKey: ["ob-lines-for-truck", form.orderbook_id],
-    queryFn: () => base44.entities.OrderbookLine.filter({ orderbook_id: form.orderbook_id }),
-    enabled: !!form.orderbook_id,
+    queryKey: ["all-orderbook-lines"],
+    queryFn: () => base44.entities.OrderbookLine.list(),
   });
   const { data: categories = [] } = useQuery({ queryKey: ["categories"], queryFn: () => base44.entities.ProductCategory.list() });
   const { data: products = [] } = useQuery({ queryKey: ["products"], queryFn: () => base44.entities.Product.list() });
@@ -63,11 +63,10 @@ export default function TruckForm({ item, onClose, onSaved, defaultOrderbookId, 
   });
   const { data: agentFees = [] } = useQuery({ queryKey: ["allFees"], queryFn: () => base44.entities.CustomsAgentFee.list() });
   
-  // Fetch all trucks for the selected orderbook to calculate real-time allocation
+  // Fetch ALL trucks to calculate real-time allocation across all orderbooks
   const { data: existingTrucks = [] } = useQuery({
-    queryKey: ["trucks-for-orderbook", form.orderbook_id],
-    queryFn: () => base44.entities.Truck.filter({ orderbook_id: form.orderbook_id }),
-    enabled: !!form.orderbook_id,
+    queryKey: ["all-trucks-for-capacity"],
+    queryFn: () => base44.entities.Truck.list(),
     refetchInterval: 2000, // Refetch every 2 seconds for real-time capacity updates
   });
 
@@ -149,21 +148,46 @@ export default function TruckForm({ item, onClose, onSaved, defaultOrderbookId, 
     }
   }, [form.carrier_id, form.destination_country, filteredSheets.length]);
 
-  // Category IDs allowed from orderbook
-  const allowedCategoryIds = orderbookLines.map(l => l.category_id);
+  // Category IDs allowed from selected orderbook
+  const allowedCategoryIds = selectedOrderbookLines.map(l => l.category_id);
   // Products filtered to allowed categories
   const allowedProducts = form.orderbook_id
     ? products.filter(p => allowedCategoryIds.includes(p.category_id) && p.status === "active")
     : products.filter(p => p.status === "active");
 
-  const selectedOrderbook = orderbooks.find(o => o.id === form.orderbook_id);
+  // Calculate remaining capacity for each orderbook
+  const orderbooksWithCapacity = orderbooks.map(ob => {
+    const obLines = orderbookLines.filter(l => l.orderbook_id === ob.id);
+    const totalCapacity = obLines.reduce((sum, line) => sum + (line.planned_quantity_tons || 0), 0);
+    
+    const trucksForOb = existingTrucks.filter(t => t.orderbook_id === ob.id && t.status !== 'cancelled');
+    const allocatedTons = trucksForOb.reduce((sum, t) => sum + (parseFloat(t.planned_quantity_tons) || 0), 0);
+    
+    const remaining = totalCapacity - allocatedTons;
+    
+    return {
+      ...ob,
+      _totalCapacity: totalCapacity,
+      _allocatedTons: allocatedTons,
+      _remainingCapacity: remaining,
+      _hasCapacity: remaining > 0.1, // At least 0.1t must be available
+    };
+  });
 
-  // Calculate remaining capacity using REAL-TIME truck data (not allocated_quantity_tons which may be stale)
-  const totalOrderbookCapacity = orderbookLines.reduce((sum, line) => sum + (line.planned_quantity_tons || 0), 0);
+  // Filter: only show orderbooks with available capacity (or currently selected one for editing)
+  const availableOrderbooks = orderbooksWithCapacity.filter(ob => 
+    ob._hasCapacity || ob.id === form.orderbook_id
+  );
+
+  const selectedOrderbook = orderbooksWithCapacity.find(o => o.id === form.orderbook_id);
+
+  // Calculate remaining capacity for the SELECTED orderbook
+  const selectedOrderbookLines = orderbookLines.filter(l => l.orderbook_id === form.orderbook_id);
+  const totalOrderbookCapacity = selectedOrderbookLines.reduce((sum, line) => sum + (line.planned_quantity_tons || 0), 0);
   
-  // Sum actual planned tons from existing trucks (excluding cancelled)
+  // Sum actual planned tons from existing trucks for THIS orderbook (excluding cancelled)
   const totalAllocatedFromTrucks = existingTrucks
-    .filter(t => t.status !== 'cancelled')
+    .filter(t => t.orderbook_id === form.orderbook_id && t.status !== 'cancelled')
     .reduce((sum, t) => sum + (parseFloat(t.planned_quantity_tons) || 0), 0);
   
   // If editing existing truck, exclude its current planned tonnage
@@ -262,25 +286,34 @@ export default function TruckForm({ item, onClose, onSaved, defaultOrderbookId, 
                   <SelectValue placeholder="Válassz nyitott rendelést..." />
                 </SelectTrigger>
                 <SelectContent className="bg-white border-[#c6ccda] max-h-72">
-                  {orderbooks.map((o, idx) => (
-                    <SelectItem key={o.id} value={o.id} className={idx % 2 === 0 ? "bg-white" : "bg-slate-50/80"}>
-                      <div className="flex flex-col py-0.5 gap-0.5">
-                        <div className="flex items-center gap-2">
-                          <span className="font-bold text-slate-900 text-sm leading-tight">
-                            {o.supplier_order_no || <span className="italic text-slate-400 font-normal">–</span>}
-                          </span>
-                          <span className="text-[10px] font-mono text-slate-400 bg-slate-100 rounded px-1">{o.order_no}</span>
-                          {o.customs_required && <span className="text-[9px] font-bold text-orange-600 bg-orange-50 rounded px-1">VÁM</span>}
+                  {availableOrderbooks.length === 0 ? (
+                    <div className="p-4 text-sm text-slate-500 text-center">
+                      Nincs szabad kapacitású rendelés
+                    </div>
+                  ) : (
+                    availableOrderbooks.map((o, idx) => (
+                      <SelectItem key={o.id} value={o.id} className={idx % 2 === 0 ? "bg-white" : "bg-slate-50/80"}>
+                        <div className="flex flex-col py-0.5 gap-0.5">
+                          <div className="flex items-center gap-2">
+                            <span className="font-bold text-slate-900 text-sm leading-tight">
+                              {o.supplier_order_no || <span className="italic text-slate-400 font-normal">–</span>}
+                            </span>
+                            <span className="text-[10px] font-mono text-slate-400 bg-slate-100 rounded px-1">{o.order_no}</span>
+                            {o.customs_required && <span className="text-[9px] font-bold text-orange-600 bg-orange-50 rounded px-1">VÁM</span>}
+                            <span className="text-[9px] font-bold text-emerald-600 bg-emerald-50 rounded px-1">
+                              {o._remainingCapacity.toFixed(1)}t szabad
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2 text-xs text-slate-500">
+                            <span className="font-medium text-slate-600">{o.supplier_name}</span>
+                            {o.supplier_site_name && <span>· {o.supplier_site_name}</span>}
+                            {o.order_date && <span>· {o.order_date}</span>}
+                            {o.incoterms_type && <span className="text-blue-600 font-semibold">{o.incoterms_type}</span>}
+                          </div>
                         </div>
-                        <div className="flex items-center gap-2 text-xs text-slate-500">
-                          <span className="font-medium text-slate-600">{o.supplier_name}</span>
-                          {o.supplier_site_name && <span>· {o.supplier_site_name}</span>}
-                          {o.order_date && <span>· {o.order_date}</span>}
-                          {o.incoterms_type && <span className="text-blue-600 font-semibold">{o.incoterms_type}</span>}
-                        </div>
-                      </div>
-                    </SelectItem>
-                  ))}
+                      </SelectItem>
+                    ))
+                  )}
                 </SelectContent>
               </Select>
               {selectedOrderbook && (
@@ -325,9 +358,9 @@ export default function TruckForm({ item, onClose, onSaved, defaultOrderbookId, 
                     )}
                   </div>
 
-                  {orderbookLines.length > 0 && (
+                  {selectedOrderbookLines.length > 0 && (
                     <div className="flex flex-wrap gap-2">
-                      {orderbookLines.map(l => (
+                      {selectedOrderbookLines.map(l => (
                         <span key={l.id} className="bg-white border border-blue-200 rounded px-2 py-0.5 text-[10px] text-blue-800">
                           <span className="font-semibold">{l.category_name}</span>
                           {l.unit_price_eur_per_ton ? ` · ${l.unit_price_eur_per_ton} EUR/t` : ""}
