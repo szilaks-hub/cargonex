@@ -603,9 +603,19 @@ export default function TruckCustomsDetail({ truck, onBack, onUpdated }) {
         </div>
       )}
       {isClosed && (
-        <div className="flex items-center gap-2 text-green-700 bg-green-50 border border-green-200 rounded-lg px-4 py-3">
-          <CheckCircle2 className="w-5 h-5" />
-          <span className="text-sm font-medium">Ez a fuvar le van zárva és véglegesítve.</span>
+        <div className="bg-green-50 border border-green-200 rounded-lg p-3 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <CheckCircle2 className="w-5 h-5 text-green-600" />
+            <span className="text-sm font-medium">Ez a fuvar le van zárva és véglegesítve.</span>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowReopenConfirm(true)}
+            className="gap-2 text-amber-600 hover:text-amber-700 hover:bg-amber-50"
+          >
+            <Lock className="w-4 h-4" /> Újranyitás
+          </Button>
         </div>
       )}
 
