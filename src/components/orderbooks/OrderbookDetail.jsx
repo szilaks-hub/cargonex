@@ -11,6 +11,7 @@ import { X, Copy, Trash2, Check, AlertCircle, Edit2, Plus, FileEdit, Truck as Tr
 import OrderbookTrucksSidebar from "./OrderbookTrucksSidebar";
 import OrderbookSummaryTable from "./OrderbookSummaryTable";
 import CarrierAssignmentEditor from "./CarrierAssignmentEditor";
+import OrderbookReport from "./OrderbookReport";
 import { toast } from "sonner";
 import {
   AlertDialog,
