@@ -219,14 +219,16 @@ export default function Dashboard() {
 
       {/* Charts Section */}
       <div>
-        <h2 className="text-lg font-semibold text-slate-900 mb-4">Statisztikák</h2>
-
+        <h2 className="text-xl font-bold text-slate-800 mb-5">📊 Statisztikák & Grafikonok</h2>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         {/* Truck status donut */}
-        <div className="bg-white p-6 rounded-lg border border-slate-200/60">
-          <h3 className="text-sm font-semibold text-slate-900 mb-4">Fuvarok státusza</h3>
+        <div className="bg-gradient-to-br from-slate-50 to-slate-100 p-6 rounded-xl shadow-md border border-slate-200">
+          <h3 className="text-base font-bold text-slate-800 mb-4 flex items-center gap-2">
+            <div className="w-2 h-6 bg-blue-500 rounded-full"></div>
+            Fuvarok státusza
+          </h3>
           {statusData.length > 0 ? (
             <>
               <ResponsiveContainer width="100%" height={180}>
