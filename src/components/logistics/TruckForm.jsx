@@ -148,13 +148,6 @@ export default function TruckForm({ item, onClose, onSaved, defaultOrderbookId, 
     }
   }, [form.carrier_id, form.destination_country, filteredSheets.length]);
 
-  // Category IDs allowed from selected orderbook
-  const allowedCategoryIds = selectedOrderbookLines.map(l => l.category_id);
-  // Products filtered to allowed categories
-  const allowedProducts = form.orderbook_id
-    ? products.filter(p => allowedCategoryIds.includes(p.category_id) && p.status === "active")
-    : products.filter(p => p.status === "active");
-
   // Calculate remaining capacity for each orderbook
   const orderbooksWithCapacity = orderbooks.map(ob => {
     const obLines = orderbookLines.filter(l => l.orderbook_id === ob.id);
@@ -183,6 +176,13 @@ export default function TruckForm({ item, onClose, onSaved, defaultOrderbookId, 
 
   // Calculate remaining capacity for the SELECTED orderbook
   const selectedOrderbookLines = orderbookLines.filter(l => l.orderbook_id === form.orderbook_id);
+  
+  // Category IDs allowed from selected orderbook
+  const allowedCategoryIds = selectedOrderbookLines.map(l => l.category_id);
+  // Products filtered to allowed categories
+  const allowedProducts = form.orderbook_id
+    ? products.filter(p => allowedCategoryIds.includes(p.category_id) && p.status === "active")
+    : products.filter(p => p.status === "active");
   const totalOrderbookCapacity = selectedOrderbookLines.reduce((sum, line) => sum + (line.planned_quantity_tons || 0), 0);
   
   // Sum actual planned tons from existing trucks for THIS orderbook (excluding cancelled)
