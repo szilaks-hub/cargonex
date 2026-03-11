@@ -37,6 +37,7 @@ export default function OrderbookDetail({ orderId, onClose, onUpdated, trucks = 
   const [amendmentKey, setAmendmentKey] = useState("");
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [deleteKey, setDeleteKey] = useState("");
+  const [showPrintDialog, setShowPrintDialog] = useState(false);
   const saveTimerRef = useRef(null);
   const qc = useQueryClient();
 
@@ -715,6 +716,14 @@ export default function OrderbookDetail({ orderId, onClose, onUpdated, trucks = 
               <Button 
                 variant="outline" 
                 size="sm" 
+                onClick={() => setShowPrintDialog(true)}
+                className="gap-2 text-slate-600 hover:text-slate-700 hover:bg-slate-50"
+              >
+                <Printer className="w-4 h-4" /> Nyomtatás
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm" 
                 onClick={() => setShowAmendmentDialog(true)}
                 className="gap-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
               >
@@ -883,6 +892,21 @@ export default function OrderbookDetail({ orderId, onClose, onUpdated, trucks = 
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Print Dialog */}
+      <Dialog open={showPrintDialog} onOpenChange={setShowPrintDialog}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Rendelés kimutatás</DialogTitle>
+          </DialogHeader>
+          <OrderbookReport
+            orderbook={form}
+            lines={lines}
+            trucks={relatedTrucks}
+            onClose={() => setShowPrintDialog(false)}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
