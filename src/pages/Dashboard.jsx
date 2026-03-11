@@ -16,10 +16,9 @@ import {
 const COLORS = ["#3B6CF4", "#f59e0b", "#22c55e", "#e05a2b", "#8b5cf6", "#06b6d4", "#ec4899", "#10b981"];
 
 const cardBase = {
-  background: "#fff",
-  border: "1px solid #e2e8f0",
-  borderRadius: "12px",
-  boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
+  background: "#ffffff",
+  border: "1px solid #e5e7eb",
+  borderRadius: "8px",
 };
 
 const fmt = (n, d = 0) =>
@@ -43,17 +42,12 @@ const CustomTooltip = ({ active, payload, label }) => {
 
 function KpiCard({ label, value, sub, icon: Icon, accent, link, trend }) {
   const inner = (
-    <div className="p-4 rounded-xl flex flex-col gap-2 h-full transition-all hover:shadow-lg hover:-translate-y-0.5 cursor-pointer border border-slate-100" style={{ background: "#fff" }}>
-      <div className="flex items-center justify-between">
-        <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wide leading-tight">{label}</span>
+    <div className="group p-5 rounded-lg bg-white border border-slate-200/60 hover:border-slate-300 hover:shadow-sm transition-all duration-200 cursor-pointer">
+      <div className="space-y-1.5">
+        <div className="text-xs font-medium text-slate-500">{label}</div>
+        <div className="text-3xl font-semibold text-slate-900 tracking-tight">{value}</div>
+        {sub && <div className="text-xs text-slate-400">{sub}</div>}
       </div>
-      <div className="text-2xl font-bold text-slate-900 leading-none">{value}</div>
-      {sub && <div className="text-[11px] text-slate-400 mt-0.5">{sub}</div>}
-      {trend !== undefined && (
-        <div className={`text-[11px] font-semibold flex items-center gap-0.5 ${trend >= 0 ? "text-emerald-500" : "text-red-400"}`}>
-          <TrendingUp className="w-3 h-3" /> {trend >= 0 ? "+" : ""}{trend}%
-        </div>
-      )}
     </div>
   );
   return link ? <Link to={createPageUrl(link)}>{inner}</Link> : inner;
@@ -190,141 +184,49 @@ export default function Dashboard() {
   const totalGoodsEur = closedTrucks.reduce((s,t) => s + (t.goods_value||0), 0);
 
   return (
-    <div className="space-y-7">
+    <div className="space-y-8">
       {/* Header */}
-      <div className="flex items-end justify-between flex-wrap gap-2">
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-800">Delivery Tracking Overview</h1>
-          <p className="text-sm mt-0.5 text-slate-500">Logistics management &amp; shipment overview — CARGONEX</p>
-        </div>
-        <div className="flex items-center gap-2 text-xs text-slate-400">
-          <Clock className="w-3.5 h-3.5" />
-          {new Date().toLocaleDateString("hu-HU", { year:"numeric", month:"long", day:"numeric" })}
+          <h1 className="text-2xl font-semibold text-slate-900">Dashboard</h1>
+          <p className="text-sm mt-1 text-slate-500">Áttekintés és statisztikák</p>
         </div>
       </div>
 
-      {/* ── SECTION 0: FINANCE + CATEGORIES (prominently at top) ─── */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {/* Finance summary */}
-        <div className="p-6 rounded-xl relative overflow-hidden border border-blue-200" style={{ background: "linear-gradient(135deg, #3B6CF4 0%, #2563eb 100%)" }}>
-          <div className="relative">
-            <div className="mb-4">
-              <h2 className="text-lg font-bold text-white leading-none">Finance / Customs összesítő</h2>
-              <p className="text-xs text-blue-100 mt-1">Vám és pénzügyi összesítő</p>
-            </div>
-            <div className="grid grid-cols-2 gap-3 mt-1">
-              {[
-                { label: "MRN-re vár", value: mrnPending, colorBg: "rgba(234,179,8,0.25)", colorText: "#fde047", sub: "finance_control státusz" },
-                { label: "MRN lezárva", value: mrnClosed, colorBg: "rgba(34,197,94,0.2)", colorText: "#86efac", sub: "lezárt fuvarok" },
-                { label: "Összes vámolt (HUF)", value: totalMrnHuf > 0 ? fmt(totalMrnHuf) : "—", colorBg: "rgba(255,255,255,0.12)", colorText: "#bfdbfe", sub: "total_base összesen" },
-                { label: "Összes rendelés (EUR)", value: totalOrderValueEur > 0 ? fmt(totalOrderValueEur, 0) : "—", colorBg: "rgba(255,255,255,0.12)", colorText: "#e9d5ff", sub: "összes rendelési érték" },
-              ].map(item => (
-                <div key={item.label} className="rounded-xl p-3" style={{ background: item.colorBg }}>
-                  <p className="text-[10px] font-semibold text-blue-200">{item.label}</p>
-                  <p className="text-lg font-bold mt-0.5 leading-none" style={{ color: item.colorText }}>{item.value}</p>
-                  <p className="text-[10px] text-blue-300 mt-1">{item.sub}</p>
-                </div>
-              ))}
-            </div>
-            <Link to={createPageUrl("Finance")} className="mt-4 flex items-center gap-2 text-xs font-semibold text-blue-200 hover:text-white transition-colors">
-              Finance / Customs oldal <ArrowRight className="w-3.5 h-3.5" />
-            </Link>
-          </div>
+      {/* Top Stats Grid */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="bg-white p-5 rounded-lg border border-slate-200/60">
+          <div className="text-xs font-medium text-slate-500 mb-2">Nyitott fuvar</div>
+          <div className="text-3xl font-semibold text-slate-900">{openTrucks.length}</div>
+          <div className="text-xs text-slate-400 mt-1">kamion úton</div>
         </div>
-
-        {/* Category distribution */}
-        <div className="p-6 rounded-xl border border-slate-200" style={{ background: "#fff" }}>
-          <div className="mb-4">
-            <h2 className="text-lg font-bold text-slate-800 leading-none">Termékkategória bontás</h2>
-            <p className="text-xs text-slate-500 mt-1">Termékkategóriák rendelési értéke és tonnája</p>
-          </div>
-          {catData.length > 0 ? (
-            <div className="space-y-2.5 mt-1">
-              {catData.slice(0, 6).map((c, i) => {
-                const pct = catData[0].value > 0 ? (c.value / catData[0].value) * 100 : 0;
-                return (
-                  <div key={c.name}>
-                    <div className="flex items-center justify-between text-xs mb-1">
-                      <div className="flex items-center gap-2">
-                        <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: COLORS[i % COLORS.length] }} />
-                        <span className="font-semibold text-slate-700 truncate max-w-[140px]">{c.name}</span>
-                      </div>
-                      <span className="text-slate-400 text-[11px] whitespace-nowrap">
-                        {fmt(c.tons, 1)} t &nbsp;·&nbsp; <span className="font-semibold text-slate-600">{fmt(c.value, 0)} EUR</span>
-                      </span>
-                    </div>
-                    <div className="h-2 rounded-full bg-slate-100 overflow-hidden">
-                      <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, background: COLORS[i % COLORS.length] }} />
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          ) : <div className="h-32 flex items-center justify-center text-sm text-slate-400">Nincs rendelési sor</div>}
+        <div className="bg-white p-5 rounded-lg border border-slate-200/60">
+          <div className="text-xs font-medium text-slate-500 mb-2">Pénzügyi kontrol</div>
+          <div className="text-3xl font-semibold text-orange-600">{financeControl.length}</div>
+          <div className="text-xs text-slate-400 mt-1">vámkezelés alatt</div>
+        </div>
+        <div className="bg-white p-5 rounded-lg border border-slate-200/60">
+          <div className="text-xs font-medium text-slate-500 mb-2">Nyitott rendelés</div>
+          <div className="text-3xl font-semibold text-slate-900">{openOrderbooks.length}</div>
+          <div className="text-xs text-slate-400 mt-1">aktív rendelés</div>
+        </div>
+        <div className="bg-white p-5 rounded-lg border border-slate-200/60">
+          <div className="text-xs font-medium text-slate-500 mb-2">Összes érték</div>
+          <div className="text-3xl font-semibold text-emerald-600">{totalOrderValueEur > 0 ? (totalOrderValueEur/1000).toFixed(0) : "0"}<span className="text-lg ml-1">k€</span></div>
+          <div className="text-xs text-slate-400 mt-1">rendelési érték</div>
         </div>
       </div>
 
-      <SectionDivider label="Fuvarok & Rendelések" />
-
-      {/* ── SECTION 1: FUVAROK ─────────────────────────────────── */}
+      {/* Charts Section */}
       <div>
-        <div className="mb-4">
-          <h2 className="text-lg font-bold text-slate-800 leading-none">Fuvarok (Trucks)</h2>
-          <p className="text-xs text-slate-500 mt-1">Összes kamion és státusz áttekintés</p>
-        </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-          <KpiCard label="Nyitott fuvar" value={openTrucks.length} sub="Előjegyzett + Megrakott" icon={Truck} accent="#3B6CF4" link="Logistics" />
-          <KpiCard label="Megrakott" value={trucks.filter(t=>t.status==="loaded").length} sub="Úton lévő" icon={Package} accent="#f59e0b" link="Logistics" />
-          <KpiCard label="Pénzügyi kontrol" value={financeControl.length} sub="Vám-ellenőrzés alatt" icon={AlertCircle} accent="#eab308" link="Finance" />
-          <KpiCard label="Lezárt" value={closedTrucks.length} sub="Összes lezárt fuvar" icon={CheckCircle2} accent="#22c55e" link="Logistics" />
-          <KpiCard label="Tranzit (TR)" value={transitTrucks.length} sub="Aktív tranzit" icon={Globe} accent="#8b5cf6" link="Logistics" />
-          <KpiCard label="Összesen" value={trucks.length} sub="Minden fuvar" icon={BarChart2} accent="#e05a2b" />
-        </div>
+        <h2 className="text-lg font-semibold text-slate-900 mb-4">Statisztikák</h2>
+
       </div>
 
-      {/* ── SECTION 2: RENDELÉSEK ──────────────────────────────── */}
-      <div>
-        <div className="mb-4">
-          <h2 className="text-lg font-bold text-slate-800 leading-none">Rendelések (Orderbooks)</h2>
-          <p className="text-xs text-slate-500 mt-1">Rendelések, értékek és átlagárak</p>
-        </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-          <KpiCard label="Nyitott rendelés" value={openOrderbooks.length} sub={`${closedOrderbooks.length} lezárt`} icon={FileText} accent="#3B6CF4" link="Orderbooks" />
-          <KpiCard label="Összes rendelt (t)" value={fmt(plannedTons, 1)} sub="Tervezett" icon={Box} accent="#f59e0b" />
-          <KpiCard label="Allokált (t)" value={fmt(allocatedTons, 1)} sub="Kiszállítva / lefoglalt" icon={Truck} accent="#22c55e" />
-          <KpiCard label="Várakozó (t)" value={fmt(waitingTons, 1)} sub="Még kiszállítandó" icon={Clock} accent="#e05a2b" />
-          <KpiCard label="Összes érték" value={totalOrderValueEur > 0 ? (totalOrderValueEur/1000).toFixed(0) + "k EUR" : "—"} sub={`Átl. ${fmt(avgPricePerTon,0)} EUR/t`} icon={Euro} accent="#8b5cf6" link="Orderbooks" />
-        </div>
-      </div>
-
-      <SectionDivider label="Rendszer adatok" />
-
-      {/* ── SECTION 3: PARTNER & RENDSZER STATS ───────────────── */}
-      <div>
-        <div className="mb-4">
-          <h2 className="text-lg font-bold text-slate-800 leading-none">Rendszer adatok</h2>
-          <p className="text-xs text-slate-500 mt-1">Partnerek, fuvarlapok, termékkategóriák</p>
-        </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-          <KpiCard label="Szállítók" value={suppliers.length} sub="Aktív partnerek" icon={Users} accent="#3B6CF4" link="Partners" />
-          <KpiCard label="Fuvarozók" value={carriers.length} sub="Aktív fuvarozók" icon={Truck} accent="#f59e0b" link="Partners" />
-          <KpiCard label="Vámügynökök" value={customsAgents.length} sub="Aktív ügynökök" icon={ShieldCheck} accent="#22c55e" link="Partners" />
-          <KpiCard label="Termékkategóriák" value={categories.filter(c=>c.status==="active").length} sub={`${categories.length} összesen`} icon={Layers} accent="#8b5cf6" link="Products" />
-          <KpiCard label="Aktív díjlapok" value={activeFreightSheets.length} sub={`${freightSheets.length} összesen`} icon={ClipboardList} accent="#06b6d4" link="FreightSheets" />
-          <KpiCard label="Finance / Vám" value={`${mrnPending} / ${mrnClosed}`} sub="Vár / lezárt MRN" icon={ShieldCheck} accent="#e05a2b" link="Finance" />
-        </div>
-      </div>
-
-      <SectionDivider label="Statisztikák & Grafikonok" />
-
-      {/* ── SECTION 4: CHARTS ROW 1 ───────────────────────────── */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Truck status donut */}
-        <div className="p-6 rounded-xl border border-slate-200" style={{ background: "#fff" }}>
-          <div className="mb-4">
-            <h3 className="text-base font-bold text-slate-800 leading-none">Státusz megoszlás</h3>
-            <p className="text-xs text-slate-500 mt-1">Fuvarok státusz megoszlása</p>
-          </div>
+        <div className="bg-white p-6 rounded-lg border border-slate-200/60">
+          <h3 className="text-sm font-semibold text-slate-900 mb-4">Fuvarok státusza</h3>
           {statusData.length > 0 ? (
             <>
               <ResponsiveContainer width="100%" height={180}>
@@ -349,11 +251,8 @@ export default function Dashboard() {
         </div>
 
         {/* Country bar */}
-        <div className="p-6 rounded-xl border border-slate-200" style={{ background: "#fff" }}>
-          <div className="mb-4">
-            <h3 className="text-base font-bold text-slate-800 leading-none">Célország bontás</h3>
-            <p className="text-xs text-slate-500 mt-1">Célország szerinti fuvarok</p>
-          </div>
+        <div className="bg-white p-6 rounded-lg border border-slate-200/60">
+          <h3 className="text-sm font-semibold text-slate-900 mb-4">Célország bontás</h3>
           {countryData.length > 0 ? (
             <ResponsiveContainer width="100%" height={230}>
               <BarChart data={countryData} barCategoryGap="35%" layout="vertical">
@@ -367,11 +266,8 @@ export default function Dashboard() {
         </div>
 
         {/* Carrier breakdown */}
-        <div className="p-6 rounded-xl border border-slate-200" style={{ background: "#fff" }}>
-          <div className="mb-4">
-            <h3 className="text-base font-bold text-slate-800 leading-none">Fuvarozó bontás</h3>
-            <p className="text-xs text-slate-500 mt-1">Fuvarozó szerint</p>
-          </div>
+        <div className="bg-white p-6 rounded-lg border border-slate-200/60">
+          <h3 className="text-sm font-semibold text-slate-900 mb-4">Fuvarozók</h3>
           {carrierData.length > 0 ? (
             <>
               <ResponsiveContainer width="100%" height={190}>
@@ -396,14 +292,10 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* ── SECTION 5: CHARTS ROW 2 ───────────────────────────── */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Monthly trend */}
-        <div className="p-6 rounded-xl border border-slate-200" style={{ background: "#fff" }}>
-          <div className="mb-4">
-            <h3 className="text-base font-bold text-slate-800 leading-none">Havi teljesítmény</h3>
-            <p className="text-xs text-slate-500 mt-1">Lezárt fuvarok havonta (darab + tonna)</p>
-          </div>
+        <div className="bg-white p-6 rounded-lg border border-slate-200/60">
+          <h3 className="text-sm font-semibold text-slate-900 mb-4">Havi teljesítmény</h3>
           {monthlyData.length > 0 ? (
             <ResponsiveContainer width="100%" height={220}>
               <AreaChart data={monthlyData}>
@@ -431,11 +323,8 @@ export default function Dashboard() {
         </div>
 
         {/* County breakdown HU */}
-        <div className="p-6 rounded-xl border border-slate-200" style={{ background: "#fff" }}>
-          <div className="mb-4">
-            <h3 className="text-base font-bold text-slate-800 leading-none">Megye bontás (HU)</h3>
-            <p className="text-xs text-slate-500 mt-1">Magyar célmegyék – aktív és lezárt fuvarok</p>
-          </div>
+        <div className="bg-white p-6 rounded-lg border border-slate-200/60">
+          <h3 className="text-sm font-semibold text-slate-900 mb-4">Megye bontás (HU)</h3>
           {countyData.length > 0 ? (
             <ResponsiveContainer width="100%" height={220}>
               <BarChart data={countyData} barCategoryGap="25%">
@@ -454,29 +343,24 @@ export default function Dashboard() {
 
 
 
-      <SectionDivider label="Legutóbbi aktivitás" />
-
-      {/* ── SECTION 7: RECENT TRUCKS TABLE ────────────────────── */}
-      <div className="p-6 rounded-xl border border-slate-200" style={{ background: "#fff" }}>
+      {/* Recent Trucks */}
+      <div className="bg-white p-6 rounded-lg border border-slate-200/60">
         <div className="flex items-center justify-between mb-4">
-          <div>
-            <h3 className="text-base font-bold text-slate-800 leading-none">Legutóbbi fuvarok</h3>
-            <p className="text-xs text-slate-500 mt-1">Legutóbbi fuvarok áttekintése</p>
-          </div>
-          <Link to={createPageUrl("Logistics")} className="text-xs font-semibold text-blue-600 hover:text-blue-700 flex items-center gap-1">
-            Összes <ArrowRight className="w-3 h-3" />
+          <h3 className="text-sm font-semibold text-slate-900">Legutóbbi fuvarok</h3>
+          <Link to={createPageUrl("Logistics")} className="text-xs font-medium text-blue-600 hover:text-blue-700 flex items-center gap-1">
+            Összes <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full text-xs">
+          <table className="w-full text-sm">
             <thead>
-              <tr className="text-left text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b">
-                <th className="pb-2 pr-4">Rendszám</th>
-                <th className="pb-2 pr-4">Termék</th>
-                <th className="pb-2 pr-4">Fuvarozó</th>
-                <th className="pb-2 pr-4">Célállomás</th>
-                <th className="pb-2 pr-4 text-right">Tonna</th>
-                <th className="pb-2">Státusz</th>
+              <tr className="text-left text-xs font-medium text-slate-500 border-b border-slate-200">
+                <th className="pb-3 pr-4">Rendszám</th>
+                <th className="pb-3 pr-4">Termék</th>
+                <th className="pb-3 pr-4">Fuvarozó</th>
+                <th className="pb-3 pr-4">Célállomás</th>
+                <th className="pb-3 pr-4 text-right">Tonna</th>
+                <th className="pb-3">Státusz</th>
               </tr>
             </thead>
             <tbody>
@@ -490,14 +374,14 @@ export default function Dashboard() {
                 };
                 const statusLabels = { booked:"Előjegyzett", loaded:"Megrakott", finance_control:"Pénzügy", closed:"Lezárt", cancelled:"Törölve" };
                 return (
-                  <tr key={t.id} className="border-b last:border-0 hover:bg-slate-50 transition-colors">
-                    <td className="py-2 pr-4 font-semibold text-slate-800">{t.truck_number || "—"}</td>
-                    <td className="py-2 pr-4 text-slate-600 max-w-[120px] truncate">{t.product_name || "—"}</td>
-                    <td className="py-2 pr-4 text-slate-600 max-w-[100px] truncate">{t.carrier_name || "—"}</td>
-                    <td className="py-2 pr-4 text-slate-600">{t.destination_country}{t.destination_city ? ` · ${t.destination_city}` : ""}</td>
-                    <td className="py-2 pr-4 text-right font-semibold text-slate-700">{t.actual_weight_tons?.toFixed(1) || t.planned_quantity_tons?.toFixed(1) || "—"}</td>
-                    <td className="py-2">
-                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${statusColors[t.status] || "bg-slate-100 text-slate-500"}`}>
+                  <tr key={t.id} className="border-b border-slate-100 last:border-0 hover:bg-slate-50/50 transition-colors">
+                    <td className="py-3 pr-4 font-medium text-slate-900">{t.truck_number || "—"}</td>
+                    <td className="py-3 pr-4 text-slate-600 max-w-[120px] truncate">{t.product_name || "—"}</td>
+                    <td className="py-3 pr-4 text-slate-600 max-w-[100px] truncate">{t.carrier_name || "—"}</td>
+                    <td className="py-3 pr-4 text-slate-600">{t.destination_country}{t.destination_city ? ` · ${t.destination_city}` : ""}</td>
+                    <td className="py-3 pr-4 text-right font-medium text-slate-900">{t.actual_weight_tons?.toFixed(1) || t.planned_quantity_tons?.toFixed(1) || "—"}</td>
+                    <td className="py-3">
+                      <span className={`px-2.5 py-1 rounded-md text-xs font-medium ${statusColors[t.status] || "bg-slate-100 text-slate-500"}`}>
                         {statusLabels[t.status] || t.status}
                       </span>
                     </td>
