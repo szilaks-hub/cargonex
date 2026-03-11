@@ -67,6 +67,7 @@ export default function TruckForm({ item, onClose, onSaved, defaultOrderbookId, 
     queryKey: ["trucks-for-orderbook", form.orderbook_id],
     queryFn: () => base44.entities.Truck.filter({ orderbook_id: form.orderbook_id }),
     enabled: !!form.orderbook_id,
+    refetchInterval: 2000, // Refetch every 2 seconds for real-time capacity updates
   });
 
   const carriers = partners.filter((p) => (p.roles || []).includes("carrier"));
