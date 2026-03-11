@@ -268,7 +268,7 @@ export default function TruckCustomsDetail({ truck, onBack, onUpdated }) {
   }
 
   return (
-    <div className="space-y-5 max-w-5xl">
+    <div className="space-y-5 max-w-5xl" style={{ background: "linear-gradient(135deg, #f8f9fb 0%, #e8ecf4 100%)", padding: "1.5rem", borderRadius: "16px" }}>
       {/* Header */}
       <div className="flex items-center gap-3">
         <Button variant="ghost" onClick={onBack} className="text-slate-500 hover:text-slate-800 p-2">
@@ -286,7 +286,7 @@ export default function TruckCustomsDetail({ truck, onBack, onUpdated }) {
       </div>
 
       {/* === ÁTTEKINTÉS / OVERVIEW === */}
-      <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+      <div className="rounded-xl p-5 shadow-lg" style={{ background: "rgba(255,255,255,0.95)", border: "1px solid rgba(226,232,240,0.8)" }}>
         <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">Áttekintés / Overview</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Left: Feladó */}
@@ -365,7 +365,7 @@ export default function TruckCustomsDetail({ truck, onBack, onUpdated }) {
       {/* Checklist & Customs Data */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Checklist */}
-        <div className="bg-white border border-slate-200 rounded-xl p-5 space-y-4 shadow-sm">
+        <div className="rounded-xl p-5 space-y-4 shadow-lg" style={{ background: "rgba(255,255,255,0.95)", border: "1px solid rgba(226,232,240,0.8)" }}>
           <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Checklist / Ellenőrzőlista</h3>
           <div className="space-y-3">
             {[
@@ -386,7 +386,7 @@ export default function TruckCustomsDetail({ truck, onBack, onUpdated }) {
         </div>
 
         {/* Customs Data */}
-        <div className="bg-white border border-slate-200 rounded-xl p-5 space-y-3 shadow-sm">
+        <div className="rounded-xl p-5 space-y-3 shadow-lg" style={{ background: "rgba(255,255,255,0.95)", border: "1px solid rgba(226,232,240,0.8)" }}>
           <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Vámadatok / Customs Data</h3>
           <div className="grid grid-cols-2 gap-3">
             <div>
@@ -452,7 +452,7 @@ export default function TruckCustomsDetail({ truck, onBack, onUpdated }) {
       </div>
 
       {/* === KALKULÁCIÓ === */}
-      <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+      <div className="rounded-xl p-5 shadow-lg" style={{ background: "rgba(255,255,255,0.95)", border: "1px solid rgba(226,232,240,0.8)" }}>
         <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">Kalkuláció / Calculation</h3>
         {exchangeRate === 0 && (
           <div className="mb-4 p-3 bg-orange-50 border border-orange-300 rounded-lg flex items-center gap-2 text-sm text-orange-700">
