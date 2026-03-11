@@ -7,7 +7,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { X, Copy, Trash2, Check, AlertCircle, Edit2, Plus, FileEdit, Truck as TruckIcon } from "lucide-react";
+import { X, Copy, Trash2, Check, AlertCircle, Edit2, Plus, FileEdit, Truck as TruckIcon, Printer } from "lucide-react";
 import OrderbookTrucksSidebar from "./OrderbookTrucksSidebar";
 import OrderbookSummaryTable from "./OrderbookSummaryTable";
 import CarrierAssignmentEditor from "./CarrierAssignmentEditor";
