@@ -23,6 +23,7 @@ export default function OrderbooksPage() {
   const [selectedOrderId, setSelectedOrderId] = useState(null);
   const [activeTab, setActiveTab] = useState("open");
   const [selectedSupplier, setSelectedSupplier] = useState("all");
+  const [selectedCategory, setSelectedCategory] = useState("all");
   const qc = useQueryClient();
 
   const { data: orders = [], isLoading } = useQuery({
@@ -35,18 +36,45 @@ export default function OrderbooksPage() {
     queryFn: () => base44.entities.OrderbookLine.list(),
   });
 
+  const { data: categories = [] } = useQuery({
+    queryKey: ['categories'],
+    queryFn: () => base44.entities.ProductCategory.list(),
+  });
+
+  const { data: trucks = [] } = useQuery({
+    queryKey: ['trucks'],
+    queryFn: () => base44.entities.Truck.list(),
+  });
+
   const allSuppliers = [...new Set(orders.filter(o => o.supplier_id).map(o => ({ id: o.supplier_id, name: o.supplier_name })))];
   const uniqueSuppliers = Array.from(
     new Map(allSuppliers.map(s => [s.id, s])).values()
   ).sort((a, b) => (a.name || '').localeCompare(b.name || ''));
 
-  const filterBySupplier = (ordersList) => {
-    if (selectedSupplier === "all") return ordersList;
-    return ordersList.filter(o => o.supplier_id === selectedSupplier);
+  const filterOrders = (ordersList) => {
+    let filtered = ordersList;
+    
+    if (selectedSupplier !== "all") {
+      filtered = filtered.filter(o => o.supplier_id === selectedSupplier);
+    }
+    
+    if (selectedCategory !== "all") {
+      const ordersWithCategory = new Set(
+        lines.filter(l => l.category_id === selectedCategory).map(l => l.orderbook_id)
+      );
+      filtered = filtered.filter(o => ordersWithCategory.has(o.id));
+    }
+    
+    return filtered;
   };
 
-  const openOrders = filterBySupplier(orders.filter(o => o.status === 'open')).sort((a, b) => new Date(b.order_date) - new Date(a.order_date));
-  const closedOrders = filterBySupplier(orders.filter(o => o.status === 'closed')).sort((a, b) => new Date(b.closed_at) - new Date(a.closed_at));
+  const openOrders = filterOrders(orders.filter(o => o.status === 'open')).sort((a, b) => new Date(b.order_date) - new Date(a.order_date));
+  const closedOrders = filterOrders(orders.filter(o => o.status === 'closed')).sort((a, b) => new Date(b.closed_at) - new Date(a.closed_at));
+
+  const allCategories = [...new Set(lines.filter(l => l.category_id).map(l => ({ id: l.category_id, name: l.category_name })))];
+  const uniqueCategories = Array.from(
+    new Map(allCategories.map(c => [c.id, c])).values()
+  ).sort((a, b) => (a.name || '').localeCompare(b.name || ''));
 
   const getOrderMetrics = (orderId) => {
     const orderLines = lines.filter(l => l.orderbook_id === orderId);
@@ -95,32 +123,59 @@ export default function OrderbooksPage() {
         addLabel="New Order"
       />
 
-      {/* Supplier Filter */}
+      {/* Filters */}
       <Card className="p-4">
-        <div className="flex items-center gap-3">
-          <Filter className="w-4 h-4 text-slate-500" />
-          <label className="text-sm font-semibold text-slate-600">Szűrés beszállítóra:</label>
-          <Select value={selectedSupplier} onValueChange={setSelectedSupplier}>
-            <SelectTrigger className="w-64">
-              <SelectValue placeholder="Minden beszállító" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Minden beszállító</SelectItem>
-              {uniqueSuppliers.map(s => (
-                <SelectItem key={s.id} value={s.id}>{s.name || "—"}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          {selectedSupplier !== "all" && (
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={() => setSelectedSupplier("all")}
-              className="text-slate-500 hover:text-slate-800"
-            >
-              <X className="w-4 h-4 mr-1" /> Törlés
-            </Button>
-          )}
+        <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
+          <div className="flex items-center gap-3 flex-1">
+            <Filter className="w-4 h-4 text-slate-500" />
+            <label className="text-sm font-semibold text-slate-600 whitespace-nowrap">Beszállító:</label>
+            <Select value={selectedSupplier} onValueChange={setSelectedSupplier}>
+              <SelectTrigger className="w-64">
+                <SelectValue placeholder="Minden beszállító" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Minden beszállító</SelectItem>
+                {uniqueSuppliers.map(s => (
+                  <SelectItem key={s.id} value={s.id}>{s.name || "—"}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {selectedSupplier !== "all" && (
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => setSelectedSupplier("all")}
+                className="text-slate-500 hover:text-slate-800"
+              >
+                <X className="w-4 h-4" />
+              </Button>
+            )}
+          </div>
+
+          <div className="flex items-center gap-3 flex-1">
+            <label className="text-sm font-semibold text-slate-600 whitespace-nowrap">Termékkör:</label>
+            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+              <SelectTrigger className="w-64">
+                <SelectValue placeholder="Minden termékkör" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Minden termékkör</SelectItem>
+                {uniqueCategories.map(c => (
+                  <SelectItem key={c.id} value={c.id}>{c.name || "—"}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {selectedCategory !== "all" && (
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => setSelectedCategory("all")}
+                className="text-slate-500 hover:text-slate-800"
+              >
+                <X className="w-4 h-4" />
+              </Button>
+            )}
+          </div>
         </div>
       </Card>
 
@@ -180,6 +235,7 @@ export default function OrderbooksPage() {
           orderId={selectedOrderId}
           onClose={() => setSelectedOrderId(null)}
           onUpdated={() => qc.invalidateQueries({ queryKey: ['orderbooks'] })}
+          trucks={trucks}
         />
       )}
     </div>

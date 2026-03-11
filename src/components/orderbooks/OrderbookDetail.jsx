@@ -7,7 +7,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { X, Copy, Trash2, Check, AlertCircle, Edit2, Plus, FileEdit } from "lucide-react";
+import { X, Copy, Trash2, Check, AlertCircle, Edit2, Plus, FileEdit, Truck as TruckIcon } from "lucide-react";
 import OrderbookTrucksSidebar from "./OrderbookTrucksSidebar";
 import OrderbookSummaryTable from "./OrderbookSummaryTable";
 import CarrierAssignmentEditor from "./CarrierAssignmentEditor";
@@ -26,7 +26,7 @@ import { Label } from "@/components/ui/label";
 
 const INCOTERMS = ['EXW', 'FCA', 'CPT', 'CIP', 'DAP', 'DPU', 'DDP', 'FAS', 'FOB', 'CFR', 'CIF'];
 
-export default function OrderbookDetail({ orderId, onClose, onUpdated }) {
+export default function OrderbookDetail({ orderId, onClose, onUpdated, trucks = [] }) {
   const [form, setForm] = useState(null);
   const [lines, setLines] = useState([]);
   const [editingLineId, setEditingLineId] = useState(null);
@@ -151,6 +151,8 @@ export default function OrderbookDetail({ orderId, onClose, onUpdated }) {
   const isClosed = form.status === 'closed';
   const isEditable = isDraft || isOpen; // Draft és Open orderek szerkeszthetőek
 
+  const relatedTrucks = trucks.filter(t => t.orderbook_id === orderId);
+
   const filteredSites = sites.filter(s => s.partner_id === form.supplier_id);
   const selectedSupplier = suppliers.find(s => s.id === form.supplier_id);
   const selectedSite = sites.find(s => s.id === form.supplier_site_id);
@@ -217,6 +219,14 @@ export default function OrderbookDetail({ orderId, onClose, onUpdated }) {
       toast.error("Helytelen mesterkulcs!");
       return;
     }
+
+    // Check for related trucks
+    const relatedTrucks = trucks.filter(t => t.orderbook_id === orderId);
+    if (relatedTrucks.length > 0) {
+      toast.error(`Nem lehet törölni: ${relatedTrucks.length} kamion kapcsolódik ehhez a rendeléshez. Előbb töröld a kamionokat!`);
+      return;
+    }
+
     try {
       for (const line of lines) await base44.entities.OrderbookLine.delete(line.id);
       await base44.entities.Orderbook.delete(orderId);
@@ -776,21 +786,58 @@ export default function OrderbookDetail({ orderId, onClose, onUpdated }) {
               Ez a művelet nem visszavonható. Minden sor törlésre kerül. Add meg a mesterkulcsot a törlés megerősítéséhez.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <div className="py-4">
-            <Label className="text-sm text-slate-600">Mesterkulcs</Label>
-            <Input
-              type="password"
-              placeholder="Írd be a mesterkulcsot"
-              value={deleteKey}
-              onChange={(e) => setDeleteKey(e.target.value)}
-              className="mt-2"
-            />
-          </div>
+
+          {relatedTrucks.length > 0 && (
+            <div className="py-3 px-4 bg-orange-50 border border-orange-200 rounded-lg">
+              <div className="flex items-start gap-2">
+                <AlertCircle className="w-5 h-5 text-orange-600 mt-0.5 flex-shrink-0" />
+                <div>
+                  <div className="font-semibold text-orange-800 mb-2">
+                    Figyelem! {relatedTrucks.length} kamion kapcsolódik ehhez a rendeléshez:
+                  </div>
+                  <div className="space-y-1 text-sm text-orange-700">
+                    {relatedTrucks.slice(0, 5).map(t => (
+                      <div key={t.id} className="flex items-center gap-2">
+                        <TruckIcon className="w-3.5 h-3.5" />
+                        <span>{t.truck_number || t.id?.slice(0, 8)}</span>
+                        <span className="text-xs">• {t.destination_city || '—'}</span>
+                        <span className="text-xs">• {t.actual_weight_tons || t.planned_quantity_tons} t</span>
+                      </div>
+                    ))}
+                    {relatedTrucks.length > 5 && (
+                      <div className="text-xs italic">... és még {relatedTrucks.length - 5} kamion</div>
+                    )}
+                  </div>
+                  <div className="mt-2 text-sm font-medium text-orange-900">
+                    Először töröld ezeket a kamionokat, majd ezután törölheted a rendelést!
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {relatedTrucks.length === 0 && (
+            <div className="py-4">
+              <Label className="text-sm text-slate-600">Mesterkulcs</Label>
+              <Input
+                type="password"
+                placeholder="Írd be a mesterkulcsot"
+                value={deleteKey}
+                onChange={(e) => setDeleteKey(e.target.value)}
+                className="mt-2"
+              />
+            </div>
+          )}
+
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setDeleteKey("")}>Mégse</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteOrder} className="bg-red-600 hover:bg-red-700">
-              Törlés
-            </AlertDialogAction>
+            <AlertDialogCancel onClick={() => setDeleteKey("")}>
+              {relatedTrucks.length > 0 ? 'Bezárás' : 'Mégse'}
+            </AlertDialogCancel>
+            {relatedTrucks.length === 0 && (
+              <AlertDialogAction onClick={handleDeleteOrder} className="bg-red-600 hover:bg-red-700">
+                Törlés
+              </AlertDialogAction>
+            )}
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
