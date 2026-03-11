@@ -262,6 +262,19 @@ export default function TruckForm({ item, onClose, onSaved, defaultOrderbookId, 
 
             {/* Multi-product editor */}
             <div className="sm:col-span-2 lg:col-span-3">
+              <div className="flex items-center justify-between mb-2">
+                <Label className={lbl}>Termékek a kamionon</Label>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const newItems = [...(form.items || []), { product_id: "", product_name: "", planned_quantity_tons: "", hs_code: "", purchase_price: "" }];
+                    setForm(f => ({ ...f, items: newItems }));
+                  }}
+                  className="bg-red-500/10 hover:bg-red-500/20 text-blue-600 font-semibold text-xs px-3 py-1.5 rounded-lg border border-red-300/30 transition-all"
+                >
+                  + Termék hozzáadása
+                </button>
+              </div>
               <TruckItemsEditor
                 items={form.items || []}
                 allowedProducts={allowedProducts}
@@ -284,37 +297,50 @@ export default function TruckForm({ item, onClose, onSaved, defaultOrderbookId, 
               />
             </div>
 
-            <div>
-              <Label className={lbl}>Tényleges súly (t)</Label>
-              <Input type="number" className={inp} value={form.actual_weight_tons} onChange={(e) => set("actual_weight_tons", e.target.value)} />
-            </div>
-            <div>
-              <Label className={lbl}>Összes tervezett (t)</Label>
-              <Input type="number" className={`${inp} font-semibold bg-slate-50`} value={form.planned_quantity_tons} onChange={(e) => set("planned_quantity_tons", e.target.value)} />
-            </div>
+            <div className="sm:col-span-2 lg:col-span-3 bg-slate-50 rounded-lg p-4 space-y-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <Label className={lbl}>Összes tervezett súly (t)</Label>
+                  <Input type="number" className={`${inp} font-bold text-lg bg-white`} value={form.planned_quantity_tons} onChange={(e) => set("planned_quantity_tons", e.target.value)} />
+                </div>
+                <div>
+                  <Label className={lbl}>Tervezett rakodási dátum *</Label>
+                  <Input type="date" className={`${inp} bg-white`} value={form.expected_loading_date} onChange={(e) => set("expected_loading_date", e.target.value)} />
+                </div>
+              </div>
+              
+              <div className="bg-white rounded-lg p-3 border-2 border-slate-200">
+                <Label className={`${lbl} mb-2 block`}>Rendszám (Truck #)</Label>
+                <Input className={`${inp} text-center font-bold text-lg`} value={form.truck_number} onChange={(e) => set("truck_number", e.target.value)} placeholder="ABC-123" />
+              </div>
 
-            <div>
-              <Label className={lbl}>Tervezett rakodási dátum *</Label>
-              <Input type="date" className={inp} value={form.expected_loading_date} onChange={(e) => set("expected_loading_date", e.target.value)} />
-            </div>
-            <div>
-              <Label className={lbl}>Tényleges rakodási dátum</Label>
-              <Input type="date" className={inp} value={form.actual_loading_date} onChange={(e) => set("actual_loading_date", e.target.value)} />
-            </div>
-
-            <div>
-              <Label className={lbl}>Rendszám (Truck #)</Label>
-              <Input className={inp} value={form.truck_number} onChange={(e) => set("truck_number", e.target.value)} placeholder="Pl. ABC-123 (kitölthető később)" />
+              <div className="border-t-2 border-slate-200 pt-3 space-y-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <Label className={lbl}>Tényleges súly (t)</Label>
+                    <Input type="number" className={`${inp} bg-white`} value={form.actual_weight_tons} onChange={(e) => set("actual_weight_tons", e.target.value)} />
+                  </div>
+                  <div>
+                    <Label className={lbl}>Tényleges rakodási dátum</Label>
+                    <Input type="date" className={`${inp} bg-white`} value={form.actual_loading_date} onChange={(e) => set("actual_loading_date", e.target.value)} />
+                  </div>
+                </div>
+              </div>
             </div>
 
             <div className="sm:col-span-2">
               <Label className={lbl}>Státusz</Label>
               <Select value={form.status} onValueChange={(v) => set("status", v)}>
-                <SelectTrigger className={inp}><SelectValue /></SelectTrigger>
-                <SelectContent className="bg-white border-[#c6ccda]">
-                  {Object.entries(STATUS_LABELS).map(([k, v]) => (
-                    <SelectItem key={k} value={k}>{v}</SelectItem>
-                  ))}
+                <SelectTrigger className={`h-11 text-base font-semibold rounded-lg ${
+                  form.status === "booked" ? "bg-slate-100 text-slate-700 border-slate-300" :
+                  form.status === "loaded" ? "bg-orange-100 text-orange-700 border-orange-300" :
+                  "bg-white text-slate-700 border-slate-300"
+                }`}>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-white border-slate-300 rounded-lg">
+                  <SelectItem value="booked" className="text-base font-medium hover:bg-slate-100">Előjegyzett</SelectItem>
+                  <SelectItem value="loaded" className="text-base font-medium hover:bg-orange-100">Megrakott</SelectItem>
                 </SelectContent>
               </Select>
             </div>
