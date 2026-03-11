@@ -5,16 +5,24 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Eye, ChevronDown, GripVertical } from "lucide-react";
+import { Plus, Eye, ChevronDown, GripVertical, Filter, X } from "lucide-react";
 import { toast } from "sonner";
 import OrderbookDetail from "@/components/orderbooks/OrderbookDetail";
 import OrderbooksMasterSummary from "@/components/orderbooks/OrderbooksMasterSummary";
 import OrderbookFamilyTree from "@/components/orderbooks/OrderbookFamilyTree";
 import PageHeader from "@/components/ui/PageHeader";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export default function OrderbooksPage() {
   const [selectedOrderId, setSelectedOrderId] = useState(null);
   const [activeTab, setActiveTab] = useState("open");
+  const [selectedSupplier, setSelectedSupplier] = useState("all");
   const qc = useQueryClient();
 
   const { data: orders = [], isLoading } = useQuery({
@@ -27,8 +35,18 @@ export default function OrderbooksPage() {
     queryFn: () => base44.entities.OrderbookLine.list(),
   });
 
-  const openOrders = orders.filter(o => o.status === 'open').sort((a, b) => new Date(b.order_date) - new Date(a.order_date));
-  const closedOrders = orders.filter(o => o.status === 'closed').sort((a, b) => new Date(b.closed_at) - new Date(a.closed_at));
+  const allSuppliers = [...new Set(orders.filter(o => o.supplier_id).map(o => ({ id: o.supplier_id, name: o.supplier_name })))];
+  const uniqueSuppliers = Array.from(
+    new Map(allSuppliers.map(s => [s.id, s])).values()
+  ).sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+
+  const filterBySupplier = (ordersList) => {
+    if (selectedSupplier === "all") return ordersList;
+    return ordersList.filter(o => o.supplier_id === selectedSupplier);
+  };
+
+  const openOrders = filterBySupplier(orders.filter(o => o.status === 'open')).sort((a, b) => new Date(b.order_date) - new Date(a.order_date));
+  const closedOrders = filterBySupplier(orders.filter(o => o.status === 'closed')).sort((a, b) => new Date(b.closed_at) - new Date(a.closed_at));
 
   const getOrderMetrics = (orderId) => {
     const orderLines = lines.filter(l => l.orderbook_id === orderId);
@@ -76,6 +94,35 @@ export default function OrderbooksPage() {
         onAdd={handleCreateOrder}
         addLabel="New Order"
       />
+
+      {/* Supplier Filter */}
+      <Card className="p-4">
+        <div className="flex items-center gap-3">
+          <Filter className="w-4 h-4 text-slate-500" />
+          <label className="text-sm font-semibold text-slate-600">Szűrés beszállítóra:</label>
+          <Select value={selectedSupplier} onValueChange={setSelectedSupplier}>
+            <SelectTrigger className="w-64">
+              <SelectValue placeholder="Minden beszállító" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Minden beszállító</SelectItem>
+              {uniqueSuppliers.map(s => (
+                <SelectItem key={s.id} value={s.id}>{s.name || "—"}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {selectedSupplier !== "all" && (
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => setSelectedSupplier("all")}
+              className="text-slate-500 hover:text-slate-800"
+            >
+              <X className="w-4 h-4 mr-1" /> Törlés
+            </Button>
+          )}
+        </div>
+      </Card>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="bg-slate-100 flex-wrap h-auto">
