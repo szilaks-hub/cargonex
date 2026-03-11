@@ -61,6 +61,13 @@ export default function TruckForm({ item, onClose, onSaved, defaultOrderbookId, 
     enabled: !!form.applied_freight_sheet_id,
   });
   const { data: agentFees = [] } = useQuery({ queryKey: ["allFees"], queryFn: () => base44.entities.CustomsAgentFee.list() });
+  
+  // Fetch all trucks for the selected orderbook to calculate real-time allocation
+  const { data: existingTrucks = [] } = useQuery({
+    queryKey: ["trucks-for-orderbook", form.orderbook_id],
+    queryFn: () => base44.entities.Truck.filter({ orderbook_id: form.orderbook_id }),
+    enabled: !!form.orderbook_id,
+  });
 
   const carriers = partners.filter((p) => (p.roles || []).includes("carrier"));
   const customsAgents = partners.filter((p) => (p.roles || []).includes("customs_agent"));
@@ -149,13 +156,17 @@ export default function TruckForm({ item, onClose, onSaved, defaultOrderbookId, 
 
   const selectedOrderbook = orderbooks.find(o => o.id === form.orderbook_id);
 
-  // Calculate remaining capacity and validate truck allocation
+  // Calculate remaining capacity using REAL-TIME truck data (not allocated_quantity_tons which may be stale)
   const totalOrderbookCapacity = orderbookLines.reduce((sum, line) => sum + (line.planned_quantity_tons || 0), 0);
-  const totalAllocated = orderbookLines.reduce((sum, line) => sum + (line.allocated_quantity_tons || 0), 0);
   
-  // If editing existing truck, exclude its current planned tonnage from allocated
+  // Sum actual planned tons from existing trucks (excluding cancelled)
+  const totalAllocatedFromTrucks = existingTrucks
+    .filter(t => t.status !== 'cancelled')
+    .reduce((sum, t) => sum + (parseFloat(t.planned_quantity_tons) || 0), 0);
+  
+  // If editing existing truck, exclude its current planned tonnage
   const currentTruckTonnage = item?.id && item.planned_quantity_tons ? parseFloat(item.planned_quantity_tons) : 0;
-  const effectiveAllocated = totalAllocated - currentTruckTonnage;
+  const effectiveAllocated = totalAllocatedFromTrucks - currentTruckTonnage;
   
   const remainingCapacity = totalOrderbookCapacity - effectiveAllocated;
   const plannedTons = parseFloat(form.planned_quantity_tons) || 0;
