@@ -237,6 +237,16 @@ export default function TruckForm({ item, onClose, onSaved, defaultOrderbookId, 
     if (item?.id) await base44.entities.Truck.update(item.id, data);
     else await base44.entities.Truck.create(data);
     
+    // Manually trigger sync so orderbook lines update IMMEDIATELY
+    try {
+      await base44.functions.invoke('syncOrderbookAllocations', {
+        event: { type: item?.id ? 'update' : 'create' },
+        data: { ...data, id: item?.id, orderbook_id: form.orderbook_id }
+      });
+    } catch (err) {
+      console.warn('Sync failed:', err);
+    }
+    
     // Invalidate queries - including orderbook data so capacity updates immediately
     queryClient.invalidateQueries({ queryKey: ["trucks"] });
     queryClient.invalidateQueries({ queryKey: ["all-trucks-for-capacity"] });
@@ -248,7 +258,28 @@ export default function TruckForm({ item, onClose, onSaved, defaultOrderbookId, 
   };
 
   const handleDelete = async () => {
-    if (item?.id) { await base44.entities.Truck.delete(item.id); onSaved(); }
+    if (item?.id) {
+      const orderbookId = item.orderbook_id;
+      await base44.entities.Truck.delete(item.id);
+      
+      // Manually trigger sync after delete
+      try {
+        await base44.functions.invoke('syncOrderbookAllocations', {
+          event: { type: 'delete' },
+          data: { orderbook_id: orderbookId }
+        });
+      } catch (err) {
+        console.warn('Sync failed:', err);
+      }
+      
+      // Invalidate queries
+      queryClient.invalidateQueries({ queryKey: ["trucks"] });
+      queryClient.invalidateQueries({ queryKey: ["all-trucks-for-capacity"] });
+      queryClient.invalidateQueries({ queryKey: ["orderbook-lines"] });
+      queryClient.invalidateQueries({ queryKey: ["orderbooks"] });
+      
+      onSaved();
+    }
   };
 
   const inp = "bg-white border-[#c6ccda] text-slate-800";
