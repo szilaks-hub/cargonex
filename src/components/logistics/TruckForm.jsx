@@ -168,6 +168,12 @@ export default function TruckForm({ item, onClose, onSaved, defaultOrderbookId, 
   const willExceedCapacity = plannedTons > remainingCapacity && plannedTons > 0;
 
   const handleSave = async () => {
+    // Validate required fields
+    if (!form.expected_loading_date && !form.loading_date) {
+      toast.error('⚠️ Tervezett rakodási dátum kötelező!');
+      return;
+    }
+
     // Validate capacity before saving (for both new and edited trucks)
     if (form.orderbook_id && willExceedCapacity) {
       toast.error(`⛔ Túllépés! Csak ${remainingCapacity.toFixed(2)} t szabad még ezen a rendelésen. (Próbált hozzáadni: ${plannedTons.toFixed(2)} t)`, {
@@ -178,7 +184,7 @@ export default function TruckForm({ item, onClose, onSaved, defaultOrderbookId, 
     setSaving(true);
     const data = {
       ...form,
-      loading_date: form.expected_loading_date || form.loading_date,
+      loading_date: form.expected_loading_date || form.actual_loading_date || form.loading_date,
       planned_quantity_tons: Number(form.planned_quantity_tons) || 0,
       actual_weight_tons: Number(form.actual_weight_tons) || 0,
       freight_domestic_leg_snapshot: Number(form.freight_domestic_leg_snapshot) || 0,
