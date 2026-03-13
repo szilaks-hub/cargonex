@@ -8,11 +8,12 @@ Deno.serve(async (req) => {
     const { event, data } = await req.json();
 
     const truck = data;
-    if (!truck?.orderbook_id) {
-      return Response.json({ skipped: true, reason: "No orderbook_id on truck" });
+    // Accept either truck.orderbook_id or direct data.orderbook_id (for manual sync)
+    const orderbookId = truck?.orderbook_id || data?.orderbook_id;
+    
+    if (!orderbookId) {
+      return Response.json({ skipped: true, reason: "No orderbook_id provided" });
     }
-
-    const orderbookId = truck.orderbook_id;
 
     // Get all trucks for this orderbook
     const allTrucks = await base44.asServiceRole.entities.Truck.filter({ orderbook_id: orderbookId });
