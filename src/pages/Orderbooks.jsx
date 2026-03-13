@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Eye, ChevronDown, GripVertical, Filter, X } from "lucide-react";
+import { Plus, Eye, ChevronDown, GripVertical, Filter, X, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import OrderbookDetail from "@/components/orderbooks/OrderbookDetail";
 import OrderbooksMasterSummary from "@/components/orderbooks/OrderbooksMasterSummary";
@@ -24,6 +24,7 @@ export default function OrderbooksPage() {
   const [activeTab, setActiveTab] = useState("open");
   const [selectedSupplier, setSelectedSupplier] = useState("all");
   const [selectedCategory, setSelectedCategory] = useState("all");
+  const [syncing, setSyncing] = useState(false);
   const qc = useQueryClient();
 
   const { data: orders = [], isLoading } = useQuery({
@@ -107,6 +108,57 @@ export default function OrderbooksPage() {
     }
   };
 
+  const handleMasterSync = async () => {
+    setSyncing(true);
+    toast.info('🔄 Master szinkronizáció indítása...');
+    
+    try {
+      let successCount = 0;
+      let errorCount = 0;
+      
+      // Get all orderbooks with trucks
+      const orderbooksWithTrucks = [...new Set(trucks.map(t => t.orderbook_id).filter(Boolean))];
+      
+      if (orderbooksWithTrucks.length === 0) {
+        toast.warning('Nincs kamion, ami szinkronizálásra vár');
+        setSyncing(false);
+        return;
+      }
+      
+      // Sync each orderbook
+      for (const orderbookId of orderbooksWithTrucks) {
+        try {
+          await base44.functions.invoke('syncOrderbookAllocations', {
+            event: { type: 'manual_sync' },
+            data: { orderbook_id: orderbookId }
+          });
+          successCount++;
+        } catch (err) {
+          console.error(`Sync failed for ${orderbookId}:`, err);
+          errorCount++;
+        }
+      }
+      
+      // Refresh all data
+      await Promise.all([
+        qc.invalidateQueries({ queryKey: ['orderbooks'] }),
+        qc.invalidateQueries({ queryKey: ['orderbook-lines'] }),
+        qc.invalidateQueries({ queryKey: ['trucks'] })
+      ]);
+      
+      if (successCount > 0) {
+        toast.success(`✅ ${successCount} rendelés szinkronizálva!`);
+      }
+      if (errorCount > 0) {
+        toast.error(`❌ ${errorCount} hiba történt`);
+      }
+    } catch (error) {
+      toast.error(`Szinkronizációs hiba: ${error.message}`);
+    } finally {
+      setSyncing(false);
+    }
+  };
+
   const openMetrics = {
     count: openOrders.length,
     tons: openOrders.reduce((s, o) => s + getOrderMetrics(o.id).plannedTons, 0),
@@ -123,6 +175,30 @@ export default function OrderbooksPage() {
         onAdd={handleCreateOrder}
         addLabel="New Order"
       />
+
+      {/* Master Sync Button */}
+      <Card className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
+        <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
+          <div className="flex-1">
+            <div className="flex items-center gap-2 mb-1">
+              <RefreshCw className="w-5 h-5 text-blue-600" />
+              <h3 className="font-bold text-slate-800">Master Szinkronizáció</h3>
+            </div>
+            <p className="text-sm text-slate-600">
+              Újraszámolja az összes rendelés allokációját a kamionok alapján. 
+              Használd, ha az adatok nincsenek szinkronban.
+            </p>
+          </div>
+          <Button
+            onClick={handleMasterSync}
+            disabled={syncing}
+            className="bg-blue-600 hover:bg-blue-700 text-white gap-2 whitespace-nowrap"
+          >
+            <RefreshCw className={`w-4 h-4 ${syncing ? 'animate-spin' : ''}`} />
+            {syncing ? 'Szinkronizálás...' : 'Szinkronizálás most'}
+          </Button>
+        </div>
+      </Card>
 
       {/* Filters */}
       <Card className="p-4">
