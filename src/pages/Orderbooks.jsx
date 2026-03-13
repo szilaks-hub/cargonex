@@ -110,31 +110,36 @@ export default function OrderbooksPage() {
 
   const handleMasterSync = async () => {
     setSyncing(true);
-    toast.info('🔄 Master szinkronizáció indítása...');
     
     try {
-      let successCount = 0;
-      let errorCount = 0;
-      
       // Get all orderbooks with trucks
       const orderbooksWithTrucks = [...new Set(trucks.map(t => t.orderbook_id).filter(Boolean))];
       
       if (orderbooksWithTrucks.length === 0) {
-        toast.warning('Nincs kamion, ami szinkronizálásra vár');
+        toast.warning('⚠️ Nincs kamion, ami szinkronizálásra vár');
         setSyncing(false);
         return;
       }
       
+      const totalTrucks = trucks.filter(t => t.orderbook_id && t.status !== 'cancelled').length;
+      toast.info(`🔄 Szinkronizálás: ${orderbooksWithTrucks.length} rendelés, ${totalTrucks} kamion...`);
+      
+      let successCount = 0;
+      let errorCount = 0;
+      const errors = [];
+      
       // Sync each orderbook
       for (const orderbookId of orderbooksWithTrucks) {
         try {
-          await base44.functions.invoke('syncOrderbookAllocations', {
+          const result = await base44.functions.invoke('syncOrderbookAllocations', {
             event: { type: 'manual_sync' },
             data: { orderbook_id: orderbookId }
           });
+          console.log(`Sync result for ${orderbookId}:`, result);
           successCount++;
         } catch (err) {
           console.error(`Sync failed for ${orderbookId}:`, err);
+          errors.push({ orderbookId, error: err.message });
           errorCount++;
         }
       }
@@ -143,17 +148,21 @@ export default function OrderbooksPage() {
       await Promise.all([
         qc.invalidateQueries({ queryKey: ['orderbooks'] }),
         qc.invalidateQueries({ queryKey: ['orderbook-lines'] }),
-        qc.invalidateQueries({ queryKey: ['trucks'] })
+        qc.invalidateQueries({ queryKey: ['trucks'] }),
+        qc.invalidateQueries({ queryKey: ['all-trucks-for-capacity'] })
       ]);
       
-      if (successCount > 0) {
-        toast.success(`✅ ${successCount} rendelés szinkronizálva!`);
-      }
-      if (errorCount > 0) {
-        toast.error(`❌ ${errorCount} hiba történt`);
+      if (successCount > 0 && errorCount === 0) {
+        toast.success(`✅ Sikeres szinkronizáció! ${successCount} rendelés frissítve`, { duration: 4000 });
+      } else if (successCount > 0 && errorCount > 0) {
+        toast.warning(`⚠️ Részleges siker: ${successCount} OK, ${errorCount} hiba`);
+      } else if (errorCount > 0) {
+        toast.error(`❌ ${errorCount} rendelés szinkronizálása sikertelen`);
+        console.error('Sync errors:', errors);
       }
     } catch (error) {
       toast.error(`Szinkronizációs hiba: ${error.message}`);
+      console.error('Master sync error:', error);
     } finally {
       setSyncing(false);
     }
