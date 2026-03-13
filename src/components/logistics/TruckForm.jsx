@@ -448,9 +448,16 @@ export default function TruckForm({ item, onClose, onSaved, defaultOrderbookId, 
                   // Sync total planned tons and primary product fields from items
                   const total = newItems.reduce((s, i) => s + (parseFloat(i.planned_quantity_tons) || 0), 0);
                   const first = newItems[0];
+                  
+                  // Ensure category_id is stored in items for sync function
+                  const itemsWithCategory = newItems.map(item => ({
+                    ...item,
+                    category_id: item._category_id || item.category_id
+                  }));
+                  
                   setForm(f => ({
                     ...f,
-                    items: newItems,
+                    items: itemsWithCategory,
                     planned_quantity_tons: total || f.planned_quantity_tons,
                     product_id: first?.product_id || f.product_id,
                     product_name: newItems.map(i => i.product_name).filter(Boolean).join(", ") || f.product_name,
