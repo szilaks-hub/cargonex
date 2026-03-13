@@ -46,9 +46,11 @@ Deno.serve(async (req) => {
 
       if (t.items && t.items.length > 0) {
         for (const item of t.items) {
-          const catId = item.category_id || (item.product_id ? resolveCategoryId(item.product_id) : null);
+          const catId = item.category_id || item._category_id || (item.product_id ? resolveCategoryId(item.product_id) : null);
           if (catId) {
-            categoryTons.push({ category_id: catId, tons: item.quantity_tons || 0 });
+            // Support both quantity_tons and planned_quantity_tons
+            const tons = item.quantity_tons || item.planned_quantity_tons || 0;
+            categoryTons.push({ category_id: catId, tons });
           }
         }
         // If items have no categories, fallback to truck-level
