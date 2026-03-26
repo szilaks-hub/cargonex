@@ -423,7 +423,6 @@ function OrderbooksList({ orders, lines, trucks = [], onSelect, onDelete, isClos
             <tr className="text-left text-xs font-semibold text-slate-600">
               <th className="py-3 px-2 w-8"></th>
               <th className="py-3 px-4">Bész. rendelésszám</th>
-              <th className="py-3 px-4">Belső szám</th>
               <th className="py-3 px-4">Beszállító</th>
               <th className="py-3 px-4">Dátum</th>
               <th className="py-3 px-4">Incoterms</th>
@@ -467,10 +466,12 @@ function OrderbooksList({ orders, lines, trucks = [], onSelect, onDelete, isClos
                         <ColorDot colorKey={order.row_color || ""} onClick={(c) => handleColorChange(order, c)} />
                       </div>
                     </td>
-                    <td className="py-3 px-4 font-bold text-slate-900">
-                      {order.supplier_order_no || <span className="text-slate-400 font-normal italic">—</span>}
+                    <td className="py-3 px-4">
+                      <div className="text-lg font-extrabold text-slate-900 leading-tight">
+                        {order.supplier_order_no || <span className="text-slate-400 font-normal italic text-sm">—</span>}
+                      </div>
+                      <div className="text-[10px] text-slate-400 font-mono mt-0.5">{order.order_no}</div>
                     </td>
-                    <td className="py-3 px-4 text-xs text-slate-500">{order.order_no}</td>
                     <td className="py-3 px-4 text-slate-700">
                       <div className="font-medium">{order.supplier_name}</div>
                       <div className="text-xs text-slate-500">{order.supplier_site_name}</div>
@@ -478,7 +479,7 @@ function OrderbooksList({ orders, lines, trucks = [], onSelect, onDelete, isClos
                     <td className="py-3 px-4 text-slate-600">{order.order_date}</td>
                     <td className="py-3 px-4 text-slate-600">{order.incoterms_type}</td>
                     <td className="py-3 px-4 text-right">
-                      <div className="font-semibold text-slate-800">{plannedTons.toFixed(2)}</div>
+                      <div className="font-semibold text-slate-800">{plannedTons.toLocaleString("hu-HU", {maximumFractionDigits: 2})}</div>
                       {plannedTons > 0 && (
                         <div className="text-xs text-slate-400">{allocPct}% allokált</div>
                       )}
@@ -534,8 +535,8 @@ function OrderbooksList({ orders, lines, trucks = [], onSelect, onDelete, isClos
                                   <div className="text-xs text-slate-500">
                                     <span className="font-medium text-blue-700">{(line.allocated_quantity_tons || 0).toFixed(2)} t</span>
                                     {' / '}
-                                    <span>{line.planned_quantity_tons?.toFixed(2)} t tervezett</span>
-                                    {remaining > 0.01 && <span className="ml-2 text-amber-600">· {remaining.toFixed(2)} t szabad</span>}
+                                    <span>{(line.planned_quantity_tons || 0).toLocaleString("hu-HU", {maximumFractionDigits: 2})} t tervezett</span>
+                                      {remaining > 0.01 && <span className="ml-2 text-amber-600">· {remaining.toLocaleString("hu-HU", {maximumFractionDigits: 2})} t szabad</span>}
                                     {remaining <= 0 && remaining > -0.01 && <span className="ml-2 text-emerald-600">· Teljes</span>}
                                   </div>
                                 </div>
@@ -558,7 +559,7 @@ function OrderbooksList({ orders, lines, trucks = [], onSelect, onDelete, isClos
                                 <span className={`text-xs font-bold w-10 text-right ${allocPct >= 100 ? 'text-emerald-600' : allocPct >= 50 ? 'text-blue-600' : 'text-amber-600'}`}>{allocPct}%</span>
                               </div>
                               <div className="text-xs text-slate-600 font-semibold">
-                                {allocatedTons.toFixed(2)} t / {plannedTons.toFixed(2)} t · marad: {remainingTons.toFixed(2)} t
+                                {allocatedTons.toLocaleString("hu-HU", {maximumFractionDigits: 2})} t / {plannedTons.toLocaleString("hu-HU", {maximumFractionDigits: 2})} t · marad: {remainingTons.toLocaleString("hu-HU", {maximumFractionDigits: 2})} t
                               </div>
                             </div>
                             <div className="text-right text-xs font-semibold text-slate-700 w-24">

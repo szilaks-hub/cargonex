@@ -215,12 +215,11 @@ export default function TruckForm({ item, onClose, onSaved, defaultOrderbookId, 
       return;
     }
 
-    // Validate capacity before saving (for both new and edited trucks)
+    // Warn but allow if capacity exceeded
     if (form.orderbook_id && willExceedCapacity) {
-      toast.error(`⛔ Túllépés! Csak ${remainingCapacity.toFixed(2)} t szabad még ezen a rendelésen. (Próbált hozzáadni: ${plannedTons.toFixed(2)} t)`, {
+      toast.warning(`⚠️ Figyelem: A tervezett ${plannedTons.toFixed(2)} t túllépi a szabad kapacitást (${remainingCapacity.toFixed(2)} t szabad). Mentés folytatódik...`, {
         duration: 5000,
       });
-      return;
     }
     setSaving(true);
     
@@ -443,7 +442,7 @@ export default function TruckForm({ item, onClose, onSaved, defaultOrderbookId, 
                 items={form.items || []}
                 allowedProducts={allowedProducts}
                 categories={categories}
-                orderbookLines={orderbookLines}
+                orderbookLines={selectedOrderbookLines}
                 onChange={(newItems) => {
                   // Sync total planned tons and primary product fields from items
                   const total = newItems.reduce((s, i) => s + (parseFloat(i.planned_quantity_tons) || 0), 0);
