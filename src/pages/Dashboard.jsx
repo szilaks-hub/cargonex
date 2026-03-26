@@ -214,12 +214,10 @@ export default function Dashboard() {
           <div className="text-xs font-semibold text-emerald-100 mb-2 uppercase tracking-wide">Fennmaradó rendelés érték</div>
           <div className="text-3xl font-bold text-white mb-1">
             {totalOrderValueEur > 0
-              ? (totalOrderValueEur >= 1000000
-                ? (totalOrderValueEur/1000000).toFixed(2)+" M€"
-                : totalOrderValueEur.toLocaleString("hu-HU", {maximumFractionDigits:0})+" €")
+              ? totalOrderValueEur.toLocaleString("hu-HU", { maximumFractionDigits: 0 }) + " €"
               : "0 €"}
           </div>
-          <div className="text-sm text-emerald-100">{plannedTons.toLocaleString("hu-HU",{maximumFractionDigits:0})} t fennmaradó rendelés</div>
+          <div className="text-xl font-bold text-emerald-100">{plannedTons.toLocaleString("hu-HU", { maximumFractionDigits: 0 })} t fennmaradó rendelés</div>
         </div>
       </div>
 
