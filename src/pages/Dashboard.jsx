@@ -211,9 +211,15 @@ export default function Dashboard() {
           <div className="text-sm text-purple-100">aktív rendelés</div>
         </div>
         <div className="bg-gradient-to-br from-emerald-500 to-emerald-600 p-6 rounded-xl shadow-lg border border-emerald-400/20">
-          <div className="text-xs font-semibold text-emerald-100 mb-2 uppercase tracking-wide">Összes érték</div>
-          <div className="text-4xl font-bold text-white mb-1">{totalOrderValueEur > 0 ? (totalOrderValueEur/1000).toFixed(0) : "0"}<span className="text-2xl ml-1">k€</span></div>
-          <div className="text-sm text-emerald-100">rendelési érték</div>
+          <div className="text-xs font-semibold text-emerald-100 mb-2 uppercase tracking-wide">Fennmaradó rendelés érték</div>
+          <div className="text-3xl font-bold text-white mb-1">
+            {totalOrderValueEur > 0
+              ? (totalOrderValueEur >= 1000000
+                ? (totalOrderValueEur/1000000).toFixed(2)+" M€"
+                : totalOrderValueEur.toLocaleString("hu-HU", {maximumFractionDigits:0})+" €")
+              : "0 €"}
+          </div>
+          <div className="text-sm text-emerald-100">{plannedTons.toLocaleString("hu-HU",{maximumFractionDigits:0})} t fennmaradó rendelés</div>
         </div>
       </div>
 

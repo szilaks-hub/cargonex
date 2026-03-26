@@ -4,11 +4,12 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import TruckForm from "@/components/logistics/TruckForm";
 import LogisticsCalendar from "@/components/logistics/LogisticsCalendar";
 import DailyLoadingStats from "@/components/logistics/DailyLoadingStats";
+import LoadingStatsPanel from "@/components/logistics/LoadingStatsPanel";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { List, CalendarDays } from "lucide-react";
+import { List, CalendarDays, BarChart2 } from "lucide-react";
 import { toast } from "sonner";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
@@ -46,7 +47,7 @@ const ROW_BG = {
 export default function Logistics() {
   const [showForm, setShowForm] = useState(false);
   const [editItem, setEditItem] = useState(null);
-  const [view, setView] = useState("list");
+  const [view, setView] = useState("list"); // "list" | "calendar" | "stats"
   const [activeTab, setActiveTab] = useState("booked");
   const qc = useQueryClient();
 
@@ -112,6 +113,12 @@ export default function Logistics() {
             >
               <CalendarDays className="w-4 h-4" /> Naptár
             </button>
+            <button
+              onClick={() => setView("stats")}
+              className={`px-3 py-2 text-sm flex items-center gap-1.5 transition-colors ${view === "stats" ? "bg-blue-600 text-white" : "text-slate-600 hover:bg-slate-50"}`}
+            >
+              <BarChart2 className="w-4 h-4" /> Statisztikák
+            </button>
           </div>
         </div>
       </div>
@@ -157,7 +164,11 @@ export default function Logistics() {
         />
       )}
 
-      {!showForm && <DailyLoadingStats trucks={trucks} />}
+      {!showForm && view !== "stats" && <DailyLoadingStats trucks={trucks} />}
+
+      {view === "stats" && !showForm && (
+        <LoadingStatsPanel trucks={trucks} />
+      )}
 
       {view === "calendar" && !showForm && (
         <LogisticsCalendar
