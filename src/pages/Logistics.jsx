@@ -164,11 +164,9 @@ export default function Logistics() {
         />
       )}
 
-      {!showForm && view !== "stats" && <DailyLoadingStats trucks={trucks} />}
+      {!showForm && view === "stats" && <LoadingStatsPanel trucks={trucks} />}
 
-      {view === "stats" && !showForm && (
-        <LoadingStatsPanel trucks={trucks} />
-      )}
+
 
       {view === "calendar" && !showForm && (
         <LogisticsCalendar
