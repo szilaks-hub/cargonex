@@ -427,7 +427,7 @@ function OrderbooksList({ orders, lines, trucks = [], onSelect, onDelete, isClos
               <th className="py-3 px-4">Dátum</th>
               <th className="py-3 px-4">Incoterms</th>
               <th className="py-3 px-4 text-right">Tervezett (t)</th>
-              <th className="py-3 px-4 text-right">Érték (k EUR)</th>
+              <th className="py-3 px-4 text-right">Érték (EUR)</th>
               <th className="py-3 px-4 text-center">Vám</th>
               <th className="py-3 px-4 text-right"></th>
             </tr>
@@ -484,7 +484,7 @@ function OrderbooksList({ orders, lines, trucks = [], onSelect, onDelete, isClos
                         <div className="text-xs text-slate-400">{allocPct}% allokált</div>
                       )}
                     </td>
-                    <td className="py-3 px-4 text-right text-slate-800">{(valueEUR / 1000).toFixed(1)}</td>
+                    <td className="py-3 px-4 text-right text-slate-800">{valueEUR.toLocaleString("hu-HU", {minimumFractionDigits: 0, maximumFractionDigits: 0})}</td>
                     <td className="py-3 px-4 text-center">
                       {order.customs_required && (
                         <Badge className="bg-orange-100 text-orange-800 text-xs">Igen</Badge>
@@ -563,7 +563,7 @@ function OrderbooksList({ orders, lines, trucks = [], onSelect, onDelete, isClos
                               </div>
                             </div>
                             <div className="text-right text-xs font-semibold text-slate-700 w-24">
-                             {(valueEUR / 1000).toFixed(1)} k EUR
+                             {valueEUR.toLocaleString("hu-HU", {minimumFractionDigits: 0, maximumFractionDigits: 0})} EUR
                             </div>
                             </div>
                             </div>
