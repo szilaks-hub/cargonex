@@ -3,6 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import TruckForm from "@/components/logistics/TruckForm";
 import LogisticsCalendar from "@/components/logistics/LogisticsCalendar";
+import DailyLoadingStats from "@/components/logistics/DailyLoadingStats";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -155,6 +156,8 @@ export default function Logistics() {
           }}
         />
       )}
+
+      {!showForm && <DailyLoadingStats trucks={trucks} />}
 
       {view === "calendar" && !showForm && (
         <LogisticsCalendar
