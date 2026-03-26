@@ -1,15 +1,13 @@
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import PageHeader from "@/components/ui/PageHeader";
 import TruckForm from "@/components/logistics/TruckForm";
-import ShipmentMap from "@/components/logistics/ShipmentMap";
-import ShipmentStats from "@/components/logistics/ShipmentStats";
+import LogisticsCalendar from "@/components/logistics/LogisticsCalendar";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Map, List } from "lucide-react";
+import { List, CalendarDays } from "lucide-react";
 import { toast } from "sonner";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
@@ -93,12 +91,28 @@ export default function Logistics() {
           <h1 className="text-2xl font-bold text-slate-900">Logistics / Logisztika</h1>
           <p className="text-sm text-slate-500 mt-1">Truck scheduling and loading / Kamionok ütemezés és rakodás</p>
         </div>
-        <Button 
-          onClick={() => { setEditItem(null); setShowForm(true); }}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-6"
-        >
-          + New Truck / Új kamion
-        </Button>
+        <div className="flex items-center justify-center gap-2">
+          <Button
+            onClick={() => { setEditItem(null); setShowForm(true); }}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-6"
+          >
+            + New Truck / Új kamion
+          </Button>
+          <div className="flex border border-slate-200 rounded-lg overflow-hidden bg-white">
+            <button
+              onClick={() => setView("list")}
+              className={`px-3 py-2 text-sm flex items-center gap-1.5 transition-colors ${view === "list" ? "bg-blue-600 text-white" : "text-slate-600 hover:bg-slate-50"}`}
+            >
+              <List className="w-4 h-4" /> Lista
+            </button>
+            <button
+              onClick={() => setView("calendar")}
+              className={`px-3 py-2 text-sm flex items-center gap-1.5 transition-colors ${view === "calendar" ? "bg-blue-600 text-white" : "text-slate-600 hover:bg-slate-50"}`}
+            >
+              <CalendarDays className="w-4 h-4" /> Naptár
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* Transit Statistics */}
@@ -142,22 +156,20 @@ export default function Logistics() {
         />
       )}
 
-      {view === "map" ? (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          <div className="lg:col-span-2">
-            <ShipmentMap trucks={trucks} />
-          </div>
-          <div className="lg:col-span-1">
-            <ShipmentStats trucks={trucks} />
-          </div>
-        </div>
-      ) : (
+      {view === "calendar" && !showForm && (
+        <LogisticsCalendar
+          trucks={trucks}
+          onEdit={(r) => { setEditItem(r); setShowForm(true); }}
+        />
+      )}
+
+      {view === "list" && !showForm && (
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="bg-white border border-slate-200 p-1 rounded-lg">
             {STATUS_TABS.map(t => (
-              <TabsTrigger 
-                key={t.key} 
-                value={t.key} 
+              <TabsTrigger
+                key={t.key}
+                value={t.key}
                 className="text-sm data-[state=active]:bg-blue-600 data-[state=active]:text-white rounded-md px-4"
               >
                 {t.label}
