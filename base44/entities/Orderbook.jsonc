@@ -1,0 +1,163 @@
+{
+  "name": "Orderbook",
+  "type": "object",
+  "properties": {
+    "order_no": {
+      "type": "string",
+      "description": "Auto-generated order number"
+    },
+    "system_order_no": {
+      "type": "string",
+      "description": "User-defined system order number"
+    },
+    "supplier_order_no": {
+      "type": "string",
+      "description": "Supplier's own order/contract number"
+    },
+    "supplier_id": {
+      "type": "string",
+      "description": "Reference to Partner (supplier)"
+    },
+    "supplier_name": {
+      "type": "string"
+    },
+    "supplier_site_id": {
+      "type": "string",
+      "description": "Reference to PartnerLocation"
+    },
+    "supplier_site_name": {
+      "type": "string"
+    },
+    "order_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "currency": {
+      "type": "string",
+      "enum": [
+        "EUR",
+        "HUF",
+        "USD"
+      ],
+      "default": "EUR"
+    },
+    "incoterms_type": {
+      "type": "string",
+      "enum": [
+        "EXW",
+        "FCA",
+        "CPT",
+        "CIP",
+        "DAP",
+        "DPU",
+        "DDP",
+        "FAS",
+        "FOB",
+        "CFR",
+        "CIF"
+      ]
+    },
+    "incoterms_place": {
+      "type": "string"
+    },
+    "payment_terms": {
+      "type": "string"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "sort_order": {
+      "type": "number",
+      "description": "Manual sort order for display"
+    },
+    "row_color": {
+      "type": "string",
+      "description": "Highlight color for this row in the list (hex or tailwind key)"
+    },
+    "destination_countries": {
+      "type": "array",
+      "description": "Multiple destination countries (ISO 2-letter codes)",
+      "items": {
+        "type": "string"
+      }
+    },
+    "carrier_assignments": {
+      "type": "array",
+      "description": "Preferred carrier per destination country: [{country, carrier_id, carrier_name}]",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    },
+    "preferred_carrier_id": {
+      "type": "string",
+      "description": "Legacy single preferred carrier id"
+    },
+    "preferred_carrier_name": {
+      "type": "string"
+    },
+    "destination_country": {
+      "type": "string",
+      "description": "Legacy single destination country"
+    },
+    "customs_required": {
+      "type": "boolean",
+      "default": false
+    },
+    "customs_agent_id": {
+      "type": "string",
+      "description": "Reference to Partner with role customs_agent"
+    },
+    "customs_agent_name": {
+      "type": "string"
+    },
+    "customs_fee_eur_per_truck": {
+      "type": "number",
+      "description": "Customs fee EUR per truck (not per ton)"
+    },
+    "other_fees": {
+      "type": "array",
+      "description": "Array of fee objects: {name, fee_eur_per_truck}",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "open",
+        "closed"
+      ],
+      "default": "draft"
+    },
+    "total_planned_tons": {
+      "type": "number",
+      "default": 0
+    },
+    "total_allocated_tons": {
+      "type": "number",
+      "default": 0
+    },
+    "total_value_eur": {
+      "type": "number",
+      "default": 0
+    },
+    "closed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "closed_by": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "supplier_id",
+    "supplier_site_id",
+    "order_date",
+    "currency",
+    "incoterms_type",
+    "customs_required"
+  ]
+}

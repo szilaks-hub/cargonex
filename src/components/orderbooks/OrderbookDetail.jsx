@@ -380,7 +380,13 @@ export default function OrderbookDetail({ orderId, onClose, onUpdated, trucks = 
               </div>
               <div>
                 <label className="text-xs font-medium text-slate-600 mb-1 block">Rendszer rendelésszám</label>
-                <div className="px-3 py-2 bg-slate-100 rounded border border-slate-200 text-slate-700 font-mono text-sm">{form.order_no || '—'}</div>
+                <Input
+                  placeholder="pl. CNX-2024-001"
+                  value={form.system_order_no || ""}
+                  onChange={(e) => handleFormChange({ system_order_no: e.target.value })}
+                  disabled={!isEditable}
+                  className={`font-semibold ${!isEditable ? 'bg-slate-100 text-slate-600' : 'bg-white'}`}
+                />
               </div>
             </div>
             
