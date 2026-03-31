@@ -467,10 +467,12 @@ function OrderbooksList({ orders, lines, trucks = [], onSelect, onDelete, isClos
                       </div>
                     </td>
                     <td className="py-3 px-4">
-                      <div className="text-lg font-extrabold text-slate-900 leading-tight">
+                      <div className="text-base font-extrabold text-slate-900 leading-tight">
                         {order.supplier_order_no || <span className="text-slate-400 font-normal italic text-sm">—</span>}
                       </div>
-                      <div className="text-[10px] text-slate-400 font-mono mt-0.5">{order.order_no}</div>
+                      <div className="text-xs text-slate-500 font-mono mt-0.5">
+                        <span className="text-slate-400">Rendszer: </span>{order.order_no}
+                      </div>
                     </td>
                     <td className="py-3 px-4 text-slate-700">
                       <div className="font-medium">{order.supplier_name}</div>

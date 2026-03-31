@@ -366,16 +366,22 @@ export default function OrderbookDetail({ orderId, onClose, onUpdated, trucks = 
           <div className="space-y-4 p-4 bg-slate-50 rounded-lg border border-slate-200">
             <h3 className="font-semibold text-slate-800">Order Details</h3>
 
-            {/* Supplier Order Number */}
-            <div>
-              <label className="text-xs font-medium text-slate-600 mb-1 block">Beszállítói rendelésszám *</label>
-              <Input
-                placeholder="pl. SZ-2024-001 (a beszállító saját száma)"
-                value={form.supplier_order_no || ""}
-                onChange={(e) => handleFormChange({ supplier_order_no: e.target.value })}
-                disabled={!isEditable}
-                className={`font-semibold ${!isEditable ? 'bg-slate-100 text-slate-600' : 'bg-white'}`}
-              />
+            {/* Order Numbers */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="text-xs font-medium text-slate-600 mb-1 block">Beszállítói rendelésszám *</label>
+                <Input
+                  placeholder="pl. SZ-2024-001 (a beszállító saját száma)"
+                  value={form.supplier_order_no || ""}
+                  onChange={(e) => handleFormChange({ supplier_order_no: e.target.value })}
+                  disabled={!isEditable}
+                  className={`font-semibold ${!isEditable ? 'bg-slate-100 text-slate-600' : 'bg-white'}`}
+                />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-slate-600 mb-1 block">Rendszer rendelésszám</label>
+                <div className="px-3 py-2 bg-slate-100 rounded border border-slate-200 text-slate-700 font-mono text-sm">{form.order_no || '—'}</div>
+              </div>
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -456,29 +462,7 @@ export default function OrderbookDetail({ orderId, onClose, onUpdated, trucks = 
                 )}
               </div>
 
-              {/* Incoterms Place */}
-              <div>
-                <label className="text-xs font-medium text-slate-600 mb-1 block">Incoterms Place</label>
-                <Input
-                  placeholder="e.g., Budapest"
-                  value={form.incoterms_place || ""}
-                  onChange={(e) => handleFormChange({ incoterms_place: e.target.value })}
-                  disabled={!isEditable}
-                  className={!isEditable ? 'bg-slate-100 text-slate-600' : 'bg-white'}
-                />
-              </div>
 
-              {/* Payment Terms */}
-              <div>
-                <label className="text-xs font-medium text-slate-600 mb-1 block">Payment Terms</label>
-                <Input
-                  placeholder="e.g., Net 30"
-                  value={form.payment_terms || ""}
-                  onChange={(e) => handleFormChange({ payment_terms: e.target.value })}
-                  disabled={!isEditable}
-                  className={!isEditable ? 'bg-slate-100 text-slate-600' : 'bg-white'}
-                />
-              </div>
             </div>
 
             {/* Destination Countries + Carrier Assignments */}
@@ -662,8 +646,8 @@ export default function OrderbookDetail({ orderId, onClose, onUpdated, trucks = 
                       {categories.filter(c => c.status === 'active').map(c => (<SelectItem key={c.id} value={c.id}>{c.name_en || c.name_hu}</SelectItem>))}
                     </SelectContent>
                   </Select>
-                  <Input type="number" placeholder="Qty (t)" step="0.01" value={newLineForm.planned_quantity_tons || ""} onChange={(e) => setNewLineForm({ ...newLineForm, planned_quantity_tons: e.target.value })} className="text-sm" />
-                  <Input type="number" placeholder="Price (EUR/t)" step="0.01" value={newLineForm.unit_price_eur_per_ton || ""} onChange={(e) => setNewLineForm({ ...newLineForm, unit_price_eur_per_ton: e.target.value })} className="text-sm" />
+                  <Input type="number" placeholder="Qty (t)" step="0.01" value={newLineForm.planned_quantity_tons || ""} onChange={(e) => setNewLineForm({ ...newLineForm, planned_quantity_tons: e.target.value })} className="text-sm [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
+                  <Input type="number" placeholder="Price (EUR/t)" step="0.01" value={newLineForm.unit_price_eur_per_ton || ""} onChange={(e) => setNewLineForm({ ...newLineForm, unit_price_eur_per_ton: e.target.value })} className="text-sm [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
                   <Input type="text" placeholder="Notes" value={newLineForm.notes || ""} onChange={(e) => setNewLineForm({ ...newLineForm, notes: e.target.value })} className="text-sm md:col-span-2" />
                   <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white" onClick={handleAddLine}>Add</Button>
                 </div>
@@ -922,8 +906,8 @@ function LineRow({ line, categories, isEditing, isEditable, onUpdate, onDelete, 
         <td colSpan="7" className="py-3 px-3">
           <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
             <Input disabled value={category?.name_en || category?.name_hu || ''} className="text-sm bg-white" />
-            <Input type="number" placeholder="Qty (t)" step="0.01" value={form.planned_quantity_tons} onChange={(e) => setForm({ ...form, planned_quantity_tons: parseFloat(e.target.value) || 0 })} className="text-sm bg-white" />
-            <Input type="number" placeholder="Price (EUR/t)" step="0.01" value={form.unit_price_eur_per_ton} onChange={(e) => setForm({ ...form, unit_price_eur_per_ton: parseFloat(e.target.value) || 0 })} className="text-sm bg-white" />
+            <Input type="number" placeholder="Qty (t)" step="0.01" value={form.planned_quantity_tons} onChange={(e) => setForm({ ...form, planned_quantity_tons: parseFloat(e.target.value) || 0 })} className="text-sm bg-white [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
+            <Input type="number" placeholder="Price (EUR/t)" step="0.01" value={form.unit_price_eur_per_ton} onChange={(e) => setForm({ ...form, unit_price_eur_per_ton: parseFloat(e.target.value) || 0 })} className="text-sm bg-white [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
             <Input type="text" placeholder="Notes" value={form.notes || ''} onChange={(e) => setForm({ ...form, notes: e.target.value })} className="text-sm bg-white md:col-span-2" />
             <div className="flex gap-1">
               <Button size="sm" variant="outline" onClick={() => onEditToggle(null)}>Cancel</Button>
