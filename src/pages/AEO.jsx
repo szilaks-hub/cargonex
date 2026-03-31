@@ -1,4 +1,5 @@
 import React, { useState, useRef } from "react";
+import { CheckCircle, AlertTriangle, Minus } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -7,6 +8,7 @@ import { FileText, Printer, Shield, Upload, X } from "lucide-react";
 
 export default function AEO() {
   const [activeSection, setActiveSection] = useState("audit");
+  const [mrnFilter, setMrnFilter] = useState("");
 
   return (
     <div className="space-y-6">
@@ -33,9 +35,21 @@ export default function AEO() {
           <FileText className="w-4 h-4" />
           Audit Jelentés
         </button>
+        <button
+          onClick={() => setActiveSection("mrn")}
+          className={`flex items-center gap-2 px-4 py-2.5 text-sm font-semibold rounded-t-lg border-b-2 transition-colors ${
+            activeSection === "mrn"
+              ? "border-blue-600 text-blue-700 bg-blue-50"
+              : "border-transparent text-slate-500 hover:text-slate-700"
+          }`}
+        >
+          <Shield className="w-4 h-4" />
+          MRN – Számla kimutatás
+        </button>
       </div>
 
       {activeSection === "audit" && <AuditJelentes />}
+      {activeSection === "mrn" && <MrnSzamlaKimutatas />}
     </div>
   );
 }
@@ -327,6 +341,155 @@ function AuditJelentes() {
           tr { page-break-inside: avoid; }
         }
       `}</style>
+    </div>
+  );
+}
+
+function MrnSzamlaKimutatas() {
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
+  const [search, setSearch] = useState("");
+
+  const { data: trucks = [] } = useQuery({
+    queryKey: ["trucks"],
+    queryFn: () => base44.entities.Truck.list(),
+  });
+
+  // Filter: finance_control or closed, with MRN
+  const relevant = trucks.filter(t => {
+    if (!["finance_control", "closed", "loaded"].includes(t.status)) return false;
+    const date = t.mrn_date || t.loading_date || t.actual_loading_date || "";
+    if (fromDate && date < fromDate) return false;
+    if (toDate && date > toDate) return false;
+    if (search) {
+      const s = search.toLowerCase();
+      if (
+        !(t.mrn_number || "").toLowerCase().includes(s) &&
+        !(t.supplier_invoice_number || "").toLowerCase().includes(s) &&
+        !(t.freight_invoice_number || "").toLowerCase().includes(s) &&
+        !(t.truck_number || "").toLowerCase().includes(s)
+      ) return false;
+    }
+    return true;
+  });
+
+  // Totals
+  const totalMrnDeclared = relevant.reduce((s, t) => s + (t.mrn_declared_amount || 0), 0);
+  const totalVat = relevant.reduce((s, t) => s + (t.declared_vat || 0), 0);
+  const totalBase = relevant.reduce((s, t) => s + (t.total_base || 0), 0);
+
+  const fmt = (n) => n ? Number(n).toLocaleString("hu-HU") : "—";
+
+  const getMatch = (t) => {
+    const declared = t.mrn_declared_amount;
+    const calculated = t.total_base;
+    if (!declared || !calculated) return "missing";
+    const diff = Math.abs(declared - calculated);
+    if (diff < 1) return "match";
+    if (diff / calculated < 0.01) return "close";
+    return "diff";
+  };
+
+  return (
+    <div className="space-y-5">
+      {/* Filters */}
+      <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+        <h3 className="font-bold text-slate-700 mb-4">Szűrők</h3>
+        <div className="flex flex-wrap gap-4 items-end">
+          <div>
+            <label className="text-xs font-semibold text-slate-600 block mb-1">Időszak (-tól)</label>
+            <input type="date" value={fromDate} onChange={e => setFromDate(e.target.value)} className="border border-slate-300 rounded-lg px-3 py-1.5 text-sm" />
+          </div>
+          <div>
+            <label className="text-xs font-semibold text-slate-600 block mb-1">Időszak (-ig)</label>
+            <input type="date" value={toDate} onChange={e => setToDate(e.target.value)} className="border border-slate-300 rounded-lg px-3 py-1.5 text-sm" />
+          </div>
+          <div className="flex-1 min-w-48">
+            <label className="text-xs font-semibold text-slate-600 block mb-1">Keresés (rendszám, MRN, számla)</label>
+            <input type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder="Szűrés..." className="border border-slate-300 rounded-lg px-3 py-1.5 text-sm w-full" />
+          </div>
+        </div>
+      </div>
+
+      {/* Summary KPI cards */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
+          <div className="text-xs text-slate-500 font-semibold mb-1">Tételek száma</div>
+          <div className="text-2xl font-extrabold text-slate-900">{relevant.length}</div>
+        </div>
+        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
+          <div className="text-xs text-slate-500 font-semibold mb-1">MRN megállapított összeg (HUF)</div>
+          <div className="text-lg font-extrabold text-blue-700">{fmt(totalMrnDeclared)}</div>
+        </div>
+        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
+          <div className="text-xs text-slate-500 font-semibold mb-1">Tájékoztató ÁFA (HUF)</div>
+          <div className="text-lg font-extrabold text-indigo-700">{fmt(totalVat)}</div>
+        </div>
+        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
+          <div className="text-xs text-slate-500 font-semibold mb-1">Végösszeg alap (HUF)</div>
+          <div className="text-lg font-extrabold text-slate-900">{fmt(totalBase)}</div>
+        </div>
+      </div>
+
+      {/* Table */}
+      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-x-auto">
+        <table className="w-full text-xs">
+          <thead>
+            <tr className="bg-slate-800 text-white">
+              <th className="px-3 py-2.5 text-left font-semibold">#</th>
+              <th className="px-3 py-2.5 text-left font-semibold">Rendszám</th>
+              <th className="px-3 py-2.5 text-left font-semibold">Dátum</th>
+              <th className="px-3 py-2.5 text-left font-semibold">MRN szám</th>
+              <th className="px-3 py-2.5 text-left font-semibold">MRN dátum</th>
+              <th className="px-3 py-2.5 text-left font-semibold">Eladó számla</th>
+              <th className="px-3 py-2.5 text-left font-semibold">Fuvarszámla</th>
+              <th className="px-3 py-2.5 text-right font-semibold">Végösszeg alap (HUF)</th>
+              <th className="px-3 py-2.5 text-right font-semibold">MRN megállapított (HUF)</th>
+              <th className="px-3 py-2.5 text-right font-semibold">Táj. ÁFA (HUF)</th>
+              <th className="px-3 py-2.5 text-center font-semibold">Egyezés</th>
+            </tr>
+          </thead>
+          <tbody>
+            {relevant.length === 0 && (
+              <tr><td colSpan="11" className="px-4 py-8 text-center text-slate-400">Nincs megjeleníthető tétel</td></tr>
+            )}
+            {relevant.map((t, i) => {
+              const match = getMatch(t);
+              return (
+                <tr key={t.id} className={`border-b border-slate-100 ${i % 2 === 0 ? "bg-white" : "bg-slate-50"} hover:bg-blue-50 transition-colors`}>
+                  <td className="px-3 py-2 text-slate-400">{i + 1}</td>
+                  <td className="px-3 py-2 font-bold text-slate-900">{t.truck_number || "—"}</td>
+                  <td className="px-3 py-2 text-slate-600">{t.loading_date || t.actual_loading_date || "—"}</td>
+                  <td className="px-3 py-2 font-mono font-semibold text-slate-800">{t.mrn_number || "—"}</td>
+                  <td className="px-3 py-2 text-slate-600">{t.mrn_date || "—"}</td>
+                  <td className="px-3 py-2 text-slate-700">{t.supplier_invoice_number || "—"}</td>
+                  <td className="px-3 py-2 text-slate-700">{t.freight_invoice_number || "—"}</td>
+                  <td className="px-3 py-2 text-right font-semibold">{fmt(t.total_base)}</td>
+                  <td className="px-3 py-2 text-right font-semibold text-blue-700">{fmt(t.mrn_declared_amount)}</td>
+                  <td className="px-3 py-2 text-right text-indigo-700">{fmt(t.declared_vat)}</td>
+                  <td className="px-3 py-2 text-center">
+                    {match === "match" && <span className="inline-flex items-center gap-1 text-green-600 font-semibold"><CheckCircle className="w-3.5 h-3.5" /> Egyezik</span>}
+                    {match === "close" && <span className="inline-flex items-center gap-1 text-amber-600 font-semibold"><AlertTriangle className="w-3.5 h-3.5" /> Közel</span>}
+                    {match === "diff" && <span className="inline-flex items-center gap-1 text-red-600 font-semibold"><AlertTriangle className="w-3.5 h-3.5" /> Eltérés</span>}
+                    {match === "missing" && <span className="inline-flex items-center gap-1 text-slate-400"><Minus className="w-3.5 h-3.5" /> N/A</span>}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+          {relevant.length > 0 && (
+            <tfoot>
+              <tr className="bg-slate-800 text-white font-bold">
+                <td colSpan="7" className="px-3 py-2.5">Összesen ({relevant.length} tétel)</td>
+                <td className="px-3 py-2.5 text-right">{fmt(totalBase)}</td>
+                <td className="px-3 py-2.5 text-right">{fmt(totalMrnDeclared)}</td>
+                <td className="px-3 py-2.5 text-right">{fmt(totalVat)}</td>
+                <td className="px-3 py-2.5"></td>
+              </tr>
+            </tfoot>
+          )}
+        </table>
+      </div>
     </div>
   );
 }
