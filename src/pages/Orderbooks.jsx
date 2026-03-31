@@ -425,10 +425,11 @@ function OrderbooksList({ orders, lines, trucks = [], onSelect, onDelete, isClos
               <th className="py-3 px-4">Bész. rendelésszám</th>
               <th className="py-3 px-4">Beszállító</th>
               <th className="py-3 px-4">Dátum</th>
-              <th className="py-3 px-4">Incoterms</th>
-              <th className="py-3 px-4 text-right">Tervezett (t)</th>
+              <th className="py-3 px-4 text-right">Rendelve (t)</th>
               <th className="py-3 px-4 text-right">Érték (EUR)</th>
-              <th className="py-3 px-4 text-center">Vám</th>
+              <th className="py-3 px-4 text-right">Tervezett (t)</th>
+              <th className="py-3 px-4 text-right">Megrakott (t)</th>
+              <th className="py-3 px-4 text-right">Felrakható (t)</th>
               <th className="py-3 px-4 text-right"></th>
             </tr>
           </thead>
@@ -439,6 +440,14 @@ function OrderbooksList({ orders, lines, trucks = [], onSelect, onDelete, isClos
               const allocatedTons = orderLines.reduce((s, l) => s + (l.allocated_quantity_tons || 0), 0);
               const valueEUR = orderLines.reduce((s, l) => s + (l.line_value_eur || 0), 0);
               const isExpanded = expandedId === order.id;
+              const orderTrucksAll = trucks.filter(t => t.orderbook_id === order.id && t.status !== 'cancelled');
+              const megrakottTons = orderTrucksAll
+                .filter(t => ['loaded', 'finance_control', 'closed'].includes(t.status))
+                .reduce((s, t) => s + (t.actual_weight_tons || t.planned_quantity_tons || 0), 0);
+              const tervezettTons = orderTrucksAll
+                .filter(t => t.status === 'booked')
+                .reduce((s, t) => s + (t.planned_quantity_tons || 0), 0);
+              const felrakhatoTons = Math.max(0, plannedTons - megrakottTons - tervezettTons);
               const remainingTons = plannedTons - allocatedTons;
               const allocPct = plannedTons > 0 ? Math.round((allocatedTons / plannedTons) * 100) : 0;
               const colorDef = ROW_COLORS.find(r => r.key === order.row_color) || ROW_COLORS[0];
@@ -479,18 +488,25 @@ function OrderbooksList({ orders, lines, trucks = [], onSelect, onDelete, isClos
                       <div className="text-xs text-slate-500">{order.supplier_site_name}</div>
                     </td>
                     <td className="py-3 px-4 text-slate-600">{order.order_date}</td>
-                    <td className="py-3 px-4 text-slate-600">{order.incoterms_type}</td>
                     <td className="py-3 px-4 text-right">
-                      <div className="font-semibold text-slate-800">{plannedTons.toLocaleString("hu-HU", {maximumFractionDigits: 2})}</div>
-                      {plannedTons > 0 && (
-                        <div className="text-xs text-slate-400">{allocPct}% allokált</div>
-                      )}
+                      <div className="font-bold text-slate-900">{plannedTons.toLocaleString("hu-HU", {maximumFractionDigits: 0})}</div>
+                      <div className="text-[10px] text-slate-400">t</div>
                     </td>
-                    <td className="py-3 px-4 text-right text-slate-800">{valueEUR.toLocaleString("hu-HU", {minimumFractionDigits: 0, maximumFractionDigits: 0})}</td>
-                    <td className="py-3 px-4 text-center">
-                      {order.customs_required && (
-                        <Badge className="bg-orange-100 text-orange-800 text-xs">Igen</Badge>
-                      )}
+                    <td className="py-3 px-4 text-right">
+                      <div className="font-semibold text-slate-800">{valueEUR.toLocaleString("hu-HU", {minimumFractionDigits: 0, maximumFractionDigits: 0})}</div>
+                      <div className="text-[10px] text-slate-400">EUR</div>
+                    </td>
+                    <td className="py-3 px-4 text-right">
+                      <div className="font-semibold text-blue-700">{tervezettTons.toLocaleString("hu-HU", {maximumFractionDigits: 0})}</div>
+                      <div className="text-[10px] text-slate-400">t</div>
+                    </td>
+                    <td className="py-3 px-4 text-right">
+                      <div className="font-semibold text-emerald-700">{megrakottTons.toLocaleString("hu-HU", {maximumFractionDigits: 0})}</div>
+                      <div className="text-[10px] text-slate-400">t</div>
+                    </td>
+                    <td className="py-3 px-4 text-right">
+                      <div className={`font-bold ${felrakhatoTons > 0 ? 'text-amber-600' : 'text-slate-400'}`}>{felrakhatoTons.toLocaleString("hu-HU", {maximumFractionDigits: 0})}</div>
+                      <div className="text-[10px] text-slate-400">t</div>
                     </td>
                     <td className="py-3 px-4 text-right">
                       <div className="flex items-center justify-end gap-1">
