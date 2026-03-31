@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Plus, Eye, ChevronDown, GripVertical, Filter, X, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import OrderbookDetail from "@/components/orderbooks/OrderbookDetail";
+import TruckForm from "@/components/logistics/TruckForm";
 import OrderbooksMasterSummary from "@/components/orderbooks/OrderbooksMasterSummary";
 import OrderbookFamilyTree from "@/components/orderbooks/OrderbookFamilyTree";
 import PageHeader from "@/components/ui/PageHeader";
@@ -21,6 +22,7 @@ import {
 
 export default function OrderbooksPage() {
   const [selectedOrderId, setSelectedOrderId] = useState(null);
+  const [selectedTruck, setSelectedTruck] = useState(null);
   const [activeTab, setActiveTab] = useState("open");
   const [selectedSupplier, setSelectedSupplier] = useState("all");
   const [selectedCategory, setSelectedCategory] = useState("all");
@@ -300,11 +302,11 @@ export default function OrderbooksPage() {
               </Card>
             </div>
           )}
-          <OrderbooksList orders={openOrders} lines={lines} trucks={trucks} onSelect={setSelectedOrderId} onDelete={() => qc.invalidateQueries({ queryKey: ['orderbooks'] })} />
+            <OrderbooksList orders={openOrders} lines={lines} trucks={trucks} onSelect={setSelectedOrderId} onDelete={() => qc.invalidateQueries({ queryKey: ['orderbooks'] })} onTruckClick={setSelectedTruck} />
         </TabsContent>
 
         <TabsContent value="closed" className="mt-4">
-          <OrderbooksList orders={closedOrders} lines={lines} trucks={trucks} onSelect={setSelectedOrderId} isClosed />
+          <OrderbooksList orders={closedOrders} lines={lines} trucks={trucks} onSelect={setSelectedOrderId} isClosed onTruckClick={setSelectedTruck} />
         </TabsContent>
 
         <TabsContent value="summary" className="mt-4">
@@ -322,6 +324,19 @@ export default function OrderbooksPage() {
           onClose={() => setSelectedOrderId(null)}
           onUpdated={() => qc.invalidateQueries({ queryKey: ['orderbooks'] })}
           trucks={trucks}
+        />
+      )}
+
+      {selectedTruck && (
+        <TruckForm
+          item={selectedTruck}
+          onClose={() => setSelectedTruck(null)}
+          onSaved={() => {
+            qc.invalidateQueries({ queryKey: ['trucks'] });
+            qc.invalidateQueries({ queryKey: ['orderbooks'] });
+            qc.invalidateQueries({ queryKey: ['orderbook-lines'] });
+            setSelectedTruck(null);
+          }}
         />
       )}
     </div>
@@ -374,7 +389,7 @@ function ColorDot({ colorKey, onClick }) {
   );
 }
 
-function OrderbooksList({ orders, lines, trucks = [], onSelect, onDelete, isClosed }) {
+function OrderbooksList({ orders, lines, trucks = [], onSelect, onDelete, isClosed, onTruckClick }) {
   const [expandedId, setExpandedId] = useState(null);
   const [sortedOrders, setSortedOrders] = useState(null);
   const [dragIdx, setDragIdx] = useState(null);
@@ -597,7 +612,7 @@ function OrderbooksList({ orders, lines, trucks = [], onSelect, onDelete, isClos
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
                                   {orderTrucks.map(t => (
-                                    <div key={t.id} className="bg-white rounded-lg border border-slate-200 p-2.5 text-xs">
+                                    <div key={t.id} className="bg-white rounded-lg border border-slate-200 p-2.5 text-xs cursor-pointer hover:border-blue-400 hover:shadow-md transition-all" onClick={() => onTruckClick && onTruckClick(t)}>
                                       <div className="flex items-center justify-between mb-1">
                                         <span className="font-bold text-slate-800">{t.truck_number || '\u2014'}</span>
                                         <Badge className={
