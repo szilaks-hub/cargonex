@@ -687,6 +687,10 @@ export default function TruckForm({ item, onClose, onSaved, defaultOrderbookId, 
               <Input type="number" className={inp} value={form.customs_agent_fee} onChange={(e) => set("customs_agent_fee", e.target.value)} placeholder="Auto-kitöltés" />
             </div>
             <div>
+              <Label className={lbl}>Eladó számlaszáma</Label>
+              <Input className={inp} value={form.supplier_invoice_number || ""} onChange={(e) => set("supplier_invoice_number", e.target.value)} placeholder="Szállítói számla száma" />
+            </div>
+            <div>
               <Label className={lbl}>MRN szám</Label>
               <Input className={inp} value={form.mrn_number || ""} onChange={(e) => set("mrn_number", e.target.value)} />
             </div>
