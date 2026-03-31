@@ -49,6 +49,8 @@ export default function Logistics() {
   const [editItem, setEditItem] = useState(null);
   const [view, setView] = useState("list"); // "list" | "calendar" | "stats"
   const [activeTab, setActiveTab] = useState("booked");
+  const [carrierFilter, setCarrierFilter] = useState("");
+  const [destinationFilter, setDestinationFilter] = useState("");
   const qc = useQueryClient();
 
   const { data: trucks = [], isLoading } = useQuery({
@@ -75,7 +77,22 @@ export default function Logistics() {
     qc.invalidateQueries({ queryKey: ["trucks"] });
   };
 
-  const filteredTrucks = trucks.filter(t => t.status === activeTab);
+  const tabTrucks = trucks.filter(t => t.status === activeTab);
+
+  // Unique carriers and destinations for filter dropdowns
+  const allCarriers = [...new Set(trucks.filter(t => t.carrier_name).map(t => t.carrier_name))].sort();
+  const allDestinations = [...new Set(trucks.filter(t => t.destination_country).map(t =>
+    t.destination_city ? `${t.destination_country} · ${t.destination_city}` : t.destination_country
+  ))].sort();
+
+  const filteredTrucks = tabTrucks.filter(t => {
+    if (carrierFilter && t.carrier_name !== carrierFilter) return false;
+    if (destinationFilter) {
+      const dest = t.destination_city ? `${t.destination_country} · ${t.destination_city}` : t.destination_country;
+      if (dest !== destinationFilter) return false;
+    }
+    return true;
+  });
   
   const transitTrucks = trucks.filter(t => t.transit && ["booked", "loaded"].includes(t.status));
   const totalActiveTrucks = trucks.filter(t => ["booked", "loaded"].includes(t.status)).length;
@@ -192,8 +209,41 @@ export default function Logistics() {
             ))}
           </TabsList>
 
+          {/* Filters */}
+          <div className="flex flex-wrap gap-3 my-3">
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-semibold text-slate-500">Fuvarozó:</span>
+              <Select value={carrierFilter || "__all"} onValueChange={v => setCarrierFilter(v === "__all" ? "" : v)}>
+                <SelectTrigger className="h-8 w-48 text-sm bg-white">
+                  <SelectValue placeholder="Mind" />
+                </SelectTrigger>
+                <SelectContent className="bg-white">
+                  <SelectItem value="__all">Mind</SelectItem>
+                  {allCarriers.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-semibold text-slate-500">Célállomás:</span>
+              <Select value={destinationFilter || "__all"} onValueChange={v => setDestinationFilter(v === "__all" ? "" : v)}>
+                <SelectTrigger className="h-8 w-52 text-sm bg-white">
+                  <SelectValue placeholder="Mind" />
+                </SelectTrigger>
+                <SelectContent className="bg-white">
+                  <SelectItem value="__all">Mind</SelectItem>
+                  {allDestinations.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            {(carrierFilter || destinationFilter) && (
+              <button onClick={() => { setCarrierFilter(""); setDestinationFilter(""); }} className="text-xs text-blue-600 hover:underline">
+                Szűrők törlése
+              </button>
+            )}
+          </div>
+
           {STATUS_TABS.map(t => (
-            <TabsContent key={t.key} value={t.key} className="mt-4">
+            <TabsContent key={t.key} value={t.key} className="mt-2">
               <TruckTable
                 trucks={filteredTrucks}
                 isLoading={isLoading}
@@ -248,7 +298,8 @@ function TruckTable({ trucks, isLoading, onEdit, onAdvance, statusLabels, status
                   </td>
                   <td className="py-2 px-3 text-slate-600 whitespace-nowrap">{r.expected_loading_date || r.loading_date || "—"}</td>
                   <td className="py-2 px-3 whitespace-nowrap">
-                    <span className="text-xs font-medium text-blue-700">{r.orderbook_no || "—"}</span>
+                    <div className="text-xs font-medium text-blue-700">{r.orderbook_no || "—"}</div>
+                    {r.order_number && <div className="text-[10px] text-slate-400">{r.order_number}</div>}
                   </td>
                   <td className="py-2 px-3 text-slate-700 max-w-[9rem] truncate">{r.product_name || "—"}</td>
                   <td className="py-2 px-3 text-right font-semibold text-slate-800 whitespace-nowrap">{r.planned_quantity_tons?.toFixed(2) || "—"}</td>
