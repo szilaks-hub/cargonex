@@ -593,7 +593,7 @@ function OrderbooksList({ orders, lines, trucks = [], onSelect, onDelete, isClos
                             return (
                               <div className="space-y-2 pt-3 border-t border-slate-200">
                                 <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
-                                  \uD83D\uDE9B El\u0151jegyzett kamionok ({orderTrucks.length})
+                                  Előjegyzett kamionok ({orderTrucks.length})
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
                                   {orderTrucks.map(t => (
@@ -612,10 +612,10 @@ function OrderbooksList({ orders, lines, trucks = [], onSelect, onDelete, isClos
                                         </Badge>
                                       </div>
                                       <div className="text-slate-600 space-y-0.5">
-                                        <div>\uD83D\uDCE6 {t.planned_quantity_tons || 0} t</div>
-                                        <div>\uD83D\uDE9A {t.carrier_name || '\u2014'}</div>
-                                        <div>\uD83D\uDCC5 {t.expected_loading_date || t.loading_date || '\u2014'}</div>
-                                        {t.destination_city && <div>\uD83D\uDCCD {t.destination_country} &middot; {t.destination_city}</div>}
+                                        <div><span className="text-slate-400">Mennyiség:</span> {t.planned_quantity_tons || 0} t</div>
+                                        <div><span className="text-slate-400">Fuvarozó:</span> {t.carrier_name || '—'}</div>
+                                        <div><span className="text-slate-400">Dátum:</span> {t.expected_loading_date || t.loading_date || '—'}</div>
+                                        {t.destination_city && <div><span className="text-slate-400">Cél:</span> {t.destination_country} · {t.destination_city}</div>}
                                       </div>
                                     </div>
                                   ))}
