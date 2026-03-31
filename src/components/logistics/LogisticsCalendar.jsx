@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQueryClient } from "@tanstack/react-query";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
 import { ChevronLeft, ChevronRight, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -330,14 +331,35 @@ export default function LogisticsCalendar({ trucks, onEdit }) {
       {/* Weekday averages summary */}
       <div className="bg-white border border-slate-200 rounded-xl p-3 shadow-sm">
         <div className="text-xs font-semibold text-slate-500 mb-2">Hétköznapi átlag (összes adat alapján)</div>
-        <div className="grid grid-cols-7 gap-1">
-          {WEEKDAYS_SHORT.map((wd, i) => (
-            <div key={i} className={`text-center rounded-lg p-2 ${i >= 5 ? "bg-slate-50 border border-slate-100" : "bg-blue-50 border border-blue-100"}`}>
-              <div className={`text-[11px] font-bold mb-1 ${i >= 5 ? "text-slate-400" : "text-blue-700"}`}>{wd}</div>
-              <div className={`text-sm font-bold ${i >= 5 ? "text-slate-400" : "text-slate-800"}`}>{weekdayStats[i].avgCount.toFixed(1)}<span className="text-[9px] font-normal text-slate-400 ml-0.5">db</span></div>
-              <div className={`text-[11px] ${i >= 5 ? "text-slate-300" : "text-blue-600 font-semibold"}`}>{weekdayStats[i].avgTons.toFixed(0)}t</div>
-            </div>
-          ))}
+        <div className="flex gap-4 items-start">
+          <div className="grid grid-cols-7 gap-1 flex-1">
+            {WEEKDAYS_SHORT.map((wd, i) => (
+              <div key={i} className={`text-center rounded-lg p-2 ${i >= 5 ? "bg-slate-50 border border-slate-100" : "bg-blue-50 border border-blue-100"}`}>
+                <div className={`text-[11px] font-bold mb-1 ${i >= 5 ? "text-slate-400" : "text-blue-700"}`}>{wd}</div>
+                <div className={`text-sm font-bold ${i >= 5 ? "text-slate-400" : "text-slate-800"}`}>{weekdayStats[i].avgCount.toFixed(1)}<span className="text-[9px] font-normal text-slate-400 ml-0.5">db</span></div>
+                <div className={`text-[11px] ${i >= 5 ? "text-slate-300" : "text-blue-600 font-semibold"}`}>{weekdayStats[i].avgTons.toFixed(0)}t</div>
+              </div>
+            ))}
+          </div>
+          {/* Mini chart */}
+          <div className="w-48 shrink-0">
+            <div className="text-[10px] text-slate-400 mb-1 text-center">Átl. tonna / nap</div>
+            <ResponsiveContainer width="100%" height={64}>
+              <BarChart data={WEEKDAYS_SHORT.map((wd, i) => ({ name: wd, tons: parseFloat(weekdayStats[i].avgTons.toFixed(1)), count: parseFloat(weekdayStats[i].avgCount.toFixed(1)) }))} barSize={14} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
+                <XAxis dataKey="name" tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
+                <YAxis hide />
+                <Tooltip
+                  contentStyle={{ fontSize: 11, padding: "4px 8px", borderRadius: 6 }}
+                  formatter={(val, name) => [val, name === "tons" ? "tonna" : "db"]}
+                />
+                <Bar dataKey="tons" radius={[3, 3, 0, 0]}>
+                  {WEEKDAYS_SHORT.map((_, i) => (
+                    <Cell key={i} fill={i >= 5 ? "#cbd5e1" : "#3b82f6"} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
         </div>
       </div>
 
