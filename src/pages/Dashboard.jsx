@@ -306,34 +306,66 @@ export default function Dashboard() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         {/* Monthly trend */}
-        <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-6 rounded-xl shadow-md border border-purple-200">
-          <h3 className="text-base font-bold text-slate-800 mb-4 flex items-center gap-2">
+        <div className="bg-white p-6 rounded-xl shadow-md border border-slate-200">
+          <h3 className="text-base font-bold text-slate-800 mb-5 flex items-center gap-2">
             <div className="w-2 h-6 bg-purple-500 rounded-full"></div>
             Havi teljesítmény
+            <span className="ml-auto text-xs font-normal text-slate-400">utolsó 12 hónap</span>
           </h3>
           {monthlyData.length > 0 ? (
-            <ResponsiveContainer width="100%" height={220}>
-              <AreaChart data={monthlyData}>
-                <defs>
-                  <linearGradient id="grad1" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#3B6CF4" stopOpacity={0.18}/>
-                    <stop offset="95%" stopColor="#3B6CF4" stopOpacity={0}/>
-                  </linearGradient>
-                  <linearGradient id="grad2" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#22c55e" stopOpacity={0.18}/>
-                    <stop offset="95%" stopColor="#22c55e" stopOpacity={0}/>
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f0f2f7" />
-                <XAxis dataKey="month" tick={{ fill: "#8896aa", fontSize: 10 }} axisLine={false} tickLine={false} />
-                <YAxis yAxisId="left" tick={{ fill: "#8896aa", fontSize: 10 }} axisLine={false} tickLine={false} />
-                <YAxis yAxisId="right" orientation="right" tick={{ fill: "#8896aa", fontSize: 10 }} axisLine={false} tickLine={false} />
-                <Tooltip content={<CustomTooltip />} />
-                <Legend wrapperStyle={{ fontSize: 11, color: "#8896aa" }} />
-                <Area yAxisId="left" type="monotone" dataKey="darab" name="Fuvar (db)" stroke="#3B6CF4" fill="url(#grad1)" strokeWidth={2} dot={false} />
-                <Area yAxisId="right" type="monotone" dataKey="tonnas" name="Tonna (t)" stroke="#22c55e" fill="url(#grad2)" strokeWidth={2} dot={false} />
-              </AreaChart>
-            </ResponsiveContainer>
+            <div className="space-y-2">
+              {/* Header */}
+              <div className="grid grid-cols-12 gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider px-1 pb-1 border-b border-slate-100">
+                <div className="col-span-2">Hónap</div>
+                <div className="col-span-2 text-right">Fuvar</div>
+                <div className="col-span-2 text-right">Tonna</div>
+                <div className="col-span-6">Megoszlás</div>
+              </div>
+              {(() => {
+                const maxTons = Math.max(...monthlyData.map(m => m.tonnas), 1);
+                const maxDb = Math.max(...monthlyData.map(m => m.darab), 1);
+                return monthlyData.map((m, i) => {
+                  const isLast = i === monthlyData.length - 1;
+                  const tPct = (m.tonnas / maxTons) * 100;
+                  const dPct = (m.darab / maxDb) * 100;
+                  return (
+                    <div key={m.month} className={`grid grid-cols-12 gap-2 items-center px-1 py-1.5 rounded-lg transition-colors ${isLast ? "bg-purple-50 border border-purple-100" : "hover:bg-slate-50"}`}>
+                      <div className="col-span-2 text-xs font-semibold text-slate-700">
+                        {m.month.replace("-", ". ")}
+                      </div>
+                      <div className="col-span-2 text-right">
+                        <span className="text-sm font-bold text-blue-600">{m.darab}</span>
+                        <span className="text-[10px] text-slate-400 ml-0.5">db</span>
+                      </div>
+                      <div className="col-span-2 text-right">
+                        <span className="text-sm font-bold text-emerald-600">{m.tonnas.toLocaleString("hu-HU", {maximumFractionDigits: 0})}</span>
+                        <span className="text-[10px] text-slate-400 ml-0.5">t</span>
+                      </div>
+                      <div className="col-span-6 space-y-1">
+                        <div className="flex items-center gap-1">
+                          <div className="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
+                            <div className="h-full bg-blue-400 rounded-full transition-all" style={{width: `${dPct}%`}} />
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <div className="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
+                            <div className="h-full bg-emerald-400 rounded-full transition-all" style={{width: `${tPct}%`}} />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                });
+              })()}
+              <div className="flex gap-4 pt-2 border-t border-slate-100">
+                <div className="flex items-center gap-1.5 text-[11px] text-slate-500">
+                  <div className="w-3 h-2 rounded-sm bg-blue-400" /> Fuvar (db)
+                </div>
+                <div className="flex items-center gap-1.5 text-[11px] text-slate-500">
+                  <div className="w-3 h-2 rounded-sm bg-emerald-400" /> Tonna (t)
+                </div>
+              </div>
+            </div>
           ) : <div className="h-48 flex items-center justify-center text-sm text-slate-400">Nincs lezárt fuvar</div>}
         </div>
 
