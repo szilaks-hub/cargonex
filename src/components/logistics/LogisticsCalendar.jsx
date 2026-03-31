@@ -331,8 +331,7 @@ export default function LogisticsCalendar({ trucks, onEdit }) {
       {/* Weekday averages summary */}
       <div className="bg-white border border-slate-200 rounded-xl p-3 shadow-sm">
         <div className="text-xs font-semibold text-slate-500 mb-2">Hétköznapi átlag (összes adat alapján)</div>
-        <div className="flex gap-4 items-start">
-          <div className="grid grid-cols-7 gap-1 flex-1">
+        <div className="grid grid-cols-7 gap-1 mb-3">
             {WEEKDAYS_SHORT.map((wd, i) => (
               <div key={i} className={`text-center rounded-lg p-2 ${i >= 5 ? "bg-slate-50 border border-slate-100" : "bg-blue-50 border border-blue-100"}`}>
                 <div className={`text-[11px] font-bold mb-1 ${i >= 5 ? "text-slate-400" : "text-blue-700"}`}>{wd}</div>
@@ -342,25 +341,29 @@ export default function LogisticsCalendar({ trucks, onEdit }) {
             ))}
           </div>
           {/* Mini chart */}
-          <div className="w-48 shrink-0">
-            <div className="text-[10px] text-slate-400 mb-1 text-center">Átl. tonna / nap</div>
-            <ResponsiveContainer width="100%" height={64}>
-              <BarChart data={WEEKDAYS_SHORT.map((wd, i) => ({ name: wd, tons: parseFloat(weekdayStats[i].avgTons.toFixed(1)), count: parseFloat(weekdayStats[i].avgCount.toFixed(1)) }))} barSize={14} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
-                <XAxis dataKey="name" tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
-                <YAxis hide />
+          <div className="w-full">
+            <div className="text-[10px] text-slate-400 mb-1">Átl. tonna / nap</div>
+            <ResponsiveContainer width="100%" height={90}>
+              <BarChart
+                data={WEEKDAYS_SHORT.map((wd, i) => ({ name: wd, tonna: parseFloat(weekdayStats[i].avgTons.toFixed(1)), db: parseFloat(weekdayStats[i].avgCount.toFixed(1)) }))}
+                barSize={28}
+                margin={{ top: 4, right: 8, left: 0, bottom: 0 }}
+              >
+                <XAxis dataKey="name" tick={{ fontSize: 11, fontWeight: 600 }} axisLine={false} tickLine={false} />
+                <YAxis hide domain={[0, 'auto']} />
                 <Tooltip
-                  contentStyle={{ fontSize: 11, padding: "4px 8px", borderRadius: 6 }}
-                  formatter={(val, name) => [val, name === "tons" ? "tonna" : "db"]}
+                  contentStyle={{ fontSize: 12, padding: "6px 10px", borderRadius: 8, border: "1px solid #e2e8f0" }}
+                  formatter={(val, name) => [val, name]}
+                  cursor={{ fill: "rgba(59,130,246,0.06)" }}
                 />
-                <Bar dataKey="tons" radius={[3, 3, 0, 0]}>
+                <Bar dataKey="tonna" radius={[4, 4, 0, 0]} label={{ position: "top", fontSize: 10, fill: "#64748b", formatter: (v) => v > 0 ? `${v}t` : "" }}>
                   {WEEKDAYS_SHORT.map((_, i) => (
-                    <Cell key={i} fill={i >= 5 ? "#cbd5e1" : "#3b82f6"} />
+                    <Cell key={i} fill={i >= 5 ? "#e2e8f0" : "#3b82f6"} />
                   ))}
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
           </div>
-        </div>
       </div>
 
       {/* Header */}
