@@ -328,16 +328,20 @@ export default function OrderbooksPage() {
       )}
 
       {selectedTruck && (
-        <TruckForm
-          item={selectedTruck}
-          onClose={() => setSelectedTruck(null)}
-          onSaved={() => {
-            qc.invalidateQueries({ queryKey: ['trucks'] });
-            qc.invalidateQueries({ queryKey: ['orderbooks'] });
-            qc.invalidateQueries({ queryKey: ['orderbook-lines'] });
-            setSelectedTruck(null);
-          }}
-        />
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-start justify-center p-4 overflow-y-auto">
+          <div className="w-full max-w-4xl mt-6 mb-6">
+            <TruckForm
+              item={selectedTruck}
+              onClose={() => setSelectedTruck(null)}
+              onSaved={() => {
+                qc.invalidateQueries({ queryKey: ['trucks'] });
+                qc.invalidateQueries({ queryKey: ['orderbooks'] });
+                qc.invalidateQueries({ queryKey: ['orderbook-lines'] });
+                setSelectedTruck(null);
+              }}
+            />
+          </div>
+        </div>
       )}
     </div>
   );
