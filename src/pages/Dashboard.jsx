@@ -162,10 +162,10 @@ export default function Dashboard() {
 
   // ── Monthly closed trucks trend ─────────────────────────────────
   const monthlyMap = {};
-  closedTrucks.forEach(t => {
-    const d = t.closed_date || t.updated_date;
+  trucks.filter(t => ["closed", "finance_control"].includes(t.status)).forEach(t => {
+    const d = t.closed_date || t.actual_loading_date || t.loading_date || t.updated_date;
     if (!d) return;
-    const key = d.slice(0, 7); // YYYY-MM
+    const key = d.slice(0, 7);
     if (!monthlyMap[key]) monthlyMap[key] = { month: key, darab: 0, tonnas: 0 };
     monthlyMap[key].darab++;
     monthlyMap[key].tonnas += t.actual_weight_tons || t.planned_quantity_tons || 0;
