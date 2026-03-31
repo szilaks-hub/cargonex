@@ -312,8 +312,35 @@ export default function LogisticsCalendar({ trucks, onEdit }) {
     );
   };
 
+  // --- weekday averages ---
+  const weekdayStats = Array.from({ length: 7 }, (_, dow) => {
+    // dow: 0=Mon...6=Sun (ISO weekday offset)
+    const daysWithData = Object.entries(trucksByDate).filter(([dateStr]) => {
+      const d = new Date(dateStr);
+      return (getDay(d) + 6) % 7 === dow;
+    });
+    const totalCount = daysWithData.reduce((s, [, ts]) => s + ts.filter(t => t.status !== "cancelled").length, 0);
+    const totalTons = daysWithData.reduce((s, [, ts]) => s + ts.filter(t => t.status !== "cancelled").reduce((ss, t) => ss + (t.planned_quantity_tons || 0), 0), 0);
+    const n = daysWithData.length || 1;
+    return { avgCount: totalCount / n, avgTons: totalTons / n, days: daysWithData.length };
+  });
+
   return (
     <div className="space-y-4">
+      {/* Weekday averages summary */}
+      <div className="bg-white border border-slate-200 rounded-xl p-3 shadow-sm">
+        <div className="text-xs font-semibold text-slate-500 mb-2">Hétköznapi átlag (összes adat alapján)</div>
+        <div className="grid grid-cols-7 gap-1">
+          {WEEKDAYS_SHORT.map((wd, i) => (
+            <div key={i} className={`text-center rounded-lg p-2 ${i >= 5 ? "bg-slate-50 border border-slate-100" : "bg-blue-50 border border-blue-100"}`}>
+              <div className={`text-[11px] font-bold mb-1 ${i >= 5 ? "text-slate-400" : "text-blue-700"}`}>{wd}</div>
+              <div className={`text-sm font-bold ${i >= 5 ? "text-slate-400" : "text-slate-800"}`}>{weekdayStats[i].avgCount.toFixed(1)}<span className="text-[9px] font-normal text-slate-400 ml-0.5">db</span></div>
+              <div className={`text-[11px] ${i >= 5 ? "text-slate-300" : "text-blue-600 font-semibold"}`}>{weekdayStats[i].avgTons.toFixed(0)}t</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div className="flex items-center gap-2">
