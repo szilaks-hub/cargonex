@@ -183,7 +183,7 @@ export default function Dashboard() {
   const catMap = {};
   openLines.forEach(l => {
     const name = l.category_name || "Egyéb";
-    if (!catMap[name]) catMap[name] = { name, tons: 0, value: 0 };
+    if (!catMap[name]) catMap[name] = { name, tons: 0, allocated: 0, value: 0 };
     catMap[name].tons += l.planned_quantity_tons || 0;
     catMap[name].value += l.line_value_eur || 0;
   });
