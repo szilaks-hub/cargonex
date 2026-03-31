@@ -42,12 +42,58 @@ export default function FinancePrint({ trucks, orderbookMap, onClose }) {
   const totalTons = filtered.reduce((s, t) => s + (t.actual_weight_tons || t.planned_quantity_tons || 0), 0);
   const totalHuf = filtered.reduce((s, t) => s + (t.total_base || 0), 0);
 
-  const handlePrint = () => window.print();
+  const handlePrint = () => {
+    const printContent = document.getElementById("print-area");
+    if (!printContent) return;
+    const win = window.open("", "_blank", "width=1200,height=800");
+    win.document.write(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="UTF-8" />
+        <title>Finance / Vámkezelési Riport</title>
+        <style>
+          @page { size: A4 landscape; margin: 10mm; }
+          body { font-family: Arial, sans-serif; font-size: 10px; color: #0f172a; margin: 0; padding: 8mm; }
+          table { border-collapse: collapse; width: 100%; font-size: 10px; }
+          th, td { border: 1px solid #94a3b8; padding: 4px 6px; vertical-align: top; }
+          thead tr { background: #1e293b; color: white; }
+          tfoot tr { background: #1e293b; color: white; font-weight: bold; }
+          .even { background: #f8fafc; }
+          .odd { background: #ffffff; }
+          .status-closed { background: #d1fae5; color: #065f46; padding: 1px 4px; border-radius: 3px; font-weight: bold; font-size: 9px; }
+          .status-finance { background: #fef9c3; color: #854d0e; padding: 1px 4px; border-radius: 3px; font-weight: bold; font-size: 9px; }
+          .status-loaded { background: #ffedd5; color: #9a3412; padding: 1px 4px; border-radius: 3px; font-weight: bold; font-size: 9px; }
+          h1 { font-size: 16px; margin: 0 0 4px 0; }
+          .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; }
+          .summary { display: flex; gap: 24px; margin-bottom: 12px; padding: 8px 12px; background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 6px; }
+          .summary-item { text-align: center; }
+          .summary-item .val { font-size: 18px; font-weight: 900; }
+          .summary-item .lbl { font-size: 9px; color: #64748b; }
+          .blue { color: #1d4ed8; } .green { color: #065f46; } .orange { color: #c2410c; } .dark { color: #1e293b; }
+          .text-right { text-align: right; }
+          .font-bold { font-weight: 700; }
+          .sub { color: #64748b; font-size: 9px; }
+          .blue-sub { color: #1d4ed8; font-size: 9px; }
+          .mrn-dup { color: #c2410c; font-weight: bold; }
+          img.logo { height: 50px; object-fit: contain; }
+          .footer { margin-top: 12px; text-align: center; font-size: 9px; color: #94a3b8; }
+        </style>
+      </head>
+      <body>
+        ${printContent.innerHTML}
+      </body>
+      </html>
+    `);
+    win.document.close();
+    win.focus();
+    setTimeout(() => { win.print(); win.close(); }, 500);
+  };
 
   const fmt = (n) => n ? Number(n).toLocaleString("hu-HU") : "—";
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/50 flex items-start justify-center overflow-y-auto py-8">
+    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto py-8" style={{ background: "rgba(15,23,60,0.7)", backdropFilter: "blur(4px)" }}>
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-6xl mx-4">
         {/* Controls - hidden on print */}
         <div className="print:hidden flex items-center justify-between p-5 border-b border-slate-200">
@@ -215,17 +261,7 @@ export default function FinancePrint({ trucks, orderbookMap, onClose }) {
         </div>
       </div>
 
-      <style>{`
-        @media print {
-          @page { size: A4 landscape; margin: 10mm; }
-          body * { visibility: hidden; }
-          #print-area, #print-area * { visibility: visible; }
-          #print-area { position: fixed; inset: 0; padding: 10mm; font-size: 10px; }
-          table { page-break-inside: auto; border-collapse: collapse !important; width: 100%; }
-          tr { page-break-inside: avoid; }
-          td, th { border: 1px solid #94a3b8 !important; }
-        }
-      `}</style>
+      <style>{``}</style>
     </div>
   );
 }
