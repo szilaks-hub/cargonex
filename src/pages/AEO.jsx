@@ -101,9 +101,9 @@ function AuditJelentes() {
           p { margin: 0 0 8px 0; line-height: 1.6; }
           ul { margin: 4px 0 8px 8px; padding: 0; list-style: none; }
           li { margin: 4px 0; }
-          .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #e2e8f0; padding-bottom: 12px; margin-bottom: 16px; }
-          .meta-line { margin: 3px 0; font-size: 11px; }
-          .meta-label { font-weight: 700; display: inline-block; width: 120px; }
+          .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #e2e8f0; padding-bottom: 18px; margin-bottom: 20px; }
+          .meta-line { margin: 4px 0; font-size: 11.5px; color: #334155; }
+          .meta-label { font-weight: 700; display: inline-block; width: 130px; color: #0f172a; }
           table { border-collapse: collapse; width: 100%; font-size: 10px; margin-top: 8px; }
           th, td { border: 1px solid #cbd5e1; padding: 4px 6px; vertical-align: top; }
           thead tr { background: #1e293b; color: white; }
@@ -113,7 +113,7 @@ function AuditJelentes() {
           .dup-badge { background: #ffedd5; color: #c2410c; font-size: 8px; padding: 1px 3px; border-radius: 2px; margin-left: 3px; }
           .sig-block { margin-top: 48px; text-align: right; }
           .sig-line { border-bottom: 1px solid #94a3b8; width: 180px; display: inline-block; margin-bottom: 4px; }
-          img.logo { max-height: 55px; max-width: 150px; object-fit: contain; }
+          img.logo { max-height: 75px; max-width: 200px; object-fit: contain; }
           .print-hidden { display: none !important; }
         </style>
       </head>
@@ -179,7 +179,7 @@ function AuditJelentes() {
             </div>
           </div>
           {logoUrl ? (
-            <img src={logoUrl} alt="Logó" className="object-contain" style={{ maxHeight: "60px", maxWidth: "160px" }} />
+            <img src={logoUrl} alt="Logó" className="object-contain" style={{ maxHeight: "80px", maxWidth: "200px" }} />
           ) : (
             <div className="w-24 h-16 rounded-lg bg-slate-100 border border-dashed border-slate-300 flex items-center justify-center print:hidden">
               <span className="text-[10px] text-slate-400 text-center">Logó<br/>feltöltés</span>
