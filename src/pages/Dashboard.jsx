@@ -133,18 +133,25 @@ export default function Dashboard() {
   const countryData = Object.entries(countryMap).sort((a,b)=>b[1]-a[1]).map(([name, value]) => ({ name, value }));
 
   // ── County breakdown (HU) ───────────────────────────────────────
+  const normalizeCounty = (raw) => {
+    if (!raw) return "Ismeretlen";
+    const s = raw.trim().toLowerCase();
+    if (s.includes("budapest") || s.includes("főváros") || s.includes("fovaros")) return "Budapest";
+    return raw.trim();
+  };
   const countyMap = {};
   activeTrucks.filter(t => t.destination_country === "HU").forEach(t => {
-    const county = t.destination_county || "Ismeretlen";
+    const county = normalizeCounty(t.destination_county);
     if (!countyMap[county]) countyMap[county] = { total: 0, open: 0, closed: 0 };
     countyMap[county].total++;
     if (["booked","loaded"].includes(t.status)) countyMap[county].open++;
     if (t.status === "closed") countyMap[county].closed++;
   });
+  const countyTotal = Object.values(countyMap).reduce((s, v) => s + v.total, 0);
   const countyData = Object.entries(countyMap)
     .sort((a,b)=>b[1].total-a[1].total)
     .slice(0, 12)
-    .map(([name, v]) => ({ name, ...v }));
+    .map(([name, v]) => ({ name, ...v, pct: countyTotal > 0 ? Math.round(v.total / countyTotal * 100) : 0 }));
 
   // ── Monthly closed trucks trend ─────────────────────────────────
   const monthlyMap = {};
@@ -376,17 +383,39 @@ export default function Dashboard() {
             Megye bontás (HU)
           </h3>
           {countyData.length > 0 ? (
-            <ResponsiveContainer width="100%" height={220}>
-              <BarChart data={countyData} barCategoryGap="25%">
-                <CartesianGrid strokeDasharray="3 3" stroke="#f0f2f7" vertical={false} />
-                <XAxis dataKey="name" tick={{ fill: "#8896aa", fontSize: 9 }} axisLine={false} tickLine={false} angle={-35} textAnchor="end" height={50} />
-                <YAxis tick={{ fill: "#8896aa", fontSize: 10 }} axisLine={false} tickLine={false} />
-                <Tooltip content={<CustomTooltip />} cursor={{ fill: "rgba(59,108,244,0.05)" }} />
-                <Legend wrapperStyle={{ fontSize: 11, color: "#8896aa" }} />
-                <Bar dataKey="open" name="Nyitott" fill="#f59e0b" radius={[4, 4, 0, 0]} stackId="a" />
-                <Bar dataKey="closed" name="Lezárt" fill="#22c55e" radius={[4, 4, 0, 0]} stackId="a" />
-              </BarChart>
-            </ResponsiveContainer>
+            <div className="space-y-2">
+              {countyData.map((c, i) => (
+                <div key={c.name} className="flex items-center gap-2">
+                  <div className="w-20 text-xs font-semibold text-slate-700 truncate flex-shrink-0">{c.name}</div>
+                  <div className="flex-1 flex h-5 rounded-md overflow-hidden bg-slate-100">
+                    {c.open > 0 && (
+                      <div className="h-full bg-amber-400 flex items-center justify-center text-[9px] font-bold text-white"
+                        style={{width: `${(c.open / c.total) * 100}%`}}>
+                        {c.open > 1 ? c.open : ""}
+                      </div>
+                    )}
+                    {c.closed > 0 && (
+                      <div className="h-full bg-emerald-400 flex items-center justify-center text-[9px] font-bold text-white"
+                        style={{width: `${(c.closed / c.total) * 100}%`}}>
+                        {c.closed > 1 ? c.closed : ""}
+                      </div>
+                    )}
+                  </div>
+                  <div className="w-16 flex items-center gap-1 flex-shrink-0">
+                    <span className="text-xs font-bold text-slate-700">{c.total}</span>
+                    <span className="text-[10px] text-slate-400">({c.pct}%)</span>
+                  </div>
+                </div>
+              ))}
+              <div className="flex gap-4 pt-2 border-t border-slate-200/60">
+                <div className="flex items-center gap-1.5 text-[11px] text-slate-500">
+                  <div className="w-3 h-2 rounded-sm bg-amber-400" /> Nyitott
+                </div>
+                <div className="flex items-center gap-1.5 text-[11px] text-slate-500">
+                  <div className="w-3 h-2 rounded-sm bg-emerald-400" /> Lezárt
+                </div>
+              </div>
+            </div>
           ) : <div className="h-48 flex items-center justify-center text-sm text-slate-400">Nincs HU szállítás</div>}
         </div>
       </div>
