@@ -128,9 +128,16 @@ export default function Dashboard() {
   // ── Country breakdown ───────────────────────────────────────────
   const countryMap = {};
   activeTrucks.forEach(t => {
-    if (t.destination_country) countryMap[t.destination_country] = (countryMap[t.destination_country] || 0) + 1;
+    if (t.destination_country) {
+      if (!countryMap[t.destination_country]) countryMap[t.destination_country] = { count: 0, tons: 0 };
+      countryMap[t.destination_country].count++;
+      countryMap[t.destination_country].tons += t.actual_weight_tons || t.planned_quantity_tons || 0;
+    }
   });
-  const countryData = Object.entries(countryMap).sort((a,b)=>b[1]-a[1]).map(([name, value]) => ({ name, value }));
+  const countryTotal = activeTrucks.filter(t => t.destination_country).length;
+  const countryData = Object.entries(countryMap)
+    .sort((a,b)=>b[1].count-a[1].count)
+    .map(([name, v]) => ({ name, count: v.count, tons: v.tons, pct: countryTotal > 0 ? Math.round(v.count / countryTotal * 100) : 0 }));
 
   // ── County breakdown (HU) ───────────────────────────────────────
   const normalizeCounty = (raw) => {
@@ -270,14 +277,36 @@ export default function Dashboard() {
             Célország bontás
           </h3>
           {countryData.length > 0 ? (
-            <ResponsiveContainer width="100%" height={230}>
-              <BarChart data={countryData} barCategoryGap="35%" layout="vertical">
-                <XAxis type="number" tick={{ fill: "#8896aa", fontSize: 10 }} axisLine={false} tickLine={false} />
-                <YAxis type="category" dataKey="name" tick={{ fill: "#8896aa", fontSize: 11 }} axisLine={false} tickLine={false} width={28} />
-                <Tooltip content={<CustomTooltip />} cursor={{ fill: "rgba(59,108,244,0.06)" }} />
-                <Bar dataKey="value" name="Fuvar" fill="#3B6CF4" radius={[0, 6, 6, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+            <div className="space-y-2">
+              <div className="grid grid-cols-12 gap-1 text-[10px] font-bold text-slate-500 uppercase tracking-wider px-1 pb-1 border-b border-orange-200">
+                <div className="col-span-2">Ország</div>
+                <div className="col-span-2 text-right">db</div>
+                <div className="col-span-1 text-right">%</div>
+                <div className="col-span-3 text-right">Tonna</div>
+                <div className="col-span-4"></div>
+              </div>
+              {countryData.map((c, i) => (
+                <div key={c.name} className="grid grid-cols-12 gap-1 items-center px-1 py-1 rounded-lg hover:bg-orange-50/60 transition-colors">
+                  <div className="col-span-2 text-xs font-bold text-slate-900">{c.name}</div>
+                  <div className="col-span-2 text-right">
+                    <span className="text-sm font-bold text-slate-900">{c.count}</span>
+                    <span className="text-[10px] text-slate-500 ml-0.5">db</span>
+                  </div>
+                  <div className="col-span-1 text-right">
+                    <span className="text-xs font-bold text-slate-900">{c.pct}%</span>
+                  </div>
+                  <div className="col-span-3 text-right">
+                    <span className="text-xs font-bold text-slate-900">{c.tons.toLocaleString("hu-HU", {maximumFractionDigits: 0})}</span>
+                    <span className="text-[10px] text-slate-500 ml-0.5">t</span>
+                  </div>
+                  <div className="col-span-4">
+                    <div className="w-full h-2.5 bg-orange-100 rounded-full overflow-hidden">
+                      <div className="h-full bg-orange-400 rounded-full" style={{width: `${c.pct}%`}} />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           ) : <div className="h-48 flex items-center justify-center text-sm text-slate-400">Nincs adat</div>}
         </div>
 
