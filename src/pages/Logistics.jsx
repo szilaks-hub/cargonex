@@ -59,6 +59,12 @@ export default function Logistics() {
     refetchInterval: 10000,
   });
 
+  const { data: orderbooks = [] } = useQuery({
+    queryKey: ["orderbooks"],
+    queryFn: () => base44.entities.Orderbook.list(),
+  });
+  const orderbookMap = Object.fromEntries(orderbooks.map(o => [o.id, o]));
+
   const handleAdvanceStatus = async (truck, newStatus) => {
     if (newStatus === "finance_control") {
       // Set to finance_control AND closed so it appears in Finance page
@@ -251,6 +257,7 @@ export default function Logistics() {
                 onAdvance={handleAdvanceStatus}
                 statusLabels={STATUS_LABELS}
                 statusColors={STATUS_COLORS}
+                orderbookMap={orderbookMap}
               />
             </TabsContent>
           ))}
@@ -260,7 +267,7 @@ export default function Logistics() {
   );
 }
 
-function TruckTable({ trucks, isLoading, onEdit, onAdvance, statusLabels, statusColors }) {
+function TruckTable({ trucks, isLoading, onEdit, onAdvance, statusLabels, statusColors, orderbookMap = {} }) {
   if (isLoading) return <div className="text-center py-8 text-slate-400">Betöltés...</div>;
   if (!trucks || trucks.length === 0) return <div className="text-center py-8 text-slate-400">Nincs adat / No data</div>;
 
@@ -298,9 +305,18 @@ function TruckTable({ trucks, isLoading, onEdit, onAdvance, statusLabels, status
                   </td>
                   <td className="py-2 px-3 text-slate-600 whitespace-nowrap">{r.expected_loading_date || r.loading_date || "—"}</td>
                   <td className="py-2 px-3 whitespace-nowrap">
-                    {r.orderbook_no && <div className="text-[10px] text-slate-600"><span className="font-semibold text-slate-400">Rsz.:</span> <span className="text-blue-700 font-medium">{r.orderbook_no}</span></div>}
-                    {r.order_number && <div className="text-[10px] text-slate-500"><span className="font-semibold text-slate-400">Besz.:</span> {r.order_number}</div>}
-                    {!r.orderbook_no && !r.order_number && <span className="text-slate-400">—</span>}
+                    {(() => {
+                      const ob = r.orderbook_id ? orderbookMap[r.orderbook_id] : null;
+                      const sysNo = ob?.system_order_no || r.orderbook_no;
+                      const supplierNo = ob?.supplier_order_no || r.order_number;
+                      return (
+                        <>
+                          {sysNo && <div className="text-[10px] text-slate-600"><span className="font-semibold text-slate-400">Rsz.:</span> <span className="text-blue-700 font-medium">{sysNo}</span></div>}
+                          {supplierNo && <div className="text-[10px] text-slate-500"><span className="font-semibold text-slate-400">Besz.:</span> {supplierNo}</div>}
+                          {!sysNo && !supplierNo && <span className="text-slate-400">—</span>}
+                        </>
+                      );
+                    })()}
                   </td>
                   <td className="py-2 px-3 text-slate-700 max-w-[9rem] truncate">{r.product_name || "—"}</td>
                   <td className="py-2 px-3 text-right font-semibold text-slate-800 whitespace-nowrap">{r.planned_quantity_tons?.toFixed(2) || "—"}</td>
