@@ -584,7 +584,7 @@ function OrderbooksList({ orders, lines, trucks = [], onSelect, onDelete, isClos
                             );
                           })}
                           <div className="flex items-center gap-3 pt-2 border-t border-slate-200">
-                            <div className="w-36 text-xs font-bold text-slate-600 uppercase">\u00d6sszesen</div>
+                            <div className="w-36 text-xs font-bold text-slate-600 uppercase">Összesen</div>
                             <div className="flex-1">
                               <div className="flex items-center gap-2 mb-0.5">
                                 <div className="h-2 flex-1 bg-slate-200 rounded-full overflow-hidden">
@@ -675,7 +675,7 @@ function OrderbooksList({ orders, lines, trucks = [], onSelect, onDelete, isClos
               <tfoot>
                 <tr className="bg-slate-100 border-t-2 border-slate-300 font-bold text-sm">
                   <td className="py-3 px-2"></td>
-                  <td className="py-3 px-4 text-slate-700 font-bold uppercase text-xs tracking-wide" colSpan="3">\u00d6sszesen ({displayOrders.length} rendelés)</td>
+                  <td className="py-3 px-4 text-slate-700 font-bold uppercase text-xs tracking-wide" colSpan="3">Összesen ({displayOrders.length} rendelés)</td>
                   <td className="py-3 px-4 text-right">
                     <div className="font-bold text-slate-900">{totPlanned.toLocaleString("hu-HU", {maximumFractionDigits: 0})}</div>
                     <div className="text-[10px] text-slate-500">t</div>
