@@ -451,6 +451,72 @@ export default function Dashboard() {
 
 
 
+      {/* Category breakdown */}
+      <div className="bg-gradient-to-br from-violet-50 to-violet-100 p-6 rounded-xl shadow-md border border-violet-200">
+        <h3 className="text-base font-bold text-slate-800 mb-4 flex items-center gap-2">
+          <div className="w-2 h-6 bg-violet-500 rounded-full"></div>
+          Termékkategória bontás
+          <span className="ml-auto text-xs font-normal text-slate-400">nyitott rendelések alapján</span>
+        </h3>
+        {catData.length > 0 ? (
+          <div className="space-y-2">
+            <div className="grid grid-cols-12 gap-1 text-[10px] font-bold text-slate-500 uppercase tracking-wider px-1 pb-1 border-b border-violet-200">
+              <div className="col-span-3">Kategória</div>
+              <div className="col-span-2 text-right">Tonna</div>
+              <div className="col-span-1 text-right">%</div>
+              <div className="col-span-3 text-right">Érték (EUR)</div>
+              <div className="col-span-3"></div>
+            </div>
+            {(() => {
+              const totalTons = catData.reduce((s, c) => s + c.tons, 0);
+              return catData.map((c, i) => {
+                const pct = totalTons > 0 ? Math.round(c.tons / totalTons * 100) : 0;
+                return (
+                  <div key={c.name} className="grid grid-cols-12 gap-1 items-center px-1 py-1.5 rounded-lg hover:bg-violet-50/60 transition-colors">
+                    <div className="col-span-3 text-xs font-bold text-slate-900 truncate">{c.name}</div>
+                    <div className="col-span-2 text-right">
+                      <span className="text-sm font-bold text-slate-900">{c.tons.toLocaleString("hu-HU", {maximumFractionDigits: 0})}</span>
+                      <span className="text-[10px] text-slate-500 ml-0.5">t</span>
+                    </div>
+                    <div className="col-span-1 text-right">
+                      <span className="text-xs font-bold text-slate-900">{pct}%</span>
+                    </div>
+                    <div className="col-span-3 text-right">
+                      <span className="text-xs font-bold text-slate-900">{c.value.toLocaleString("hu-HU", {maximumFractionDigits: 0})}</span>
+                      <span className="text-[10px] text-slate-500 ml-0.5">€</span>
+                    </div>
+                    <div className="col-span-3">
+                      <div className="w-full h-2.5 bg-violet-100 rounded-full overflow-hidden">
+                        <div className="h-full bg-violet-400 rounded-full" style={{width: `${pct}%`}} />
+                      </div>
+                    </div>
+                  </div>
+                );
+              });
+            })()}
+            {(() => {
+              const totalTons = catData.reduce((s, c) => s + c.tons, 0);
+              const totalVal = catData.reduce((s, c) => s + c.value, 0);
+              return (
+                <div className="grid grid-cols-12 gap-1 items-center px-1 py-1.5 border-t border-violet-200 mt-1">
+                  <div className="col-span-3 text-xs font-bold text-slate-700">Összesen</div>
+                  <div className="col-span-2 text-right">
+                    <span className="text-sm font-bold text-violet-700">{totalTons.toLocaleString("hu-HU", {maximumFractionDigits: 0})}</span>
+                    <span className="text-[10px] text-slate-500 ml-0.5">t</span>
+                  </div>
+                  <div className="col-span-1 text-right"><span className="text-xs font-bold text-slate-700">100%</span></div>
+                  <div className="col-span-3 text-right">
+                    <span className="text-xs font-bold text-violet-700">{totalVal.toLocaleString("hu-HU", {maximumFractionDigits: 0})}</span>
+                    <span className="text-[10px] text-slate-500 ml-0.5">€</span>
+                  </div>
+                  <div className="col-span-3"></div>
+                </div>
+              );
+            })()}
+          </div>
+        ) : <div className="h-24 flex items-center justify-center text-sm text-slate-400">Nincs nyitott rendelési adat</div>}
+      </div>
+
       {/* Recent Trucks */}
       <div className="bg-gradient-to-br from-indigo-50 to-indigo-100 p-6 rounded-xl shadow-md border border-indigo-200">
         <div className="flex items-center justify-between mb-5">
