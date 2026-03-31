@@ -82,7 +82,48 @@ function AuditJelentes() {
     reader.readAsDataURL(file);
   };
 
-  const handlePrint = () => window.print();
+  const handlePrint = () => {
+    const content = document.getElementById("audit-print");
+    if (!content) return;
+    const win = window.open("", "_blank", "width=900,height=1200");
+    win.document.write(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="UTF-8" />
+        <title>Auditjelentés</title>
+        <style>
+          @page { size: A4 portrait; margin: 15mm; }
+          body { font-family: Arial, sans-serif; font-size: 11px; color: #0f172a; margin: 0; padding: 0; }
+          h1 { font-size: 22px; font-weight: 900; margin: 0 0 12px 0; }
+          h2 { font-size: 14px; font-weight: 700; margin: 16px 0 6px 0; }
+          h3 { font-size: 12px; font-weight: 700; margin: 12px 0 4px 0; }
+          p { margin: 0 0 8px 0; line-height: 1.6; }
+          ul { margin: 4px 0 8px 8px; padding: 0; list-style: none; }
+          li { margin: 4px 0; }
+          .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #e2e8f0; padding-bottom: 12px; margin-bottom: 16px; }
+          .meta-line { margin: 3px 0; font-size: 11px; }
+          .meta-label { font-weight: 700; display: inline-block; width: 120px; }
+          table { border-collapse: collapse; width: 100%; font-size: 10px; margin-top: 8px; }
+          th, td { border: 1px solid #cbd5e1; padding: 4px 6px; vertical-align: top; }
+          thead tr { background: #1e293b; color: white; }
+          tfoot tr { background: #1e293b; color: white; font-weight: bold; }
+          .even { background: #f8fafc; } .odd { background: #ffffff; }
+          .dup { color: #c2410c; font-weight: bold; }
+          .dup-badge { background: #ffedd5; color: #c2410c; font-size: 8px; padding: 1px 3px; border-radius: 2px; margin-left: 3px; }
+          .sig-block { margin-top: 48px; text-align: right; }
+          .sig-line { border-bottom: 1px solid #94a3b8; width: 180px; display: inline-block; margin-bottom: 4px; }
+          img.logo { max-height: 55px; max-width: 150px; object-fit: contain; }
+          .print-hidden { display: none !important; }
+        </style>
+      </head>
+      <body>${content.innerHTML}</body>
+      </html>
+    `);
+    win.document.close();
+    win.focus();
+    setTimeout(() => { win.print(); win.close(); }, 500);
+  };
 
   const periodText = fromDate || toDate
     ? `${fromDate ? fromDate : "—"} – ${toDate ? toDate : "—"}`
@@ -138,7 +179,7 @@ function AuditJelentes() {
             </div>
           </div>
           {logoUrl ? (
-            <img src={logoUrl} alt="Logó" className="h-20 object-contain" />
+            <img src={logoUrl} alt="Logó" className="object-contain" style={{ maxHeight: "60px", maxWidth: "160px" }} />
           ) : (
             <div className="w-24 h-16 rounded-lg bg-slate-100 border border-dashed border-slate-300 flex items-center justify-center print:hidden">
               <span className="text-[10px] text-slate-400 text-center">Logó<br/>feltöltés</span>
@@ -275,9 +316,10 @@ function AuditJelentes() {
 
       <style>{`
         @media print {
+          @page { size: A4 portrait; margin: 15mm; margin-top: 8mm; }
           body * { visibility: hidden; }
           #audit-print, #audit-print * { visibility: visible; }
-          #audit-print { position: fixed; inset: 0; padding: 24px; font-size: 11px; }
+          #audit-print { position: fixed; inset: 0; padding: 15mm; font-size: 11px; }
           table { page-break-inside: auto; }
           tr { page-break-inside: avoid; }
         }
