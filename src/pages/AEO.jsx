@@ -349,18 +349,37 @@ function MrnSzamlaKimutatas() {
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
   const [search, setSearch] = useState("");
+  const [filterStatus, setFilterStatus] = useState("");
+  const [filterCountry, setFilterCountry] = useState("");
+  const [filterOrigin, setFilterOrigin] = useState("");
+  const [filterDest, setFilterDest] = useState("");
+  const printRef = useRef();
 
   const { data: trucks = [] } = useQuery({
     queryKey: ["trucks"],
     queryFn: () => base44.entities.Truck.list(),
   });
 
-  // Filter: finance_control or closed, with MRN
+  const { data: me } = useQuery({
+    queryKey: ["me"],
+    queryFn: () => base44.auth.me(),
+  });
+
+  const today = new Date().toLocaleDateString("hu-HU");
+
+  // All unique values for filter dropdowns
+  const allCountries = [...new Set(trucks.map(t => t.destination_country).filter(Boolean))].sort();
+  const allOrigins = [...new Set(trucks.map(t => t.supplier_site_name || t.origin_location_name).filter(Boolean))].sort();
+  const allDests = [...new Set(trucks.map(t => t.destination_city).filter(Boolean))].sort();
+
   const relevant = trucks.filter(t => {
-    if (!["finance_control", "closed", "loaded"].includes(t.status)) return false;
     const date = t.mrn_date || t.loading_date || t.actual_loading_date || "";
     if (fromDate && date < fromDate) return false;
     if (toDate && date > toDate) return false;
+    if (filterStatus && t.status !== filterStatus) return false;
+    if (filterCountry && t.destination_country !== filterCountry) return false;
+    if (filterOrigin && (t.supplier_site_name || t.origin_location_name) !== filterOrigin) return false;
+    if (filterDest && t.destination_city !== filterDest) return false;
     if (search) {
       const s = search.toLowerCase();
       if (
@@ -373,46 +392,112 @@ function MrnSzamlaKimutatas() {
     return true;
   });
 
-  // Totals
-  const totalMrnDeclared = relevant.reduce((s, t) => s + (t.mrn_declared_amount || 0), 0);
-  const totalVat = relevant.reduce((s, t) => s + (t.declared_vat || 0), 0);
-  const totalBase = relevant.reduce((s, t) => s + (t.total_base || 0), 0);
+  const totalMrnDeclared = relevant.reduce((s, t) => s + (Number(t.mrn_declared_amount) || 0), 0);
+  const totalVat = relevant.reduce((s, t) => s + (Number(t.declared_vat) || 0), 0);
+  const totalBase = relevant.reduce((s, t) => s + (Number(t.total_base) || 0), 0);
 
-  const fmt = (n) => n ? Number(n).toLocaleString("hu-HU") : "—";
+  const fmt = (n) => (n !== null && n !== undefined && n !== "" && Number(n) !== 0) ? Number(n).toLocaleString("hu-HU") : "—";
 
+  // Only compare if BOTH fields are filled and non-zero
   const getMatch = (t) => {
-    const declared = t.mrn_declared_amount;
-    const calculated = t.total_base;
+    const declared = Number(t.mrn_declared_amount);
+    const calculated = Number(t.total_base);
     if (!declared || !calculated) return "missing";
     const diff = Math.abs(declared - calculated);
-    if (diff < 1) return "match";
-    if (diff / calculated < 0.01) return "close";
+    const pct = diff / Math.max(declared, calculated);
+    if (pct < 0.001) return "match";   // <0.1% = egyezik
+    if (pct < 0.05) return "close";    // <5% = közel
     return "diff";
+  };
+
+  const handlePrint = () => {
+    const content = document.getElementById("mrn-print-area");
+    if (!content) return;
+    const win = window.open("", "_blank", "width=1100,height=1400");
+    win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"/><title>MRN – Számla kimutatás</title>
+    <style>
+      @page { size: A4 landscape; margin: 10mm; }
+      body { font-family: Arial, sans-serif; font-size: 9.5px; color: #0f172a; margin: 0; padding: 0; }
+      .header { display:flex; justify-content:space-between; align-items:flex-end; border-bottom:2px solid #1e293b; padding-bottom:10px; margin-bottom:14px; }
+      .header h1 { font-size:18px; font-weight:900; margin:0 0 4px 0; }
+      .header p { margin:0; font-size:10px; color:#475569; }
+      table { border-collapse:collapse; width:100%; }
+      th { background:#1e293b; color:white; padding:5px 7px; font-size:8.5px; font-weight:700; text-align:left; }
+      td { border:1px solid #cbd5e1; padding:4px 6px; vertical-align:top; }
+      tr:nth-child(even) td { background:#f8fafc; }
+      tfoot td { background:#1e293b; color:white; font-weight:bold; }
+      .match { color:#16a34a; font-weight:bold; }
+      .close { color:#d97706; font-weight:bold; }
+      .diff { color:#dc2626; font-weight:bold; }
+      .na { color:#94a3b8; }
+      .kpis { display:flex; gap:16px; margin-bottom:14px; }
+      .kpi { border:1px solid #e2e8f0; border-radius:6px; padding:8px 14px; flex:1; }
+      .kpi-label { font-size:8px; color:#64748b; font-weight:600; text-transform:uppercase; margin-bottom:2px; }
+      .kpi-value { font-size:14px; font-weight:900; color:#1e293b; }
+    </style></head><body>${content.innerHTML}</body></html>`);
+    win.document.close(); win.focus();
+    setTimeout(() => { win.print(); win.close(); }, 500);
   };
 
   return (
     <div className="space-y-5">
       {/* Filters */}
       <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
-        <h3 className="font-bold text-slate-700 mb-4">Szűrők</h3>
-        <div className="flex flex-wrap gap-4 items-end">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="font-bold text-slate-700">Szűrők</h3>
+          <Button onClick={handlePrint} className="bg-blue-600 hover:bg-blue-700 text-white gap-2" size="sm">
+            <Printer className="w-4 h-4" /> Nyomtatás / PDF
+          </Button>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
           <div>
-            <label className="text-xs font-semibold text-slate-600 block mb-1">Időszak (-tól)</label>
-            <input type="date" value={fromDate} onChange={e => setFromDate(e.target.value)} className="border border-slate-300 rounded-lg px-3 py-1.5 text-sm" />
+            <label className="text-xs font-semibold text-slate-600 block mb-1">Dátum (-tól)</label>
+            <input type="date" value={fromDate} onChange={e => setFromDate(e.target.value)} className="border border-slate-300 rounded-lg px-2 py-1.5 text-sm w-full" />
           </div>
           <div>
-            <label className="text-xs font-semibold text-slate-600 block mb-1">Időszak (-ig)</label>
-            <input type="date" value={toDate} onChange={e => setToDate(e.target.value)} className="border border-slate-300 rounded-lg px-3 py-1.5 text-sm" />
+            <label className="text-xs font-semibold text-slate-600 block mb-1">Dátum (-ig)</label>
+            <input type="date" value={toDate} onChange={e => setToDate(e.target.value)} className="border border-slate-300 rounded-lg px-2 py-1.5 text-sm w-full" />
           </div>
-          <div className="flex-1 min-w-48">
-            <label className="text-xs font-semibold text-slate-600 block mb-1">Keresés (rendszám, MRN, számla)</label>
-            <input type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder="Szűrés..." className="border border-slate-300 rounded-lg px-3 py-1.5 text-sm w-full" />
+          <div>
+            <label className="text-xs font-semibold text-slate-600 block mb-1">Státusz</label>
+            <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)} className="border border-slate-300 rounded-lg px-2 py-1.5 text-sm w-full">
+              <option value="">Minden</option>
+              <option value="closed">Lezárt</option>
+              <option value="finance_control">Pénzügyi ellenőrzés</option>
+              <option value="loaded">Megrakott</option>
+            </select>
+          </div>
+          <div>
+            <label className="text-xs font-semibold text-slate-600 block mb-1">Rendszám / MRN</label>
+            <input type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder="Keresés..." className="border border-slate-300 rounded-lg px-2 py-1.5 text-sm w-full" />
+          </div>
+          <div>
+            <label className="text-xs font-semibold text-slate-600 block mb-1">Felrakó (origin)</label>
+            <select value={filterOrigin} onChange={e => setFilterOrigin(e.target.value)} className="border border-slate-300 rounded-lg px-2 py-1.5 text-sm w-full">
+              <option value="">Minden</option>
+              {allOrigins.map(o => <option key={o} value={o}>{o}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="text-xs font-semibold text-slate-600 block mb-1">Lerakó (város)</label>
+            <select value={filterDest} onChange={e => setFilterDest(e.target.value)} className="border border-slate-300 rounded-lg px-2 py-1.5 text-sm w-full">
+              <option value="">Minden</option>
+              {allDests.map(d => <option key={d} value={d}>{d}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="text-xs font-semibold text-slate-600 block mb-1">Ország</label>
+            <select value={filterCountry} onChange={e => setFilterCountry(e.target.value)} className="border border-slate-300 rounded-lg px-2 py-1.5 text-sm w-full">
+              <option value="">Minden</option>
+              {allCountries.map(c => <option key={c} value={c}>{c}</option>)}
+            </select>
           </div>
         </div>
       </div>
 
       {/* Summary KPI cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div id="mrn-print-area">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-5">
         <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
           <div className="text-xs text-slate-500 font-semibold mb-1">Tételek száma</div>
           <div className="text-2xl font-extrabold text-slate-900">{relevant.length}</div>
@@ -490,6 +575,7 @@ function MrnSzamlaKimutatas() {
           )}
         </table>
       </div>
+      </div>{/* end mrn-print-area */}
     </div>
   );
 }
