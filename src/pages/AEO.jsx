@@ -101,9 +101,10 @@ function AuditJelentes() {
           p { margin: 0 0 8px 0; line-height: 1.6; }
           ul { margin: 4px 0 8px 8px; padding: 0; list-style: none; }
           li { margin: 4px 0; }
-          .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #e2e8f0; padding-bottom: 18px; margin-bottom: 20px; }
-          .meta-line { margin: 4px 0; font-size: 11.5px; color: #334155; }
-          .meta-label { font-weight: 700; display: inline-block; width: 130px; color: #0f172a; }
+          .audit-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #e2e8f0; padding-bottom: 18px; margin-bottom: 20px; }
+          .audit-header-left { flex: 1; min-width: 0; padding-right: 24px; }
+          .audit-header-right { flex-shrink: 0; }
+          .audit-logo { max-height: 75px; max-width: 200px; object-fit: contain; display: block; }
           table { border-collapse: collapse; width: 100%; font-size: 10px; margin-top: 8px; }
           th, td { border: 1px solid #cbd5e1; padding: 4px 6px; vertical-align: top; }
           thead tr { background: #1e293b; color: white; }
@@ -168,8 +169,8 @@ function AuditJelentes() {
       <div ref={printRef} id="audit-print" className="bg-white rounded-2xl border border-slate-200 shadow-md p-10 max-w-4xl mx-auto print:shadow-none print:border-none print:rounded-none print:p-8">
 
         {/* Letterhead */}
-        <div className="flex items-start justify-between mb-8 pb-6 border-b-2 border-slate-200">
-          <div>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", borderBottom: "2px solid #e2e8f0", paddingBottom: "24px", marginBottom: "24px" }}>
+          <div style={{ flex: 1, minWidth: 0, paddingRight: "32px" }}>
             <h1 className="text-2xl font-extrabold text-slate-900 mb-1">Auditjelentés</h1>
             <div className="space-y-1 text-sm text-slate-700 mt-3">
               <div><span className="font-semibold w-32 inline-block">Készült, Dabas:</span> {today}</div>
@@ -178,13 +179,15 @@ function AuditJelentes() {
               <div><span className="font-semibold w-32 inline-block">Vizsgált időszak:</span> {periodText}</div>
             </div>
           </div>
-          {logoUrl ? (
-            <img src={logoUrl} alt="Logó" className="object-contain" style={{ maxHeight: "80px", maxWidth: "200px" }} />
-          ) : (
-            <div className="w-24 h-16 rounded-lg bg-slate-100 border border-dashed border-slate-300 flex items-center justify-center print:hidden">
-              <span className="text-[10px] text-slate-400 text-center">Logó<br/>feltöltés</span>
-            </div>
-          )}
+          <div style={{ flexShrink: 0 }}>
+            {logoUrl ? (
+              <img src={logoUrl} alt="Logó" style={{ maxHeight: "75px", maxWidth: "200px", objectFit: "contain", display: "block" }} />
+            ) : (
+              <div className="w-24 h-16 rounded-lg bg-slate-100 border border-dashed border-slate-300 flex items-center justify-center print:hidden">
+                <span className="text-[10px] text-slate-400 text-center">Logó<br/>feltöltés</span>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Salutation */}
