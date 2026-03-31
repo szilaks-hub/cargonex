@@ -8,6 +8,7 @@ import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import MasterPanel from './pages/MasterPanel';
+import AEO from './pages/AEO';
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
@@ -60,6 +61,7 @@ const AuthenticatedApp = () => {
         />
       ))}
       <Route path="/MasterPanel" element={<LayoutWrapper currentPageName="MasterPanel"><MasterPanel /></LayoutWrapper>} />
+      <Route path="/AEO" element={<LayoutWrapper currentPageName="AEO"><AEO /></LayoutWrapper>} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );

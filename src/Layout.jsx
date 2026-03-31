@@ -12,7 +12,8 @@ import {
   ChevronRight,
   ClipboardList,
   FileText,
-  Settings2
+  Settings2,
+  BadgeCheck
 } from "lucide-react";
 
 const navItems = [
@@ -24,6 +25,7 @@ const navItems = [
   { name: "Logistics", nameHu: "Logisztika", icon: Truck, page: "Logistics" },
   { name: "Finance / Customs", nameHu: "Pénzügy / Vám", icon: ShieldCheck, page: "Finance" },
   { name: "Master Panel", nameHu: "Adatkezelés", icon: Settings2, page: "MasterPanel" },
+  { name: "AEO", nameHu: "Nyilatkozatok & Audit", icon: BadgeCheck, page: "AEO" },
 ];
 
 export default function Layout({ children, currentPageName }) {
