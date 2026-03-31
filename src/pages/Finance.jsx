@@ -7,13 +7,15 @@ import StatusBadge from "@/components/ui/StatusBadge";
 import TruckCustomsDetail from "../components/finance/TruckCustomsDetail";
 import MrnStatistics from "../components/finance/MrnStatistics";
 import { Input } from "@/components/ui/input";
-import { Search, BarChart2, List } from "lucide-react";
+import { Search, BarChart2, List, Printer } from "lucide-react";
+import FinancePrint from "../components/finance/FinancePrint";
 import { Button } from "@/components/ui/button";
 
 export default function Finance() {
   const [selectedTruck, setSelectedTruck] = useState(null);
   const [search, setSearch] = useState("");
   const [tab, setTab] = useState("list"); // "list" | "stats"
+  const [showPrint, setShowPrint] = useState(false);
   const qc = useQueryClient();
 
   const { data: trucks = [], isLoading } = useQuery({
@@ -125,6 +127,10 @@ export default function Finance() {
             className={`gap-1.5 text-xs h-7 px-3 ${tab === "stats" ? "bg-white shadow-sm text-slate-800" : "text-slate-500"}`}>
             <BarChart2 className="w-3.5 h-3.5" /> MRN Statisztika
           </Button>
+          <Button size="sm" variant="ghost" onClick={() => setShowPrint(true)}
+            className="gap-1.5 text-xs h-7 px-3 text-slate-500">
+            <Printer className="w-3.5 h-3.5" /> Nyomtatás
+          </Button>
         </div>
       </div>
 
@@ -145,6 +151,14 @@ export default function Finance() {
 
       {tab === "stats" && (
         <MrnStatistics trucks={eligibleTrucks} />
+      )}
+
+      {showPrint && (
+        <FinancePrint
+          trucks={eligibleTrucks}
+          orderbookMap={orderbookMap}
+          onClose={() => setShowPrint(false)}
+        />
       )}
     </div>
   );
