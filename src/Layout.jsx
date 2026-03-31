@@ -11,7 +11,8 @@ import {
   X,
   ChevronRight,
   ClipboardList,
-  FileText
+  FileText,
+  Settings2
 } from "lucide-react";
 
 const navItems = [
@@ -22,6 +23,7 @@ const navItems = [
   { name: "Orderbooks", nameHu: "Rendelések", icon: FileText, page: "Orderbooks" },
   { name: "Logistics", nameHu: "Logisztika", icon: Truck, page: "Logistics" },
   { name: "Finance / Customs", nameHu: "Pénzügy / Vám", icon: ShieldCheck, page: "Finance" },
+  { name: "Master Panel", nameHu: "Adatkezelés", icon: Settings2, page: "MasterPanel" },
 ];
 
 export default function Layout({ children, currentPageName }) {
