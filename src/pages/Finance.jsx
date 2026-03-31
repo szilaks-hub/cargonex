@@ -51,23 +51,44 @@ export default function Finance() {
         (t.mrn_number || "").toLowerCase().includes(s) ||
         (t.supplier_invoice_number || "").toLowerCase().includes(s) ||
         (ob?.supplier_order_no || "").toLowerCase().includes(s) ||
-        (ob?.system_order_no || "").toLowerCase().includes(s)
+        (ob?.system_order_no || "").toLowerCase().includes(s) ||
+        (t.items || []).some(i => (i.product_name || "").toLowerCase().includes(s))
       );
     });
   }, [eligibleTrucks, search, orderbookMap]);
 
   const columns = [
     { header: "Rendszám", render: (r) => r.truck_number || `T-${r.id?.slice(0, 6)}` },
-    { header: "Bész. rendelsz.", render: (r) => {
+    { header: "Rendelésszámok", render: (r) => {
       const ob = orderbookMap[r.orderbook_id];
-      return ob?.supplier_order_no ? (
-        <div>
-          <div className="font-semibold text-slate-800 text-xs">{ob.supplier_order_no}</div>
-          {ob?.system_order_no && <div className="text-[10px] text-slate-500">{ob.system_order_no}</div>}
+      if (!ob) return <span className="text-slate-400">—</span>;
+      return (
+        <div className="space-y-0.5">
+          {ob.supplier_order_no && (
+            <div className="text-xs font-semibold text-slate-800">{ob.supplier_order_no}</div>
+          )}
+          {ob.system_order_no && (
+            <div className="text-xs text-blue-700 font-medium">{ob.system_order_no}</div>
+          )}
+          {!ob.supplier_order_no && !ob.system_order_no && <span className="text-slate-400">—</span>}
         </div>
-      ) : <span className="text-slate-400">—</span>;
+      );
     }},
-    { header: "Termék", key: "product_name" },
+    { header: "Termék / Cíkk", render: (r) => {
+      if (r.items && r.items.length > 0) {
+        return (
+          <div className="space-y-0.5">
+            {r.items.map((item, i) => (
+              <div key={i} className="text-xs">
+                <span className="font-medium text-slate-800">{item.product_name || item.category_name || '—'}</span>
+                {item.planned_quantity_tons && <span className="text-slate-400 ml-1">{item.planned_quantity_tons} t</span>}
+              </div>
+            ))}
+          </div>
+        );
+      }
+      return <span className="text-slate-700">{r.product_name || "-"}</span>;
+    }},
     { header: "Dátum", render: (r) => r.loading_date || r.actual_loading_date || "-" },
     { header: "Tény. (t)", render: (r) => r.actual_weight_tons?.toFixed(2) || "-" },
     { header: "Fuvarozó", key: "carrier_name", render: (r) => r.carrier_name || "-" },

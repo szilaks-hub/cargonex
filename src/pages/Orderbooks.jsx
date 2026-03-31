@@ -539,7 +539,7 @@ function OrderbooksList({ orders, lines, trucks = [], onSelect, onDelete, isClos
                             const remaining = (line.planned_quantity_tons || 0) - (line.allocated_quantity_tons || 0);
                             return (
                               <div key={line.id} className="flex items-center gap-3">
-                                <div className="w-36 text-sm font-medium text-slate-700 truncate">{line.category_name || '—'}</div>
+                                <div className="w-36 text-sm font-medium text-slate-700 truncate">{line.category_name || '\u2014'}</div>
                                 <div className="flex-1">
                                   <div className="flex items-center gap-2 mb-0.5">
                                     <div className="h-2 flex-1 bg-slate-200 rounded-full overflow-hidden">
@@ -554,8 +554,8 @@ function OrderbooksList({ orders, lines, trucks = [], onSelect, onDelete, isClos
                                     <span className="font-medium text-blue-700">{(line.allocated_quantity_tons || 0).toFixed(2)} t</span>
                                     {' / '}
                                     <span>{(line.planned_quantity_tons || 0).toLocaleString("hu-HU", {maximumFractionDigits: 2})} t tervezett</span>
-                                      {remaining > 0.01 && <span className="ml-2 text-amber-600">· {remaining.toLocaleString("hu-HU", {maximumFractionDigits: 2})} t szabad</span>}
-                                    {remaining <= 0 && remaining > -0.01 && <span className="ml-2 text-emerald-600">· Teljes</span>}
+                                      {remaining > 0.01 && <span className="ml-2 text-amber-600">&middot; {remaining.toLocaleString("hu-HU", {maximumFractionDigits: 2})} t szabad</span>}
+                                    {remaining <= 0 && remaining > -0.01 && <span className="ml-2 text-emerald-600">&middot; Teljes</span>}
                                   </div>
                                 </div>
                                 <div className="text-right text-xs text-slate-500 w-24">
@@ -565,7 +565,7 @@ function OrderbooksList({ orders, lines, trucks = [], onSelect, onDelete, isClos
                             );
                           })}
                           <div className="flex items-center gap-3 pt-2 border-t border-slate-200">
-                            <div className="w-36 text-xs font-bold text-slate-600 uppercase">Összesen</div>
+                            <div className="w-36 text-xs font-bold text-slate-600 uppercase">\u00d6sszesen</div>
                             <div className="flex-1">
                               <div className="flex items-center gap-2 mb-0.5">
                                 <div className="h-2 flex-1 bg-slate-200 rounded-full overflow-hidden">
@@ -577,7 +577,7 @@ function OrderbooksList({ orders, lines, trucks = [], onSelect, onDelete, isClos
                                 <span className={`text-xs font-bold w-10 text-right ${allocPct >= 100 ? 'text-emerald-600' : allocPct >= 50 ? 'text-blue-600' : 'text-amber-600'}`}>{allocPct}%</span>
                               </div>
                               <div className="text-xs text-slate-600 font-semibold">
-                                {allocatedTons.toLocaleString("hu-HU", {maximumFractionDigits: 2})} t / {plannedTons.toLocaleString("hu-HU", {maximumFractionDigits: 2})} t · marad: {remainingTons.toLocaleString("hu-HU", {maximumFractionDigits: 2})} t
+                                {allocatedTons.toLocaleString("hu-HU", {maximumFractionDigits: 2})} t / {plannedTons.toLocaleString("hu-HU", {maximumFractionDigits: 2})} t &middot; marad: {remainingTons.toLocaleString("hu-HU", {maximumFractionDigits: 2})} t
                               </div>
                             </div>
                             <div className="text-right text-xs font-semibold text-slate-700 w-24">
@@ -586,36 +586,36 @@ function OrderbooksList({ orders, lines, trucks = [], onSelect, onDelete, isClos
                             </div>
                             </div>
 
-                            {/* Előjegyzett kamionok */}
+                            {/* El\u0151jegyzett kamionok */}
                             {(() => {
                             const orderTrucks = trucks.filter(t => t.orderbook_id === order.id && t.status !== 'cancelled');
                             if (orderTrucks.length === 0) return null;
                             return (
                               <div className="space-y-2 pt-3 border-t border-slate-200">
                                 <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
-                                  🚛 Előjegyzett kamionok ({orderTrucks.length})
+                                  \uD83D\uDE9B El\u0151jegyzett kamionok ({orderTrucks.length})
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
                                   {orderTrucks.map(t => (
                                     <div key={t.id} className="bg-white rounded-lg border border-slate-200 p-2.5 text-xs">
                                       <div className="flex items-center justify-between mb-1">
-                                        <span className="font-bold text-slate-800">{t.truck_number || '—'}</span>
+                                        <span className="font-bold text-slate-800">{t.truck_number || '\u2014'}</span>
                                         <Badge className={
                                           t.status === 'booked' ? 'bg-slate-100 text-slate-700' :
                                           t.status === 'loaded' ? 'bg-orange-100 text-orange-700' :
                                           t.status === 'closed' ? 'bg-emerald-100 text-emerald-700' :
                                           'bg-slate-100 text-slate-600'
                                         }>
-                                          {t.status === 'booked' ? 'Előjegyzett' : 
+                                          {t.status === 'booked' ? 'El\u0151jegyzett' : 
                                            t.status === 'loaded' ? 'Megrakott' : 
-                                           t.status === 'closed' ? 'Lezárt' : t.status}
+                                           t.status === 'closed' ? 'Lez\u00e1rt' : t.status}
                                         </Badge>
                                       </div>
                                       <div className="text-slate-600 space-y-0.5">
-                                        <div>📦 {t.planned_quantity_tons || 0} t</div>
-                                        <div>🚚 {t.carrier_name || '—'}</div>
-                                        <div>📅 {t.expected_loading_date || t.loading_date || '—'}</div>
-                                        {t.destination_city && <div>📍 {t.destination_country} · {t.destination_city}</div>}
+                                        <div>\uD83D\uDCE6 {t.planned_quantity_tons || 0} t</div>
+                                        <div>\uD83D\uDE9A {t.carrier_name || '\u2014'}</div>
+                                        <div>\uD83D\uDCC5 {t.expected_loading_date || t.loading_date || '\u2014'}</div>
+                                        {t.destination_city && <div>\uD83D\uDCCD {t.destination_country} &middot; {t.destination_city}</div>}
                                       </div>
                                     </div>
                                   ))}
@@ -631,6 +631,57 @@ function OrderbooksList({ orders, lines, trucks = [], onSelect, onDelete, isClos
               );
             })}
           </tbody>
+          {/* Summary footer row */}
+          {(() => {
+            let totPlanned = 0, totValue = 0, totTervezett = 0, totMegrakott = 0, totFelrakhato = 0;
+            displayOrders.forEach(order => {
+              const orderLines = lines.filter(l => l.orderbook_id === order.id);
+              const plannedTons = orderLines.reduce((s, l) => s + (l.planned_quantity_tons || 0), 0);
+              const valueEUR = orderLines.reduce((s, l) => s + (l.line_value_eur || 0), 0);
+              const orderTrucksAll = trucks.filter(t => t.orderbook_id === order.id && t.status !== 'cancelled');
+              const megrakottTons = orderTrucksAll
+                .filter(t => ['loaded', 'finance_control', 'closed'].includes(t.status))
+                .reduce((s, t) => s + (t.actual_weight_tons || t.planned_quantity_tons || 0), 0);
+              const tervezettTons = orderTrucksAll
+                .filter(t => t.status === 'booked')
+                .reduce((s, t) => s + (t.planned_quantity_tons || 0), 0);
+              const felrakhatoTons = Math.max(0, plannedTons - megrakottTons - tervezettTons);
+              totPlanned += plannedTons;
+              totValue += valueEUR;
+              totTervezett += tervezettTons;
+              totMegrakott += megrakottTons;
+              totFelrakhato += felrakhatoTons;
+            });
+            return (
+              <tfoot>
+                <tr className="bg-slate-100 border-t-2 border-slate-300 font-bold text-sm">
+                  <td className="py-3 px-2"></td>
+                  <td className="py-3 px-4 text-slate-700 font-bold uppercase text-xs tracking-wide" colSpan="3">\u00d6sszesen ({displayOrders.length} rendelés)</td>
+                  <td className="py-3 px-4 text-right">
+                    <div className="font-bold text-slate-900">{totPlanned.toLocaleString("hu-HU", {maximumFractionDigits: 0})}</div>
+                    <div className="text-[10px] text-slate-500">t</div>
+                  </td>
+                  <td className="py-3 px-4 text-right">
+                    <div className="font-bold text-slate-900">{totValue.toLocaleString("hu-HU", {maximumFractionDigits: 0})}</div>
+                    <div className="text-[10px] text-slate-500">EUR</div>
+                  </td>
+                  <td className="py-3 px-4 text-right">
+                    <div className="font-bold text-blue-700">{totTervezett.toLocaleString("hu-HU", {maximumFractionDigits: 0})}</div>
+                    <div className="text-[10px] text-slate-500">t</div>
+                  </td>
+                  <td className="py-3 px-4 text-right">
+                    <div className="font-bold text-emerald-700">{totMegrakott.toLocaleString("hu-HU", {maximumFractionDigits: 0})}</div>
+                    <div className="text-[10px] text-slate-500">t</div>
+                  </td>
+                  <td className="py-3 px-4 text-right">
+                    <div className="font-bold text-amber-600">{totFelrakhato.toLocaleString("hu-HU", {maximumFractionDigits: 0})}</div>
+                    <div className="text-[10px] text-slate-500">t</div>
+                  </td>
+                  <td className="py-3 px-4"></td>
+                </tr>
+              </tfoot>
+            );
+          })()}
         </table>
       </div>
     </Card>
