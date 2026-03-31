@@ -462,15 +462,17 @@ export default function Dashboard() {
           <div className="space-y-2">
             <div className="grid grid-cols-12 gap-1 text-[10px] font-bold text-slate-500 uppercase tracking-wider px-1 pb-1 border-b border-violet-200">
               <div className="col-span-3">Kategória</div>
-              <div className="col-span-2 text-right">Tonna</div>
+              <div className="col-span-2 text-right">Rendelt t</div>
+              <div className="col-span-2 text-right">Kiszáll. t</div>
               <div className="col-span-1 text-right">%</div>
-              <div className="col-span-3 text-right">Érték (EUR)</div>
-              <div className="col-span-3"></div>
+              <div className="col-span-2 text-right">Érték €</div>
+              <div className="col-span-2"></div>
             </div>
             {(() => {
               const totalTons = catData.reduce((s, c) => s + c.tons, 0);
               return catData.map((c, i) => {
                 const pct = totalTons > 0 ? Math.round(c.tons / totalTons * 100) : 0;
+                const allocPct = c.tons > 0 ? Math.round(c.allocated / c.tons * 100) : 0;
                 return (
                   <div key={c.name} className="grid grid-cols-12 gap-1 items-center px-1 py-1.5 rounded-lg hover:bg-violet-50/60 transition-colors">
                     <div className="col-span-3 text-xs font-bold text-slate-900 truncate">{c.name}</div>
@@ -478,17 +480,22 @@ export default function Dashboard() {
                       <span className="text-sm font-bold text-slate-900">{c.tons.toLocaleString("hu-HU", {maximumFractionDigits: 0})}</span>
                       <span className="text-[10px] text-slate-500 ml-0.5">t</span>
                     </div>
+                    <div className="col-span-2 text-right">
+                      <span className="text-sm font-bold text-emerald-700">{c.allocated.toLocaleString("hu-HU", {maximumFractionDigits: 0})}</span>
+                      <span className="text-[10px] text-slate-500 ml-0.5">t</span>
+                    </div>
                     <div className="col-span-1 text-right">
                       <span className="text-xs font-bold text-slate-900">{pct}%</span>
                     </div>
-                    <div className="col-span-3 text-right">
+                    <div className="col-span-2 text-right">
                       <span className="text-xs font-bold text-slate-900">{c.value.toLocaleString("hu-HU", {maximumFractionDigits: 0})}</span>
                       <span className="text-[10px] text-slate-500 ml-0.5">€</span>
                     </div>
-                    <div className="col-span-3">
+                    <div className="col-span-2">
                       <div className="w-full h-2.5 bg-violet-100 rounded-full overflow-hidden">
-                        <div className="h-full bg-violet-400 rounded-full" style={{width: `${pct}%`}} />
+                        <div className="h-full bg-emerald-400 rounded-full" style={{width: `${allocPct}%`}} />
                       </div>
+                      <div className="text-[9px] text-slate-500 text-right mt-0.5">{allocPct}%</div>
                     </div>
                   </div>
                 );
@@ -504,12 +511,16 @@ export default function Dashboard() {
                     <span className="text-sm font-bold text-violet-700">{totalTons.toLocaleString("hu-HU", {maximumFractionDigits: 0})}</span>
                     <span className="text-[10px] text-slate-500 ml-0.5">t</span>
                   </div>
+                  <div className="col-span-2 text-right">
+                    <span className="text-sm font-bold text-emerald-700">{catData.reduce((s,c)=>s+c.allocated,0).toLocaleString("hu-HU",{maximumFractionDigits:0})}</span>
+                    <span className="text-[10px] text-slate-500 ml-0.5">t</span>
+                  </div>
                   <div className="col-span-1 text-right"><span className="text-xs font-bold text-slate-700">100%</span></div>
-                  <div className="col-span-3 text-right">
+                  <div className="col-span-2 text-right">
                     <span className="text-xs font-bold text-violet-700">{totalVal.toLocaleString("hu-HU", {maximumFractionDigits: 0})}</span>
                     <span className="text-[10px] text-slate-500 ml-0.5">€</span>
                   </div>
-                  <div className="col-span-3"></div>
+                  <div className="col-span-2"></div>
                 </div>
               );
             })()}
