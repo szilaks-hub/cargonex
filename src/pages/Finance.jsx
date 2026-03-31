@@ -21,6 +21,17 @@ export default function Finance() {
     queryFn: () => base44.entities.Truck.list("-created_date"),
   });
 
+  const { data: orderbooks = [] } = useQuery({
+    queryKey: ["orderbooks"],
+    queryFn: () => base44.entities.Orderbook.list(),
+  });
+
+  const orderbookMap = useMemo(() => {
+    const m = {};
+    orderbooks.forEach(o => { m[o.id] = o; });
+    return m;
+  }, [orderbooks]);
+
   // Show finance_control and closed trucks
   const eligibleTrucks = useMemo(() => {
     return trucks.filter((t) =>
@@ -31,18 +42,33 @@ export default function Finance() {
   const filtered = useMemo(() => {
     if (!search) return eligibleTrucks;
     const s = search.toLowerCase();
-    return eligibleTrucks.filter((t) =>
-      (t.truck_number || "").toLowerCase().includes(s) ||
-      (t.product_name || "").toLowerCase().includes(s) ||
-      (t.carrier_name || "").toLowerCase().includes(s) ||
-      (t.mrn_number || "").toLowerCase().includes(s) ||
-      (t.supplier_invoice_number || "").toLowerCase().includes(s)
-    );
-  }, [eligibleTrucks, search]);
+    return eligibleTrucks.filter((t) => {
+      const ob = orderbookMap[t.orderbook_id];
+      return (
+        (t.truck_number || "").toLowerCase().includes(s) ||
+        (t.product_name || "").toLowerCase().includes(s) ||
+        (t.carrier_name || "").toLowerCase().includes(s) ||
+        (t.mrn_number || "").toLowerCase().includes(s) ||
+        (t.supplier_invoice_number || "").toLowerCase().includes(s) ||
+        (ob?.supplier_order_no || "").toLowerCase().includes(s) ||
+        (ob?.system_order_no || "").toLowerCase().includes(s)
+      );
+    });
+  }, [eligibleTrucks, search, orderbookMap]);
 
   const columns = [
     { header: "Rendszám", render: (r) => r.truck_number || `T-${r.id?.slice(0, 6)}` },
+    { header: "Bész. rendelsz.", render: (r) => {
+      const ob = orderbookMap[r.orderbook_id];
+      return ob?.supplier_order_no ? (
+        <div>
+          <div className="font-semibold text-slate-800 text-xs">{ob.supplier_order_no}</div>
+          {ob?.system_order_no && <div className="text-[10px] text-slate-500">{ob.system_order_no}</div>}
+        </div>
+      ) : <span className="text-slate-400">—</span>;
+    }},
     { header: "Termék", key: "product_name" },
+    { header: "Dátum", render: (r) => r.loading_date || r.actual_loading_date || "-" },
     { header: "Tény. (t)", render: (r) => r.actual_weight_tons?.toFixed(2) || "-" },
     { header: "Fuvarozó", key: "carrier_name", render: (r) => r.carrier_name || "-" },
     { header: "Eladó számlaszám", render: (r) => r.supplier_invoice_number || "-" },
@@ -87,7 +113,7 @@ export default function Finance() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <Input
               className="pl-9"
-              placeholder="Keresés: rendszám, termék, MRN, számlaszám..."
+              placeholder="Keresés: rendszám, termék, MRN, számlaszám, bész. rendelésszám, rendszer rendelsz..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
