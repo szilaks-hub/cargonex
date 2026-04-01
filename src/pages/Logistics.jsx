@@ -225,6 +225,7 @@ export default function Logistics() {
       {showForm && (
         <TruckForm
           item={editItem}
+          readOnly={editItem?.status === "closed"}
           onClose={() => { setShowForm(false); setEditItem(null); }}
           onSaved={() => {
             qc.invalidateQueries({ queryKey: ["trucks"] });

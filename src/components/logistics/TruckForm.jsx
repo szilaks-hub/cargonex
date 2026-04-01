@@ -20,7 +20,7 @@ const STATUS_LABELS = {
 
 const COUNTRIES = ["HU", "DE", "AT", "SK", "RO", "HR", "SI", "PL", "CZ", "FR", "IT", "NL", "BE", "BG", "RS", "UA", "TR"];
 
-export default function TruckForm({ item, onClose, onSaved, defaultOrderbookId, defaultOrderNo }) {
+export default function TruckForm({ item, onClose, onSaved, defaultOrderbookId, defaultOrderNo, readOnly = false }) {
   const queryClient = useQueryClient();
   const [tab, setTab] = useState("order");
   const [form, setForm] = useState(() => {
@@ -291,14 +291,19 @@ export default function TruckForm({ item, onClose, onSaved, defaultOrderbookId, 
     }
   };
 
-  const inp = "bg-white border-[#c6ccda] text-slate-800";
+  const inp = readOnly ? "bg-slate-100 border-slate-200 text-slate-600 pointer-events-none" : "bg-white border-[#c6ccda] text-slate-800";
   const lbl = "text-slate-600 text-xs font-semibold";
 
   return (
     <div className="bg-[#f5f7fa] border border-[rgba(46,58,90,0.12)] rounded-xl p-5 space-y-4">
+      {readOnly && (
+        <div className="bg-green-50 border border-green-300 rounded-lg px-4 py-2 text-sm text-green-800 font-semibold flex items-center gap-2">
+          🔒 Lezárt fuvar – csak megtekintés, szerkesztés nem lehetséges.
+        </div>
+      )}
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold text-slate-800">
-          {item ? `Fuvar szerkesztése – ${item.truck_number || item.id?.slice(0, 8)}` : "Új fuvar előjegyzése"}
+          {item ? `Fuvar megtekintése – ${item.truck_number || item.id?.slice(0, 8)}` : "Új fuvar előjegyzése"}
         </h3>
         <button onClick={onClose} className="text-slate-400 hover:text-slate-700"><X className="w-4 h-4" /></button>
       </div>
@@ -719,12 +724,14 @@ export default function TruckForm({ item, onClose, onSaved, defaultOrderbookId, 
       </Tabs>
 
       <div className="flex justify-between pt-2 border-t border-slate-200">
-        <div>{item?.id && <Button variant="ghost" onClick={handleDelete} className="text-red-500 hover:text-red-600 hover:bg-red-50 gap-2"><Trash2 className="w-4 h-4" /> Törlés</Button>}</div>
+        <div>{!readOnly && item?.id && <Button variant="ghost" onClick={handleDelete} className="text-red-500 hover:text-red-600 hover:bg-red-50 gap-2"><Trash2 className="w-4 h-4" /> Törlés</Button>}</div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={onClose} className="border-[#c6ccda] text-slate-600">Mégsem</Button>
-          <Button onClick={handleSave} disabled={saving} className="bg-blue-600 hover:bg-blue-700 text-white gap-2">
-            <Save className="w-4 h-4" /> {saving ? "Mentés..." : "Mentés"}
-          </Button>
+          <Button variant="outline" onClick={onClose} className="border-[#c6ccda] text-slate-600">{readOnly ? "Bezárás" : "Mégsem"}</Button>
+          {!readOnly && (
+            <Button onClick={handleSave} disabled={saving} className="bg-blue-600 hover:bg-blue-700 text-white gap-2">
+              <Save className="w-4 h-4" /> {saving ? "Mentés..." : "Mentés"}
+            </Button>
+          )}
         </div>
       </div>
     </div>
