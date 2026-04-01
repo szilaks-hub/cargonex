@@ -336,6 +336,7 @@ export default function Logistics() {
                 orderbookMap={orderbookMap}
                 checkedTrucks={checkedTrucks}
                 onToggleCheck={toggleCheck}
+                isClosed={activeTab === "closed"}
               />
             </TabsContent>
           ))}
@@ -354,7 +355,7 @@ export default function Logistics() {
   );
 }
 
-function TruckTable({ trucks, isLoading, onEdit, onAdvance, statusLabels, statusColors, orderbookMap = {}, checkedTrucks = new Set(), onToggleCheck }) {
+function TruckTable({ trucks, isLoading, onEdit, onAdvance, statusLabels, statusColors, orderbookMap = {}, checkedTrucks = new Set(), onToggleCheck, isClosed = false }) {
   if (isLoading) return <div className="text-center py-8 text-slate-400">Betöltés...</div>;
   if (!trucks || trucks.length === 0) return <div className="text-center py-8 text-slate-400">Nincs adat / No data</div>;
 
@@ -372,9 +373,9 @@ function TruckTable({ trucks, isLoading, onEdit, onAdvance, statusLabels, status
               <th className="py-2 px-3 text-right">Tény. (t)</th>
               <th className="py-2 px-3">Fuvarozó</th>
               <th className="py-2 px-3">Célállomás</th>
-              <th className="py-2 px-3">Státusz</th>
+              {!isClosed && <th className="py-2 px-3">Státusz</th>}
               <th className="py-2 px-3 text-center">Fuvardíj</th>
-              <th className="py-2 px-3 text-center">Lejelent</th>
+              {!isClosed && <th className="py-2 px-3 text-center">Lejelent</th>}
             </tr>
           </thead>
           <tbody>
@@ -414,20 +415,24 @@ function TruckTable({ trucks, isLoading, onEdit, onAdvance, statusLabels, status
                   <td className="py-2 px-3 text-slate-600 whitespace-nowrap">
                     {r.destination_country}{r.destination_city ? ` · ${r.destination_city}` : ""}
                   </td>
-                  <td className="py-2 px-3" onClick={e => e.stopPropagation()}>
-                    <StatusDropdown truck={r} onAdvance={onAdvance} statusLabels={statusLabels} statusColors={statusColors} />
-                  </td>
+                  {!isClosed && (
+                    <td className="py-2 px-3" onClick={e => e.stopPropagation()}>
+                      <StatusDropdown truck={r} onAdvance={onAdvance} statusLabels={statusLabels} statusColors={statusColors} />
+                    </td>
+                  )}
                   <td className="py-2 px-3" onClick={e => e.stopPropagation()}>
                     <FreightCostCell truck={r} />
                   </td>
-                  <td className="py-2 px-3 text-center" onClick={e => e.stopPropagation()}>
-                    <input
-                      type="checkbox"
-                      checked={checkedTrucks.has(r.id)}
-                      onChange={() => onToggleCheck(r.id)}
-                      className="w-4 h-4 accent-yellow-500 cursor-pointer"
-                    />
-                  </td>
+                  {!isClosed && (
+                    <td className="py-2 px-3 text-center" onClick={e => e.stopPropagation()}>
+                      <input
+                        type="checkbox"
+                        checked={checkedTrucks.has(r.id)}
+                        onChange={() => onToggleCheck(r.id)}
+                        className="w-4 h-4 accent-yellow-500 cursor-pointer"
+                      />
+                    </td>
+                  )}
                 </tr>
               );
             })}
