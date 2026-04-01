@@ -1,5 +1,6 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import { base44 } from "@/api/base44Client";
 import { createPageUrl } from "./utils";
 import {
   LayoutDashboard,
@@ -30,6 +31,22 @@ const navItems = [
 
 export default function Layout({ children, currentPageName }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [userRole, setUserRole] = useState(null);
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    base44.auth.me().then(u => {
+      setUserRole(u?.role || null);
+      if (u?.role === 'logistics_viewer' && currentPageName !== 'Logistics') {
+        navigate('/Logistics', { replace: true });
+      }
+    }).catch(() => {});
+  }, [currentPageName]);
+
+  const visibleNavItems = userRole === 'logistics_viewer'
+    ? navItems.filter(n => n.page === 'Logistics')
+    : navItems;
 
   const currentItem = navItems.find((n) => n.page === currentPageName);
 
@@ -79,7 +96,7 @@ export default function Layout({ children, currentPageName }) {
 
         {/* Navigation */}
         <nav className="flex-1 py-4 px-3 space-y-0.5 overflow-y-auto">
-          {navItems.map((item) => {
+          {visibleNavItems.map((item) => {
             const isActive = currentPageName === item.page;
             return (
               <Link
