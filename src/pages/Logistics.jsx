@@ -128,16 +128,27 @@ export default function Logistics() {
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Logistics / Logisztika</h1>
           <p className="text-sm text-slate-500 mt-1">Truck scheduling and loading / Kamionok ütemezés és rakodás</p>
+          <InviteLink />
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
           {checkedTrucks.size > 0 && (
-            <Button
-              onClick={() => setShowReport(true)}
-              className="bg-yellow-400 hover:bg-yellow-500 text-yellow-900 font-bold gap-2 shadow-md"
-            >
-              <FileText className="w-4 h-4" />
-              Jelentés ({checkedTrucks.size} db)
-            </Button>
+            <>
+              <Button
+                onClick={clearChecks}
+                variant="outline"
+                className="border-slate-300 text-slate-600 gap-2"
+                size="sm"
+              >
+                <X className="w-3.5 h-3.5" /> Jelölés törlése
+              </Button>
+              <Button
+                onClick={() => setShowReport(true)}
+                className="bg-yellow-400 hover:bg-yellow-500 text-yellow-900 font-bold gap-2 shadow-md"
+              >
+                <FileText className="w-4 h-4" />
+                Jelentés ({checkedTrucks.size} db)
+              </Button>
+            </>
           )}
           <Button
             onClick={() => { setEditItem(null); setShowForm(true); }}
@@ -319,6 +330,7 @@ function TruckTable({ trucks, isLoading, onEdit, onAdvance, statusLabels, status
               <th className="py-2 px-3">Fuvarozó</th>
               <th className="py-2 px-3">Célállomás</th>
               <th className="py-2 px-3">Státusz</th>
+              <th className="py-2 px-3 text-center">Fuvardíj</th>
               <th className="py-2 px-3 text-center">Lejelent</th>
             </tr>
           </thead>
@@ -361,6 +373,9 @@ function TruckTable({ trucks, isLoading, onEdit, onAdvance, statusLabels, status
                   </td>
                   <td className="py-2 px-3" onClick={e => e.stopPropagation()}>
                     <StatusDropdown truck={r} onAdvance={onAdvance} statusLabels={statusLabels} statusColors={statusColors} />
+                  </td>
+                  <td className="py-2 px-3" onClick={e => e.stopPropagation()}>
+                    <FreightCostCell truck={r} />
                   </td>
                   <td className="py-2 px-3 text-center" onClick={e => e.stopPropagation()}>
                     <input
@@ -408,7 +423,7 @@ function StatusDropdown({ truck, onAdvance, statusLabels, statusColors }) {
   );
 }
 
-function QuickStatusAdvance({ truck, onAdvance, statusLabels }) {
+function QuickStatusAdvance({ truck, onAdvance }) {
   const nextMap = {
     booked: [{ val: "loaded", label: "→ Megrakott" }],
     loaded: [{ val: "closed", label: "→ Lezár" }],
@@ -428,6 +443,46 @@ function QuickStatusAdvance({ truck, onAdvance, statusLabels }) {
           {opt.label}
         </Button>
       ))}
+    </div>
+  );
+}
+
+function FreightCostCell({ truck }) {
+  const domestic = Number(truck.freight_domestic_leg_snapshot) || 0;
+  const foreign = Number(truck.freight_foreign_leg_snapshot) || 0;
+  const total = Number(truck.freight_total_snapshot) || (domestic + foreign) || 0;
+  if (!total) return <span className="text-slate-300 text-xs">—</span>;
+  return (
+    <div className="bg-green-50 border border-green-200 rounded-lg px-2 py-1 min-w-[7rem]">
+      {(domestic > 0 || foreign > 0) && (
+        <div className="flex justify-between gap-2 text-[10px] text-green-700 mb-0.5">
+          {domestic > 0 && <span>HU: <strong>{domestic.toLocaleString("hu-HU")}</strong></span>}
+          {foreign > 0 && <span>Kül: <strong>{foreign.toLocaleString("hu-HU")}</strong></span>}
+        </div>
+      )}
+      <div className="text-xs font-extrabold text-green-800">∑ {total.toLocaleString("hu-HU")} EUR</div>
+    </div>
+  );
+}
+
+function InviteLink() {
+  const [copied, setCopied] = useState(false);
+  const link = `${window.location.origin}/Logistics`;
+  const handleCopy = () => {
+    navigator.clipboard.writeText(link);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+  return (
+    <div className="flex items-center gap-2 mt-2">
+      <span className="text-xs text-slate-400">Megosztható link:</span>
+      <span className="text-xs text-blue-600 font-mono bg-blue-50 border border-blue-200 rounded px-2 py-0.5 max-w-[220px] truncate">{link}</span>
+      <button
+        onClick={handleCopy}
+        className="text-xs bg-slate-100 hover:bg-slate-200 text-slate-600 rounded px-2 py-0.5 font-semibold transition-colors"
+      >
+        {copied ? "✓ Másolva!" : "Másolás"}
+      </button>
     </div>
   );
 }
