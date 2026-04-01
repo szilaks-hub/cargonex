@@ -1,4 +1,5 @@
 import React, { useState, useRef } from "react";
+import { startOfWeek, endOfWeek, addWeeks, parseISO, isWithinInterval } from "date-fns";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import TruckForm from "@/components/logistics/TruckForm";
@@ -10,13 +11,14 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { List, CalendarDays, BarChart2, Printer, X, FileText } from "lucide-react";
+import { List, CalendarDays, BarChart2, Printer, X, FileText, Search } from "lucide-react";
 import { toast } from "sonner";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const STATUS_TABS = [
   { key: "booked", label: "Előjegyzett" },
   { key: "loaded", label: "Megrakott" },
+  { key: "closed", label: "Lezárt fuvar" },
 ];
 
 const STATUS_LABELS = {
@@ -52,6 +54,8 @@ export default function Logistics() {
   const [activeTab, setActiveTab] = useState("booked");
   const [carrierFilter, setCarrierFilter] = useState("");
   const [destinationFilter, setDestinationFilter] = useState("");
+  const [truckNumberFilter, setTruckNumberFilter] = useState("");
+  const [weekFilter, setWeekFilter] = useState("");
   const [checkedTrucks, setCheckedTrucks] = useState(new Set());
   const [showReport, setShowReport] = useState(false);
   const qc = useQueryClient();
@@ -110,6 +114,18 @@ export default function Logistics() {
       const dest = t.destination_city ? `${t.destination_country} · ${t.destination_city}` : t.destination_country;
       if (dest !== destinationFilter) return false;
     }
+    if (truckNumberFilter && !(t.truck_number || "").toLowerCase().includes(truckNumberFilter.toLowerCase())) return false;
+    if (weekFilter && activeTab === "loaded") {
+      const dateStr = t.expected_loading_date || t.loading_date;
+      if (!dateStr) return false;
+      const weeks = parseInt(weekFilter);
+      const now = new Date();
+      const start = startOfWeek(now, { weekStartsOn: 1 });
+      const end = endOfWeek(addWeeks(now, weeks - 1), { weekStartsOn: 1 });
+      try {
+        if (!isWithinInterval(parseISO(dateStr), { start, end })) return false;
+      } catch { return false; }
+    }
     return true;
   });
   
@@ -118,7 +134,7 @@ export default function Logistics() {
   const transitRatio = totalActiveTrucks > 0 ? ((transitTrucks.length / totalActiveTrucks) * 100).toFixed(1) : 0;
 
   const stats = STATUS_TABS.reduce((acc, t) => {
-    acc[t.key] = t.key === "all" ? trucks.length : trucks.filter(x => x.status === t.key).length;
+    acc[t.key] = trucks.filter(x => x.status === t.key).length;
     return acc;
   }, {});
 
@@ -250,6 +266,17 @@ export default function Logistics() {
 
           {/* Filters */}
           <div className="flex flex-wrap gap-3 my-3">
+            {/* Rendszám kereső */}
+            <div className="flex items-center gap-2 relative">
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
+              <input
+                type="text"
+                value={truckNumberFilter}
+                onChange={e => setTruckNumberFilter(e.target.value)}
+                placeholder="Rendszám keresés..."
+                className="h-8 pl-8 pr-3 text-sm border border-slate-200 rounded-md bg-white focus:outline-none focus:ring-1 focus:ring-blue-400 w-44"
+              />
+            </div>
             <div className="flex items-center gap-2">
               <span className="text-xs font-semibold text-slate-500">Fuvarozó:</span>
               <Select value={carrierFilter || "__all"} onValueChange={v => setCarrierFilter(v === "__all" ? "" : v)}>
@@ -274,8 +301,24 @@ export default function Logistics() {
                 </SelectContent>
               </Select>
             </div>
-            {(carrierFilter || destinationFilter) && (
-              <button onClick={() => { setCarrierFilter(""); setDestinationFilter(""); }} className="text-xs text-blue-600 hover:underline">
+            {activeTab === "loaded" && (
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-semibold text-slate-500">Időszak:</span>
+                <Select value={weekFilter || "__all"} onValueChange={v => setWeekFilter(v === "__all" ? "" : v)}>
+                  <SelectTrigger className="h-8 w-40 text-sm bg-white">
+                    <SelectValue placeholder="Mind" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white">
+                    <SelectItem value="__all">Mind</SelectItem>
+                    <SelectItem value="1">Aktuális hét</SelectItem>
+                    <SelectItem value="2">2 hét</SelectItem>
+                    <SelectItem value="3">3 hét</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+            {(carrierFilter || destinationFilter || truckNumberFilter || weekFilter) && (
+              <button onClick={() => { setCarrierFilter(""); setDestinationFilter(""); setTruckNumberFilter(""); setWeekFilter(""); }} className="text-xs text-blue-600 hover:underline">
                 Szűrők törlése
               </button>
             )}
