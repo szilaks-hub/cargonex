@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import TruckForm from "@/components/logistics/TruckForm";
+import TruckReportModal from "@/components/logistics/TruckReportModal";
 import LogisticsCalendar from "@/components/logistics/LogisticsCalendar";
 import DailyLoadingStats from "@/components/logistics/DailyLoadingStats";
 import LoadingStatsPanel from "@/components/logistics/LoadingStatsPanel";
@@ -9,7 +10,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { List, CalendarDays, BarChart2 } from "lucide-react";
+import { List, CalendarDays, BarChart2, Printer, X, FileText } from "lucide-react";
 import { toast } from "sonner";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
@@ -51,7 +52,19 @@ export default function Logistics() {
   const [activeTab, setActiveTab] = useState("booked");
   const [carrierFilter, setCarrierFilter] = useState("");
   const [destinationFilter, setDestinationFilter] = useState("");
+  const [checkedTrucks, setCheckedTrucks] = useState(new Set());
+  const [showReport, setShowReport] = useState(false);
   const qc = useQueryClient();
+
+  const toggleCheck = (id) => {
+    setCheckedTrucks(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+
+  const clearChecks = () => setCheckedTrucks(new Set());
 
   const { data: trucks = [], isLoading } = useQuery({
     queryKey: ["trucks"],
@@ -111,12 +124,21 @@ export default function Logistics() {
 
   return (
     <div className="space-y-5">
-      <div className="text-center space-y-3">
+      <div className="flex items-start justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Logistics / Logisztika</h1>
           <p className="text-sm text-slate-500 mt-1">Truck scheduling and loading / Kamionok ütemezés és rakodás</p>
         </div>
-        <div className="flex items-center justify-center gap-2">
+        <div className="flex items-center gap-2 flex-shrink-0">
+          {checkedTrucks.size > 0 && (
+            <Button
+              onClick={() => setShowReport(true)}
+              className="bg-yellow-400 hover:bg-yellow-500 text-yellow-900 font-bold gap-2 shadow-md"
+            >
+              <FileText className="w-4 h-4" />
+              Jelentés ({checkedTrucks.size} db)
+            </Button>
+          )}
           <Button
             onClick={() => { setEditItem(null); setShowForm(true); }}
             className="bg-blue-600 hover:bg-blue-700 text-white px-6"
@@ -258,16 +280,27 @@ export default function Logistics() {
                 statusLabels={STATUS_LABELS}
                 statusColors={STATUS_COLORS}
                 orderbookMap={orderbookMap}
+                checkedTrucks={checkedTrucks}
+                onToggleCheck={toggleCheck}
               />
             </TabsContent>
           ))}
         </Tabs>
       )}
+
+      {/* Report Modal */}
+      {showReport && (
+        <TruckReportModal
+          trucks={trucks.filter(t => checkedTrucks.has(t.id))}
+          orderbookMap={orderbookMap}
+          onClose={() => setShowReport(false)}
+        />
+      )}
     </div>
   );
 }
 
-function TruckTable({ trucks, isLoading, onEdit, onAdvance, statusLabels, statusColors, orderbookMap = {} }) {
+function TruckTable({ trucks, isLoading, onEdit, onAdvance, statusLabels, statusColors, orderbookMap = {}, checkedTrucks = new Set(), onToggleCheck }) {
   if (isLoading) return <div className="text-center py-8 text-slate-400">Betöltés...</div>;
   if (!trucks || trucks.length === 0) return <div className="text-center py-8 text-slate-400">Nincs adat / No data</div>;
 
@@ -286,6 +319,7 @@ function TruckTable({ trucks, isLoading, onEdit, onAdvance, statusLabels, status
               <th className="py-2 px-3">Fuvarozó</th>
               <th className="py-2 px-3">Célállomás</th>
               <th className="py-2 px-3">Státusz</th>
+              <th className="py-2 px-3 text-center">Lejelent</th>
             </tr>
           </thead>
           <tbody>
@@ -327,6 +361,14 @@ function TruckTable({ trucks, isLoading, onEdit, onAdvance, statusLabels, status
                   </td>
                   <td className="py-2 px-3" onClick={e => e.stopPropagation()}>
                     <StatusDropdown truck={r} onAdvance={onAdvance} statusLabels={statusLabels} statusColors={statusColors} />
+                  </td>
+                  <td className="py-2 px-3 text-center" onClick={e => e.stopPropagation()}>
+                    <input
+                      type="checkbox"
+                      checked={checkedTrucks.has(r.id)}
+                      onChange={() => onToggleCheck(r.id)}
+                      className="w-4 h-4 accent-yellow-500 cursor-pointer"
+                    />
                   </td>
                 </tr>
               );
