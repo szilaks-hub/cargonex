@@ -163,10 +163,15 @@ export default function OrderbookDetail({ orderId, onClose, onUpdated, trucks = 
   const allocatedTons = lines.reduce((s, l) => s + (l.allocated_quantity_tons || 0), 0);
   const valueEUR = lines.reduce((s, l) => s + (l.line_value_eur || 0), 0);
   const remainingTons = plannedTons - allocatedTons;
-  
-  // Estimate trucks needed (assuming 24t average capacity)
+
+  // "Felrakható" = allokált tonnából csak a "booked" (előjegyzett, még fel nem rakott) kamionok
+  const bookedTons = relatedTrucks
+    .filter(t => t.status === "booked")
+    .reduce((s, t) => s + (t.planned_quantity_tons || 0), 0);
+
+  // Estimate trucks needed based on booked (felrakható) quantity
   const avgTruckCapacity = 24;
-  const estimatedTrucksNeeded = remainingTons > 0 ? Math.ceil(remainingTons / avgTruckCapacity) : 0;
+  const estimatedTrucksNeeded = bookedTons > 0 ? Math.ceil(bookedTons / avgTruckCapacity) : 0;
   // Customs fee is now per-truck (fixed EUR/truck), shown separately in summary
   const customsFeePerTruck = form.customs_required ? (form.customs_fee_eur_per_truck || 0) : 0;
   const otherFees = form.other_fees || [];
@@ -683,13 +688,13 @@ export default function OrderbookDetail({ orderId, onClose, onUpdated, trucks = 
                   </div>
                 </div>
               </div>
-              {remainingTons > 0 && (
+              {bookedTons > 0 && (
                 <div className="flex items-center justify-between p-3 bg-white rounded-lg border border-blue-200">
                   <div className="flex items-center gap-2">
                     <span className="text-2xl">🚛</span>
                     <div>
-                      <div className="text-xs text-slate-500">Becsült fuvarok száma</div>
-                      <div className="text-sm font-medium text-slate-700">(24 t/kamion átlag alapján)</div>
+                      <div className="text-xs text-slate-500">Felrakható kamionok száma</div>
+                      <div className="text-sm font-medium text-slate-700">{bookedTons.toFixed(2)} t előjegyzett · 24 t/kamion átlag</div>
                     </div>
                   </div>
                   <div className="text-3xl font-bold text-blue-700">{estimatedTrucksNeeded}</div>
