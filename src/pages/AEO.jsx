@@ -393,21 +393,22 @@ function MrnSzamlaKimutatas() {
   });
 
   const totalMrnDeclared = relevant.reduce((s, t) => s + (Number(t.mrn_declared_amount) || 0), 0);
-  const totalVat = relevant.reduce((s, t) => s + (Number(t.declared_vat) || 0), 0);
+  const totalVat = relevant.reduce((s, t) => s + (t.calculated_vat || (t.total_base * 0.27) || 0), 0);
   const totalBase = relevant.reduce((s, t) => s + (Number(t.total_base) || 0), 0);
 
   const fmt = (n) => (n !== null && n !== undefined && n !== "" && Number(n) !== 0) ? Number(n).toLocaleString("hu-HU") : "—";
 
-  // Egyezés: MRN megállapított HUF vs Tájékoztató ÁFA
+  // Tájékoztató ÁFA: calculated_vat vagy total_base * 0.27 (mint a Finance oldalon)
+  const getIndicVat = (t) => t.calculated_vat || (t.total_base * 0.27) || 0;
+
+  // Egyezés: Tájékoztató ÁFA vs MRN megállapított (mint a Finance MrnStatistics)
   const getMatch = (t) => {
-    const mrn = Math.round(Number(t.mrn_declared_amount));
-    const vat = Math.round(Number(t.declared_vat));
-    if (!mrn || !vat) return "missing";
-    const diff = Math.abs(mrn - vat);
-    if (diff <= 1) return "match";
-    const pct = diff / Math.max(mrn, vat);
-    if (pct < 0.01) return "match";
-    if (pct < 0.05) return "close";
+    const indicVat = getIndicVat(t);
+    const mrn = Number(t.mrn_declared_amount);
+    if (!mrn || !indicVat) return "missing";
+    const diff = Math.abs(indicVat - mrn) / indicVat * 100;
+    if (diff <= 0.5) return "match";
+    if (diff <= 1) return "close";
     return "diff";
   };
 
@@ -511,9 +512,9 @@ function MrnSzamlaKimutatas() {
           <div className="text-xs text-slate-500 font-semibold mb-1">MRN megállapított összeg (HUF)</div>
           <div className="text-lg font-extrabold text-blue-700">{fmt(totalMrnDeclared)}</div>
         </div>
-        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
+        <div className="bg-amber-50 rounded-xl border border-amber-200 p-4 shadow-sm">
           <div className="text-xs text-slate-500 font-semibold mb-1">Tájékoztató ÁFA (HUF)</div>
-          <div className="text-lg font-extrabold text-indigo-700">{fmt(totalVat)}</div>
+          <div className="text-lg font-extrabold text-amber-700">{fmt(totalVat)}</div>
         </div>
         <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
           <div className="text-xs text-slate-500 font-semibold mb-1">Végösszeg alap (HUF)</div>
@@ -565,7 +566,7 @@ function MrnSzamlaKimutatas() {
                   <td className="px-2 py-2 font-mono font-semibold text-slate-800 whitespace-nowrap">{t.mrn_number || "—"}</td>
                   <td className="px-2 py-2 text-slate-600 whitespace-nowrap">{t.mrn_date || "—"}</td>
                   <td className="px-2 py-2 text-right font-bold text-blue-700">{fmt(t.mrn_declared_amount)}</td>
-                  <td className="px-2 py-2 text-right font-bold text-indigo-700">{fmt(t.declared_vat)}</td>
+                  <td className="px-2 py-2 text-right font-bold text-indigo-700">{fmt(getIndicVat(t))}</td>
                   <td className="px-2 py-2 text-center whitespace-nowrap">
                     {match === "match" && <span className="inline-flex items-center gap-1 text-green-600 font-bold"><CheckCircle className="w-3.5 h-3.5" /> Egyezik</span>}
                     {match === "close" && <span className="inline-flex items-center gap-1 text-amber-600 font-semibold"><AlertTriangle className="w-3.5 h-3.5" /> Közel</span>}
