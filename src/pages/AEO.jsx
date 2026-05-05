@@ -98,108 +98,188 @@ function AuditJelentes() {
 
   const CARGONEX_LOGO = "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6995745b061c5cfec8978279/7ed19bd16_image.png";
 
+  const buildAuditRows = () => filteredTrucks.map((t, i) => `
+    <tr>
+      <td>${i + 1}</td>
+      <td><strong>${t.truck_number || "—"}</strong></td>
+      <td>${t.loading_date || t.actual_loading_date || "—"}</td>
+      <td>${t.product_name || "—"}</td>
+      <td class="right">${(t.actual_weight_tons || t.planned_quantity_tons || 0).toFixed(2)}</td>
+      <td>${t.supplier_invoice_number || "—"}</td>
+      <td class="${mrnCount[t.mrn_number] > 1 ? "dup" : ""}">${t.mrn_number || "—"}${mrnCount[t.mrn_number] > 1 ? ' <span class="dup-badge">dupla</span>' : ""}</td>
+      <td>${t.mrn_date || "—"}</td>
+      <td class="right">${t.total_base ? Number(t.total_base).toLocaleString("hu-HU") : "—"}</td>
+    </tr>
+  `).join("");
+
+  const buildDupRows = () => duplicateMrnTrucks.map((t, i) => `
+    <tr>
+      <td><strong>${t.truck_number || "—"}</strong></td>
+      <td class="dup">${t.mrn_number}</td>
+      <td>${t.mrn_date || "—"}</td>
+      <td>${t.carrier_name || "—"}</td>
+      <td class="right">${t.total_base ? Number(t.total_base).toLocaleString("hu-HU") : "—"}</td>
+    </tr>
+  `).join("");
+
+  const totalTons = filteredTrucks.reduce((s, t) => s + (t.actual_weight_tons || t.planned_quantity_tons || 0), 0).toFixed(2);
+  const totalHuf = filteredTrucks.reduce((s, t) => s + (t.total_base || 0), 0).toLocaleString("hu-HU");
+
   const handlePrint = () => {
-    const content = document.getElementById("audit-print");
-    if (!content) return;
-    const win = window.open("", "_blank", "width=900,height=1200");
-    win.document.write(`
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <meta charset="UTF-8" />
-        <title>Auditjelentés – CARGONEX</title>
-        <style>
-          @page { size: A4 portrait; margin: 12mm 14mm; }
-          * { box-sizing: border-box; }
-          body { font-family: Arial, sans-serif; font-size: 10.5px; color: #0f172a; margin: 0; padding: 0; background: #fff; }
+    const win = window.open("", "_blank", "width=960,height=1200");
+    win.document.write(`<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Auditjelentés</title>
+  <style>
+    @page { size: A4 portrait; margin: 14mm 16mm; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: Arial, sans-serif; font-size: 10.5px; color: #0f172a; background: #fff; }
 
-          /* ── TOP BANNER ── */
-          .print-banner {
-            background: linear-gradient(135deg, #1e3a8a 0%, #3B6CF4 100%);
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 10px 18px;
-            margin-bottom: 18px;
-            border-radius: 6px;
-          }
-          .print-banner-left { display: flex; align-items: center; gap: 14px; }
-          .print-banner-logo { height: 54px; object-fit: contain; filter: brightness(0) invert(1); }
-          .print-banner-title { font-size: 18px; font-weight: 900; letter-spacing: 0.04em; }
-          .print-banner-sub { font-size: 8px; letter-spacing: 0.2em; text-transform: uppercase; opacity: 0.75; margin-top: 2px; }
-          .print-banner-right { text-align: right; font-size: 8px; opacity: 0.85; line-height: 1.7; }
+    /* ── PRINT TOOLBAR (screen only) ── */
+    .toolbar { position: fixed; top: 0; left: 0; right: 0; background: #1e3a8a; color: white; padding: 10px 20px; display: flex; align-items: center; justify-content: space-between; z-index: 999; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+    .toolbar span { font-size: 13px; font-weight: 700; }
+    .toolbar button { background: white; color: #1e3a8a; border: none; padding: 7px 20px; border-radius: 5px; font-size: 12px; font-weight: 700; cursor: pointer; }
+    .toolbar button:hover { background: #dbeafe; }
+    @media print { .toolbar { display: none !important; } body { padding-top: 0 !important; } }
 
-          /* ── DOCUMENT META ── */
-          .doc-meta { display: flex; justify-content: space-between; align-items: flex-start; border: 1px solid #e2e8f0; border-radius: 6px; padding: 10px 14px; margin-bottom: 16px; background: #f8fafc; }
-          .doc-meta-item { font-size: 9px; }
-          .doc-meta-label { color: #64748b; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px; }
-          .doc-meta-value { color: #0f172a; font-weight: 700; font-size: 10.5px; }
+    body { padding-top: 52px; }
 
-          /* ── USER LOGO ── */
-          .user-logo-wrap { text-align: right; margin-bottom: 12px; }
-          .user-logo { max-height: 60px; max-width: 160px; object-fit: contain; }
+    /* ── PAGE WRAPPER ── */
+    .page { max-width: 780px; margin: 24px auto; padding: 32px 36px; background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; box-shadow: 0 4px 24px rgba(0,0,0,0.07); }
+    @media print { .page { max-width: 100%; margin: 0; padding: 0; border: none; box-shadow: none; border-radius: 0; } }
 
-          /* ── BODY TEXT ── */
-          h2 { font-size: 12px; font-weight: 800; margin: 16px 0 6px 0; color: #1e3a8a; border-bottom: 1px solid #dbeafe; padding-bottom: 4px; }
-          h3 { font-size: 10.5px; font-weight: 700; margin: 12px 0 4px 0; color: #334155; }
-          p { margin: 0 0 8px 0; line-height: 1.65; }
-          ul { margin: 4px 0 8px 12px; padding: 0; list-style: none; }
-          li { margin: 4px 0; padding: 3px 0; }
+    /* ── HEADER ── */
+    .doc-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 3px solid #1e3a8a; padding-bottom: 18px; margin-bottom: 22px; }
+    .doc-header-left h1 { font-size: 22px; font-weight: 900; color: #0f172a; margin-bottom: 10px; }
+    .doc-meta-row { display: flex; gap: 6px; font-size: 9.5px; color: #475569; margin-bottom: 3px; }
+    .doc-meta-row strong { color: #0f172a; min-width: 130px; display: inline-block; }
+    .doc-logo { max-height: 80px; max-width: 180px; object-fit: contain; }
 
-          /* ── TABLES ── */
-          table { border-collapse: collapse; width: 100%; font-size: 9px; margin-top: 8px; }
-          th { background: #1e3a8a; color: white; padding: 5px 7px; font-size: 8.5px; font-weight: 700; text-align: left; white-space: nowrap; }
-          th.right { text-align: right; }
-          td { border: 1px solid #e2e8f0; padding: 3.5px 7px; vertical-align: middle; }
-          td.right { text-align: right; }
-          tr:nth-child(even) td { background: #f8fafc; }
-          tfoot td { background: #1e3a8a; color: white; font-weight: bold; border-color: #1e3a8a; }
-          .dup-cell { color: #c2410c; font-weight: bold; }
-          .dup-badge { background: #ffedd5; color: #c2410c; font-size: 7px; padding: 1px 4px; border-radius: 2px; margin-left: 4px; font-weight: 700; }
+    /* ── BODY ── */
+    .section { margin-bottom: 20px; }
+    .salutation { font-size: 11px; font-weight: 600; margin-bottom: 14px; }
+    p { line-height: 1.7; font-size: 10.5px; margin-bottom: 10px; }
+    h2 { font-size: 12px; font-weight: 800; color: #1e3a8a; border-bottom: 1px solid #dbeafe; padding-bottom: 5px; margin: 20px 0 8px 0; }
+    h3 { font-size: 10.5px; font-weight: 700; color: #334155; margin: 14px 0 5px 0; }
+    ul.actions { list-style: none; margin: 6px 0 0 8px; }
+    ul.actions li { padding: 4px 0; font-size: 10.5px; border-bottom: 1px solid #f1f5f9; }
+    ul.actions li.selected { font-weight: 700; text-decoration: underline; }
+    ul.actions li.dimmed { color: #94a3b8; }
 
-          /* ── SIGNATURE ── */
-          .sig-block { margin-top: 36px; display: flex; justify-content: flex-end; }
-          .sig-inner { text-align: center; }
-          .sig-line { border-bottom: 1px solid #94a3b8; width: 200px; margin-bottom: 5px; }
-          .sig-name { font-size: 9.5px; font-weight: 700; color: #1e293b; }
-          .sig-date { font-size: 8.5px; color: #64748b; }
+    /* ── TABLES ── */
+    table { border-collapse: collapse; width: 100%; font-size: 9px; margin-top: 8px; }
+    th { background: #1e3a8a; color: white; padding: 5px 7px; font-size: 8.5px; font-weight: 700; text-align: left; white-space: nowrap; }
+    td { border: 1px solid #e2e8f0; padding: 3.5px 7px; vertical-align: middle; }
+    tr:nth-child(even) td { background: #f8fafc; }
+    tfoot td { background: #1e3a8a; color: white; font-weight: bold; border-color: #1e3a8a; }
+    .right { text-align: right; }
+    .dup { color: #c2410c; font-weight: bold; }
+    .dup-badge { background: #ffedd5; color: #c2410c; font-size: 7px; padding: 1px 4px; border-radius: 2px; margin-left: 4px; font-weight: 700; }
 
-          /* ── FOOTER ── */
-          .print-footer { margin-top: 28px; border-top: 1px solid #e2e8f0; padding-top: 7px; display: flex; justify-content: space-between; font-size: 7.5px; color: #94a3b8; }
+    /* ── SIGNATURE ── */
+    .sig-block { margin-top: 40px; display: flex; justify-content: flex-end; }
+    .sig-inner { text-align: center; }
+    .sig-line { border-bottom: 1px solid #64748b; width: 220px; height: 28px; }
+    .sig-name { font-size: 10px; font-weight: 700; margin-top: 4px; }
+    .sig-date { font-size: 9px; color: #64748b; margin-top: 2px; }
 
-          .print-hidden { display: none !important; }
-        </style>
-      </head>
-      <body>
-        <!-- TOP BANNER -->
-        <div class="print-banner">
-          <div class="print-banner-left">
-            <img src="${CARGONEX_LOGO}" class="print-banner-logo" />
-            <div>
-              <div class="print-banner-title">CARGONEX</div>
-              <div class="print-banner-sub">Cargo · Logistic · Custom · For Next Step</div>
-            </div>
-          </div>
-          <div class="print-banner-right">
-            <div><strong>AEO – Authorized Economic Operator</strong></div>
-            <div>Audit Dokumentum</div>
-            <div>Dabas, ${today}</div>
-          </div>
-        </div>
+    /* ── FOOTER ── */
+    .doc-footer { margin-top: 30px; border-top: 1px solid #e2e8f0; padding-top: 8px; display: flex; justify-content: space-between; font-size: 8px; color: #94a3b8; }
+  </style>
+</head>
+<body>
+  <div class="toolbar">
+    <span>Auditjelentés – Nyomtatási nézet</span>
+    <button onclick="window.print()">🖨️ Nyomtatás / PDF mentés</button>
+  </div>
 
-        ${content.innerHTML}
+  <div class="page">
+    <!-- FEJLÉC -->
+    <div class="doc-header">
+      <div class="doc-header-left">
+        <h1>Auditjelentés</h1>
+        <div class="doc-meta-row"><strong>Készült, Dabas:</strong> ${today}</div>
+        <div class="doc-meta-row"><strong>Készítette:</strong> ${me?.full_name || me?.email || "—"}</div>
+        <div class="doc-meta-row"><strong>Témakör:</strong> Számla-Vámkezelés ellenőrzés</div>
+        <div class="doc-meta-row"><strong>Vizsgált időszak:</strong> ${periodText}</div>
+      </div>
+      <div>
+        <img src="${logoUrl || CARGONEX_LOGO}" class="doc-logo" />
+      </div>
+    </div>
 
-        <div class="print-footer">
-          <span>CARGONEX – AEO Audit Dokumentum</span>
-          <span>Dabas, ${today}</span>
-        </div>
-      </body>
-      </html>
-    `);
+    <!-- MEGSZÓLÍTÁS -->
+    <p class="salutation">Tisztelt Suhajda Krisztián ügyvezető Úr,</p>
+
+    <!-- TÖRZS -->
+    <div class="section">
+      <p>Kérésének megfelelően vizsgálatot folytattam számlák és határozatok közti kapcsolatokon.
+      Az auditot a beszerzési osztály bevonásával végeztem el. A vizsgálat tárgya és a vizsgált
+      időszak: <strong>${periodText}</strong>. A vizsgált témakör alapadatait a vállalatirányítási rendszer,
+      illetve manuálisan történt a teljes időszak egyenkénti átvizsgálása.</p>
+    </div>
+
+    <h2>Megállapítás:</h2>
+    <div class="section">
+      <p>A vizsgált időszakban nem tapasztaltunk eltéréseket.
+      Ugyanis amit észrevettünk, rögtön kérvényeztük a felülvizsgálatát és a módosítását.
+      Azon tételek, amelyek dupla MRN számmal rendelkeznek, mind ilyen tételek.</p>
+
+      ${duplicateMrnTrucks.length > 0 ? `
+      <h3>Dupla MRN számmal rendelkező tételek (${duplicateMrnTrucks.length} db):</h3>
+      <table>
+        <thead><tr>
+          <th>Rendszám</th><th>MRN szám</th><th>MRN dátum</th><th>Fuvarozó</th><th class="right">Végösszeg (HUF)</th>
+        </tr></thead>
+        <tbody>${buildDupRows()}</tbody>
+      </table>` : ""}
+    </div>
+
+    <h2>Javasolt intézkedés <span style="font-weight:400;font-size:10px;color:#64748b;">(megfelelő rész aláhúzandó):</span></h2>
+    <ul class="actions">
+      <li class="selected">– nem szükséges további intézkedés</li>
+      <li class="dimmed">– visszaellenőrzés szükséges</li>
+      <li class="dimmed">– hatósági bejelentés szükséges</li>
+      <li class="dimmed">– belső szabályzat módosítása szükséges</li>
+    </ul>
+
+    ${filteredTrucks.length > 0 ? `
+    <h2>Vizsgált időszak összesítője (${filteredTrucks.length} tétel):</h2>
+    <table>
+      <thead><tr>
+        <th>#</th><th>Rendszám</th><th>Dátum</th><th>Termék</th>
+        <th class="right">Tény. (t)</th><th>Eladó sz.sz.</th>
+        <th>MRN szám</th><th>MRN dátum</th><th class="right">Végösszeg (HUF)</th>
+      </tr></thead>
+      <tbody>${buildAuditRows()}</tbody>
+      <tfoot><tr>
+        <td colspan="4">Összesen</td>
+        <td class="right">${totalTons} t</td>
+        <td colspan="3"></td>
+        <td class="right">${totalHuf} HUF</td>
+      </tr></tfoot>
+    </table>` : ""}
+
+    <!-- ALÁÍRÁS -->
+    <div class="sig-block">
+      <div class="sig-inner">
+        <div class="sig-line"></div>
+        <div class="sig-name">${me?.full_name || me?.email || "Készítő"}</div>
+        <div class="sig-date">Dabas, ${today}</div>
+      </div>
+    </div>
+
+    <div class="doc-footer">
+      <span>AEO – Audit Nyilatkozat</span>
+      <span>Dabas, ${today}</span>
+    </div>
+  </div>
+</body>
+</html>`);
     win.document.close();
     win.focus();
-    setTimeout(() => { win.print(); win.close(); }, 600);
   };
 
   const periodText = fromDate || toDate
@@ -476,82 +556,171 @@ function MrnSzamlaKimutatas() {
 
   const CARGONEX_LOGO = "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6995745b061c5cfec8978279/7ed19bd16_image.png";
 
+  const fmtN = (n) => (n && Number(n) !== 0) ? Number(n).toLocaleString("hu-HU") : "—";
+
+  const buildMrnRows = () => relevant.map((t, i) => {
+    const match = getMatch(t);
+    const freightTotal = Number(t.freight_total_snapshot) || (Number(t.freight_domestic_leg_snapshot) || 0) + (Number(t.freight_foreign_leg_snapshot) || 0);
+    const matchHtml = {
+      match: '<span class="match">✔ Egyezik</span>',
+      close: '<span class="close">≈ Közel</span>',
+      diff: '<span class="diff">✗ Eltérés</span>',
+      missing: '<span class="na">—</span>',
+    }[match];
+    return `<tr>
+      <td>${i + 1}</td>
+      <td><strong>${t.truck_number || "—"}</strong></td>
+      <td>${t.actual_loading_date || t.loading_date || "—"}</td>
+      <td>${t.carrier_name || "—"}</td>
+      <td>${t.supplier_name || "—"}</td>
+      <td>${t.supplier_invoice_number || "—"}</td>
+      <td>${t.freight_invoice_number || "—"}</td>
+      <td class="right">${(t.actual_weight_tons || t.planned_quantity_tons) ? Number(t.actual_weight_tons || t.planned_quantity_tons).toFixed(2) : "—"}</td>
+      <td class="right">${fmtN(t.purchase_price)}</td>
+      <td class="right">${freightTotal ? freightTotal.toLocaleString("hu-HU") : "—"}</td>
+      <td>${t.mrn_number || "—"}</td>
+      <td>${t.mrn_date || "—"}</td>
+      <td class="right blue">${fmtN(t.mrn_declared_amount)}</td>
+      <td class="right amber">${fmtN(getIndicVat(t))}</td>
+      <td class="center">${matchHtml}</td>
+    </tr>`;
+  }).join("");
+
+  const mrnTotalTons = relevant.reduce((s, t) => s + Number(t.actual_weight_tons || t.planned_quantity_tons || 0), 0).toFixed(2);
+  const mrnTotalPurchase = fmtN(relevant.reduce((s, t) => s + (Number(t.purchase_price) || 0), 0));
+  const mrnTotalFreight = relevant.reduce((s, t) => s + (Number(t.freight_total_snapshot) || (Number(t.freight_domestic_leg_snapshot) || 0) + (Number(t.freight_foreign_leg_snapshot) || 0)), 0).toLocaleString("hu-HU");
+
   const handlePrint = () => {
-    const content = document.getElementById("mrn-print-area");
-    if (!content) return;
-    const win = window.open("", "_blank", "width=1200,height=1400");
-    win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"/><title>MRN – Számla kimutatás – CARGONEX</title>
-    <style>
-      @page { size: A4 landscape; margin: 8mm 10mm; }
-      * { box-sizing: border-box; }
-      body { font-family: Arial, sans-serif; font-size: 7.5px; color: #0f172a; margin: 0; padding: 0; background: #fff; }
+    const win = window.open("", "_blank", "width=1280,height=1000");
+    win.document.write(`<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8"/>
+  <title>MRN – Számla kimutatás</title>
+  <style>
+    @page { size: A4 landscape; margin: 9mm 11mm; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: Arial, sans-serif; font-size: 8px; color: #0f172a; background: #f8fafc; }
 
-      /* ── TOP BANNER ── */
-      .print-banner {
-        background: linear-gradient(135deg, #1e3a8a 0%, #3B6CF4 100%);
-        color: white;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 7px 14px;
-        margin-bottom: 10px;
-        border-radius: 5px;
-      }
-      .print-banner-left { display: flex; align-items: center; gap: 10px; }
-      .print-banner-logo { height: 44px; object-fit: contain; filter: brightness(0) invert(1); }
-      .print-banner-title { font-size: 15px; font-weight: 900; letter-spacing: 0.04em; }
-      .print-banner-sub { font-size: 7px; letter-spacing: 0.2em; text-transform: uppercase; opacity: 0.75; margin-top: 2px; }
-      .print-banner-right { text-align: right; font-size: 7.5px; opacity: 0.9; line-height: 1.7; }
+    /* ── PRINT TOOLBAR (screen only) ── */
+    .toolbar { position: fixed; top: 0; left: 0; right: 0; background: #1e3a8a; color: white; padding: 9px 20px; display: flex; align-items: center; justify-content: space-between; z-index: 999; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+    .toolbar span { font-size: 13px; font-weight: 700; }
+    .toolbar button { background: white; color: #1e3a8a; border: none; padding: 6px 18px; border-radius: 5px; font-size: 12px; font-weight: 700; cursor: pointer; }
+    .toolbar button:hover { background: #dbeafe; }
+    @media print { .toolbar { display: none !important; } body { padding-top: 0 !important; background: #fff; } }
 
-      /* ── KPI CARDS ── */
-      .kpis { display:flex; gap:8px; margin-bottom:8px; }
-      .kpi { border:1px solid #e2e8f0; border-radius:4px; padding:5px 9px; flex:1; background:#f8fafc; }
-      .kpi-label { font-size:6.5px; color:#64748b; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:2px; }
-      .kpi-value { font-size:11px; font-weight:900; color:#1e293b; }
-      .kpi-value.blue { color:#2563eb; }
-      .kpi-value.amber { color:#d97706; }
+    body { padding-top: 48px; }
 
-      /* ── TABLE ── */
-      table { border-collapse:collapse; width:100%; font-size:7px; }
-      th { background:#1e3a8a; color:white; padding:4px 5px; font-size:6.5px; font-weight:700; text-align:left; white-space:nowrap; }
-      th.right { text-align:right; }
-      th.center { text-align:center; }
-      td { border:1px solid #e2e8f0; padding:3px 5px; vertical-align:middle; }
-      td.right { text-align:right; }
-      td.center { text-align:center; }
-      tr:nth-child(even) td { background:#f8fafc; }
-      tfoot td { background:#1e3a8a; color:white; font-weight:bold; border-color:#1e3a8a; }
-      .match { color:#16a34a; font-weight:bold; }
-      .close { color:#d97706; font-weight:bold; }
-      .diff { color:#dc2626; font-weight:bold; }
-      .na { color:#94a3b8; }
+    /* ── PAGE WRAPPER ── */
+    .page { max-width: 1050px; margin: 18px auto; padding: 22px 26px; background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; box-shadow: 0 4px 24px rgba(0,0,0,0.07); }
+    @media print { .page { max-width: 100%; margin: 0; padding: 0; border: none; box-shadow: none; border-radius: 0; } }
 
-      /* ── FOOTER ── */
-      .print-footer { margin-top:10px; border-top:1px solid #e2e8f0; padding-top:5px; display:flex; justify-content:space-between; font-size:6.5px; color:#94a3b8; }
-    </style></head>
-    <body>
-      <div class="print-banner">
-        <div class="print-banner-left">
-          <img src="${CARGONEX_LOGO}" class="print-banner-logo" />
-          <div>
-            <div class="print-banner-title">CARGONEX</div>
-            <div class="print-banner-sub">Cargo · Logistic · Custom · For Next Step</div>
-          </div>
-        </div>
-        <div class="print-banner-right">
-          <div><strong>MRN – Számla kimutatás</strong></div>
-          <div>AEO Audit Dokumentum</div>
-          <div>Dabas, ${today}</div>
-        </div>
+    /* ── HEADER ── */
+    .doc-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 3px solid #1e3a8a; padding-bottom: 12px; margin-bottom: 14px; }
+    .doc-header-left h1 { font-size: 18px; font-weight: 900; color: #0f172a; margin-bottom: 6px; }
+    .doc-meta-row { font-size: 8.5px; color: #475569; margin-bottom: 2px; }
+    .doc-meta-row strong { color: #0f172a; min-width: 110px; display: inline-block; }
+    .doc-logo { max-height: 65px; max-width: 160px; object-fit: contain; }
+
+    /* ── KPI ── */
+    .kpis { display: flex; gap: 8px; margin-bottom: 12px; }
+    .kpi { border: 1px solid #e2e8f0; border-radius: 6px; padding: 7px 12px; flex: 1; background: #f8fafc; }
+    .kpi-label { font-size: 6.5px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 3px; }
+    .kpi-value { font-size: 13px; font-weight: 900; color: #0f172a; }
+    .kpi-value.blue { color: #2563eb; }
+    .kpi-value.amber { color: #d97706; }
+
+    /* ── TABLE ── */
+    table { border-collapse: collapse; width: 100%; font-size: 7px; }
+    th { background: #1e3a8a; color: white; padding: 4px 5px; font-size: 6.5px; font-weight: 700; text-align: left; white-space: nowrap; }
+    td { border: 1px solid #e8edf5; padding: 3px 5px; vertical-align: middle; }
+    tr:nth-child(even) td { background: #f8fafc; }
+    tfoot td { background: #1e3a8a; color: white; font-weight: bold; border-color: #1e3a8a; }
+    .right { text-align: right; }
+    .center { text-align: center; }
+    .match { color: #16a34a; font-weight: bold; }
+    .close { color: #d97706; font-weight: bold; }
+    .diff { color: #dc2626; font-weight: bold; }
+    .na { color: #94a3b8; }
+    .blue { color: #2563eb; font-weight: bold; }
+    .amber { color: #d97706; font-weight: bold; }
+
+    /* ── FOOTER ── */
+    .doc-footer { margin-top: 14px; border-top: 1px solid #e2e8f0; padding-top: 6px; display: flex; justify-content: space-between; font-size: 7px; color: #94a3b8; }
+  </style>
+</head>
+<body>
+  <div class="toolbar">
+    <span>MRN – Számla kimutatás – Nyomtatási nézet</span>
+    <button onclick="window.print()">🖨️ Nyomtatás / PDF mentés</button>
+  </div>
+
+  <div class="page">
+    <!-- FEJLÉC -->
+    <div class="doc-header">
+      <div class="doc-header-left">
+        <h1>MRN – Számla kimutatás</h1>
+        <div class="doc-meta-row"><strong>Készült, Dabas:</strong> ${today}</div>
+        <div class="doc-meta-row"><strong>Készítette:</strong> ${me?.full_name || me?.email || "—"}</div>
+        <div class="doc-meta-row"><strong>Tételek száma:</strong> ${relevant.length} db</div>
       </div>
-      ${content.innerHTML}
-      <div class="print-footer">
-        <span>CARGONEX – MRN Számla kimutatás</span>
-        <span>Nyomtatva: ${today} &nbsp;|&nbsp; Készítette: ${me?.full_name || me?.email || "—"}</span>
+      <div>
+        <img src="${CARGONEX_LOGO}" class="doc-logo" />
       </div>
-    </body></html>`);
-    win.document.close(); win.focus();
-    setTimeout(() => { win.print(); win.close(); }, 600);
+    </div>
+
+    <!-- KPI ÖSSZESÍTŐK -->
+    <div class="kpis">
+      <div class="kpi">
+        <div class="kpi-label">Tételek száma</div>
+        <div class="kpi-value">${relevant.length}</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Végösszeg alap (HUF)</div>
+        <div class="kpi-value">${fmtN(totalBase)}</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">MRN megállapított (HUF)</div>
+        <div class="kpi-value blue">${fmtN(totalMrnDeclared)}</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Tájékoztató ÁFA (HUF)</div>
+        <div class="kpi-value amber">${fmtN(totalVat)}</div>
+      </div>
+    </div>
+
+    <!-- TÁBLÁZAT -->
+    <table>
+      <thead><tr>
+        <th>#</th><th>Rendszám</th><th>Rakodás dátuma</th><th>Fuvarozó</th><th>Eladó</th>
+        <th>Eladó sz.sz.</th><th>Fuvarszámla</th>
+        <th class="right">Menny. (t)</th><th class="right">Áruvásl. (EUR)</th><th class="right">Fuvardíj (EUR)</th>
+        <th>MRN szám</th><th>MRN dátum</th>
+        <th class="right">MRN megáll. (HUF)</th><th class="right">Táj. ÁFA (HUF)</th>
+        <th class="center">Egyezés</th>
+      </tr></thead>
+      <tbody>${buildMrnRows()}</tbody>
+      <tfoot><tr>
+        <td colspan="7">Összesen (${relevant.length} tétel)</td>
+        <td class="right">${mrnTotalTons} t</td>
+        <td class="right">${mrnTotalPurchase}</td>
+        <td class="right">${mrnTotalFreight}</td>
+        <td colspan="2"></td>
+        <td class="right">${fmtN(totalMrnDeclared)}</td>
+        <td class="right">${fmtN(totalVat)}</td>
+        <td></td>
+      </tr></tfoot>
+    </table>
+
+    <div class="doc-footer">
+      <span>AEO – MRN Számla Nyilatkozat</span>
+      <span>Dabas, ${today} &nbsp;|&nbsp; Készítette: ${me?.full_name || me?.email || "—"}</span>
+    </div>
+  </div>
+</body>
+</html>`);
+    win.document.close();
+    win.focus();
   };
 
   return (
