@@ -398,16 +398,16 @@ function MrnSzamlaKimutatas() {
 
   const fmt = (n) => (n !== null && n !== undefined && n !== "" && Number(n) !== 0) ? Number(n).toLocaleString("hu-HU") : "—";
 
-  // Only compare if BOTH fields are filled and non-zero
+  // Egyezés: MRN megállapított HUF vs Tájékoztató ÁFA
   const getMatch = (t) => {
-    const declared = Math.round(Number(t.mrn_declared_amount));
-    const calculated = Math.round(Number(t.total_base));
-    if (!declared || !calculated) return "missing";
-    const diff = Math.abs(declared - calculated);
-    if (diff <= 1) return "match";                              // ±1 HUF eltérés = egyezik (kerekítés)
-    const pct = diff / Math.max(declared, calculated);
-    if (pct < 0.01) return "match";   // <1% = egyezik
-    if (pct < 0.05) return "close";   // 1–5% = közel
+    const mrn = Math.round(Number(t.mrn_declared_amount));
+    const vat = Math.round(Number(t.declared_vat));
+    if (!mrn || !vat) return "missing";
+    const diff = Math.abs(mrn - vat);
+    if (diff <= 1) return "match";
+    const pct = diff / Math.max(mrn, vat);
+    if (pct < 0.01) return "match";
+    if (pct < 0.05) return "close";
     return "diff";
   };
 
@@ -417,24 +417,28 @@ function MrnSzamlaKimutatas() {
     const win = window.open("", "_blank", "width=1100,height=1400");
     win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"/><title>MRN – Számla kimutatás</title>
     <style>
-      @page { size: A4 landscape; margin: 10mm; }
-      body { font-family: Arial, sans-serif; font-size: 9.5px; color: #0f172a; margin: 0; padding: 0; }
-      .header { display:flex; justify-content:space-between; align-items:flex-end; border-bottom:2px solid #1e293b; padding-bottom:10px; margin-bottom:14px; }
-      .header h1 { font-size:18px; font-weight:900; margin:0 0 4px 0; }
-      .header p { margin:0; font-size:10px; color:#475569; }
-      table { border-collapse:collapse; width:100%; }
-      th { background:#1e293b; color:white; padding:5px 7px; font-size:8.5px; font-weight:700; text-align:left; }
-      td { border:1px solid #cbd5e1; padding:4px 6px; vertical-align:top; }
+      @page { size: A4 landscape; margin: 8mm; }
+      body { font-family: Arial, sans-serif; font-size: 8px; color: #0f172a; margin: 0; padding: 0; }
+      .header { display:flex; justify-content:space-between; align-items:flex-end; border-bottom:2px solid #1e293b; padding-bottom:8px; margin-bottom:10px; }
+      .header h1 { font-size:16px; font-weight:900; margin:0 0 3px 0; }
+      .header p { margin:0; font-size:8.5px; color:#475569; }
+      table { border-collapse:collapse; width:100%; font-size:7.5px; }
+      th { background:#1e293b; color:white; padding:4px 5px; font-size:7px; font-weight:700; text-align:left; white-space:nowrap; }
+      th.right { text-align:right; }
+      th.center { text-align:center; }
+      td { border:1px solid #cbd5e1; padding:3px 5px; vertical-align:middle; }
+      td.right { text-align:right; }
+      td.center { text-align:center; }
       tr:nth-child(even) td { background:#f8fafc; }
       tfoot td { background:#1e293b; color:white; font-weight:bold; }
       .match { color:#16a34a; font-weight:bold; }
       .close { color:#d97706; font-weight:bold; }
       .diff { color:#dc2626; font-weight:bold; }
       .na { color:#94a3b8; }
-      .kpis { display:flex; gap:16px; margin-bottom:14px; }
-      .kpi { border:1px solid #e2e8f0; border-radius:6px; padding:8px 14px; flex:1; }
-      .kpi-label { font-size:8px; color:#64748b; font-weight:600; text-transform:uppercase; margin-bottom:2px; }
-      .kpi-value { font-size:14px; font-weight:900; color:#1e293b; }
+      .kpis { display:flex; gap:10px; margin-bottom:10px; }
+      .kpi { border:1px solid #e2e8f0; border-radius:4px; padding:6px 10px; flex:1; }
+      .kpi-label { font-size:7px; color:#64748b; font-weight:600; text-transform:uppercase; margin-bottom:2px; }
+      .kpi-value { font-size:12px; font-weight:900; color:#1e293b; }
     </style></head><body>${content.innerHTML}</body></html>`);
     win.document.close(); win.focus();
     setTimeout(() => { win.print(); win.close(); }, 500);
@@ -522,39 +526,48 @@ function MrnSzamlaKimutatas() {
         <table className="w-full text-xs">
           <thead>
             <tr className="bg-slate-800 text-white">
-              <th className="px-3 py-2.5 text-left font-semibold">#</th>
-              <th className="px-3 py-2.5 text-left font-semibold">Rendszám</th>
-              <th className="px-3 py-2.5 text-left font-semibold">Dátum</th>
-              <th className="px-3 py-2.5 text-left font-semibold">MRN szám</th>
-              <th className="px-3 py-2.5 text-left font-semibold">MRN dátum</th>
-              <th className="px-3 py-2.5 text-left font-semibold">Eladó számla</th>
-              <th className="px-3 py-2.5 text-left font-semibold">Fuvarszámla</th>
-              <th className="px-3 py-2.5 text-right font-semibold">Végösszeg alap (HUF)</th>
-              <th className="px-3 py-2.5 text-right font-semibold">MRN megállapított (HUF)</th>
-              <th className="px-3 py-2.5 text-right font-semibold">Táj. ÁFA (HUF)</th>
-              <th className="px-3 py-2.5 text-center font-semibold">Egyezés</th>
+              <th className="px-2 py-2.5 text-left font-semibold">#</th>
+              <th className="px-2 py-2.5 text-left font-semibold">Rendszám</th>
+              <th className="px-2 py-2.5 text-left font-semibold">Rakodás dátuma</th>
+              <th className="px-2 py-2.5 text-left font-semibold">Fuvarozó</th>
+              <th className="px-2 py-2.5 text-left font-semibold">Eladó</th>
+              <th className="px-2 py-2.5 text-left font-semibold">Eladó sz.sz.</th>
+              <th className="px-2 py-2.5 text-left font-semibold">Fuvarszámla</th>
+              <th className="px-2 py-2.5 text-right font-semibold">Mennyiség (t)</th>
+              <th className="px-2 py-2.5 text-right font-semibold">Áruvásárlás (EUR)</th>
+              <th className="px-2 py-2.5 text-right font-semibold">Fuvardíj (EUR)</th>
+              <th className="px-2 py-2.5 text-left font-semibold">MRN szám</th>
+              <th className="px-2 py-2.5 text-left font-semibold">MRN dátum</th>
+              <th className="px-2 py-2.5 text-right font-semibold">MRN megállapított (HUF)</th>
+              <th className="px-2 py-2.5 text-right font-semibold">Táj. ÁFA (HUF)</th>
+              <th className="px-2 py-2.5 text-center font-semibold">Egyezés</th>
             </tr>
           </thead>
           <tbody>
             {relevant.length === 0 && (
-              <tr><td colSpan="11" className="px-4 py-8 text-center text-slate-400">Nincs megjeleníthető tétel</td></tr>
+              <tr><td colSpan="15" className="px-4 py-8 text-center text-slate-400">Nincs megjeleníthető tétel</td></tr>
             )}
             {relevant.map((t, i) => {
               const match = getMatch(t);
+              const freightTotal = Number(t.freight_total_snapshot) || (Number(t.freight_domestic_leg_snapshot) || 0) + (Number(t.freight_foreign_leg_snapshot) || 0);
               return (
                 <tr key={t.id} className={`border-b border-slate-100 ${i % 2 === 0 ? "bg-white" : "bg-slate-50"} hover:bg-blue-50 transition-colors`}>
-                  <td className="px-3 py-2 text-slate-400">{i + 1}</td>
-                  <td className="px-3 py-2 font-bold text-slate-900">{t.truck_number || "—"}</td>
-                  <td className="px-3 py-2 text-slate-600">{t.loading_date || t.actual_loading_date || "—"}</td>
-                  <td className="px-3 py-2 font-mono font-semibold text-slate-800">{t.mrn_number || "—"}</td>
-                  <td className="px-3 py-2 text-slate-600">{t.mrn_date || "—"}</td>
-                  <td className="px-3 py-2 text-slate-700">{t.supplier_invoice_number || "—"}</td>
-                  <td className="px-3 py-2 text-slate-700">{t.freight_invoice_number || "—"}</td>
-                  <td className="px-3 py-2 text-right font-semibold">{fmt(t.total_base)}</td>
-                  <td className="px-3 py-2 text-right font-semibold text-blue-700">{fmt(t.mrn_declared_amount)}</td>
-                  <td className="px-3 py-2 text-right text-indigo-700">{fmt(t.declared_vat)}</td>
-                  <td className="px-3 py-2 text-center">
-                    {match === "match" && <span className="inline-flex items-center gap-1 text-green-600 font-semibold"><CheckCircle className="w-3.5 h-3.5" /> Egyezik</span>}
+                  <td className="px-2 py-2 text-slate-400">{i + 1}</td>
+                  <td className="px-2 py-2 font-bold text-slate-900 whitespace-nowrap">{t.truck_number || "—"}</td>
+                  <td className="px-2 py-2 text-slate-600 whitespace-nowrap">{t.actual_loading_date || t.loading_date || "—"}</td>
+                  <td className="px-2 py-2 text-slate-700 max-w-[8rem] truncate">{t.carrier_name || "—"}</td>
+                  <td className="px-2 py-2 text-slate-700 max-w-[8rem] truncate">{t.supplier_name || "—"}</td>
+                  <td className="px-2 py-2 text-slate-700">{t.supplier_invoice_number || "—"}</td>
+                  <td className="px-2 py-2 text-slate-700">{t.freight_invoice_number || "—"}</td>
+                  <td className="px-2 py-2 text-right font-semibold text-slate-800">{(t.actual_weight_tons || t.planned_quantity_tons) ? Number(t.actual_weight_tons || t.planned_quantity_tons).toFixed(2) : "—"}</td>
+                  <td className="px-2 py-2 text-right text-slate-700">{fmt(t.purchase_price)}</td>
+                  <td className="px-2 py-2 text-right text-green-700 font-semibold">{freightTotal ? freightTotal.toLocaleString("hu-HU") : "—"}</td>
+                  <td className="px-2 py-2 font-mono font-semibold text-slate-800 whitespace-nowrap">{t.mrn_number || "—"}</td>
+                  <td className="px-2 py-2 text-slate-600 whitespace-nowrap">{t.mrn_date || "—"}</td>
+                  <td className="px-2 py-2 text-right font-bold text-blue-700">{fmt(t.mrn_declared_amount)}</td>
+                  <td className="px-2 py-2 text-right font-bold text-indigo-700">{fmt(t.declared_vat)}</td>
+                  <td className="px-2 py-2 text-center whitespace-nowrap">
+                    {match === "match" && <span className="inline-flex items-center gap-1 text-green-600 font-bold"><CheckCircle className="w-3.5 h-3.5" /> Egyezik</span>}
                     {match === "close" && <span className="inline-flex items-center gap-1 text-amber-600 font-semibold"><AlertTriangle className="w-3.5 h-3.5" /> Közel</span>}
                     {match === "diff" && <span className="inline-flex items-center gap-1 text-red-600 font-semibold"><AlertTriangle className="w-3.5 h-3.5" /> Eltérés</span>}
                     {match === "missing" && <span className="inline-flex items-center gap-1 text-slate-400"><Minus className="w-3.5 h-3.5" /> N/A</span>}
@@ -566,11 +579,14 @@ function MrnSzamlaKimutatas() {
           {relevant.length > 0 && (
             <tfoot>
               <tr className="bg-slate-800 text-white font-bold">
-                <td colSpan="7" className="px-3 py-2.5">Összesen ({relevant.length} tétel)</td>
-                <td className="px-3 py-2.5 text-right">{fmt(totalBase)}</td>
-                <td className="px-3 py-2.5 text-right">{fmt(totalMrnDeclared)}</td>
-                <td className="px-3 py-2.5 text-right">{fmt(totalVat)}</td>
-                <td className="px-3 py-2.5"></td>
+                <td colSpan="7" className="px-2 py-2.5">Összesen ({relevant.length} tétel)</td>
+                <td className="px-2 py-2.5 text-right">{relevant.reduce((s,t) => s + Number(t.actual_weight_tons || t.planned_quantity_tons || 0), 0).toFixed(2)} t</td>
+                <td className="px-2 py-2.5 text-right">{fmt(relevant.reduce((s,t) => s + (Number(t.purchase_price)||0), 0))}</td>
+                <td className="px-2 py-2.5 text-right">{relevant.reduce((s,t) => s + (Number(t.freight_total_snapshot)||(Number(t.freight_domestic_leg_snapshot)||0)+(Number(t.freight_foreign_leg_snapshot)||0)), 0).toLocaleString("hu-HU")}</td>
+                <td colSpan="2" className="px-2 py-2.5"></td>
+                <td className="px-2 py-2.5 text-right">{fmt(totalMrnDeclared)}</td>
+                <td className="px-2 py-2.5 text-right">{fmt(totalVat)}</td>
+                <td className="px-2 py-2.5"></td>
               </tr>
             </tfoot>
           )}
