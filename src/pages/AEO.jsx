@@ -495,7 +495,17 @@ function MrnSzamlaKimutatas() {
   const [filterCountry, setFilterCountry] = useState("");
   const [filterOrigin, setFilterOrigin] = useState("");
   const [filterDest, setFilterDest] = useState("");
+  const [logoUrl, setLogoUrl] = useState(null);
+  const fileRef = useRef();
   const printRef = useRef();
+
+  const handleLogoUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => setLogoUrl(ev.target.result);
+    reader.readAsDataURL(file);
+  };
 
   const { data: trucks = [] } = useQuery({
     queryKey: ["trucks"],
@@ -665,7 +675,7 @@ function MrnSzamlaKimutatas() {
         <div class="doc-meta-row"><strong>Tételek száma:</strong> ${relevant.length} db</div>
       </div>
       <div>
-        <img src="${CARGONEX_LOGO}" class="doc-logo" />
+        <img src="${logoUrl || CARGONEX_LOGO}" class="doc-logo" />
       </div>
     </div>
 
@@ -729,9 +739,21 @@ function MrnSzamlaKimutatas() {
       <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-bold text-slate-700">Szűrők</h3>
-          <Button onClick={handlePrint} className="bg-blue-600 hover:bg-blue-700 text-white gap-2" size="sm">
-            <Printer className="w-4 h-4" /> Nyomtatás / PDF
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button size="sm" variant="outline" onClick={() => fileRef.current.click()} className="gap-1.5">
+              <Upload className="w-4 h-4" /> {logoUrl ? "Logó csere" : "Logó feltöltés"}
+            </Button>
+            {logoUrl && (
+              <>
+                <img src={logoUrl} alt="logo" className="h-7 object-contain rounded border border-slate-200" />
+                <button onClick={() => setLogoUrl(null)} className="text-xs text-red-500 hover:underline">Törlés</button>
+              </>
+            )}
+            <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} />
+            <Button onClick={handlePrint} className="bg-blue-600 hover:bg-blue-700 text-white gap-2" size="sm">
+              <Printer className="w-4 h-4" /> Nyomtatás / PDF
+            </Button>
+          </div>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
           <div>
