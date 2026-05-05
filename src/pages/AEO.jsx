@@ -400,13 +400,14 @@ function MrnSzamlaKimutatas() {
 
   // Only compare if BOTH fields are filled and non-zero
   const getMatch = (t) => {
-    const declared = Number(t.mrn_declared_amount);
-    const calculated = Number(t.total_base);
+    const declared = Math.round(Number(t.mrn_declared_amount));
+    const calculated = Math.round(Number(t.total_base));
     if (!declared || !calculated) return "missing";
     const diff = Math.abs(declared - calculated);
+    if (diff <= 1) return "match";                              // ±1 HUF eltérés = egyezik (kerekítés)
     const pct = diff / Math.max(declared, calculated);
-    if (pct < 0.001) return "match";   // <0.1% = egyezik
-    if (pct < 0.05) return "close";    // <5% = közel
+    if (pct < 0.01) return "match";   // <1% = egyezik
+    if (pct < 0.05) return "close";   // 1–5% = közel
     return "diff";
   };
 
