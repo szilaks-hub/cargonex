@@ -51,16 +51,25 @@ export default function HuLocationSearch({
       let results = [];
       const isNumeric = /^\d+$/.test(q);
       if (isNumeric) {
-        results = await base44.entities.HuZip.filter({ zip: { $regex: `^${q}` } }, "zip", 10);
+        results = await base44.entities.HuZip.filter({ zip: { $regex: `^${q}` } }, "zip", 30);
       } else {
         // Add Budapest as first synthetic option if query matches
         if ("budapest".startsWith(q.toLowerCase())) {
           results = [{ id: "__budapest__", zip: "", city: "Budapest", county: "Budapest / Főváros", synthetic: true }];
         }
-        const dbResults = await base44.entities.HuZip.filter({ city: { $regex: `^${q}`, $options: "i" } }, "city", 12);
-        // Merge, avoiding duplicate Budapest entries from DB
-        const filtered = dbResults.filter(r => !isBudapest(r.city));
-        results = [...results, ...filtered];
+        // Try prefix match first, then contains match if fewer than 5 results
+        const prefixResults = await base44.entities.HuZip.filter({ city: { $regex: `^${q}`, $options: "i" } }, "city", 20);
+        const filtered = prefixResults.filter(r => !isBudapest(r.city));
+        if (filtered.length < 5) {
+          const containsResults = await base44.entities.HuZip.filter({ city: { $regex: q, $options: "i" } }, "city", 20);
+          const containsFiltered = containsResults.filter(r => !isBudapest(r.city));
+          // Merge without duplicates
+          const seen = new Set(filtered.map(r => r.id));
+          const extra = containsFiltered.filter(r => !seen.has(r.id));
+          results = [...results, ...filtered, ...extra];
+        } else {
+          results = [...results, ...filtered];
+        }
       }
       setSuggestions(results);
       setOpen(results.length > 0);

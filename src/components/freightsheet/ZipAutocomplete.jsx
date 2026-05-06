@@ -14,7 +14,7 @@ export default function ZipAutocomplete({ value, inputClassName, onZipChange, on
   // Fetch matching ZIP records when user types >= 1 char
   const { data: suggestions = [] } = useQuery({
     queryKey: ["huzip", value],
-    queryFn: () => base44.entities.HuZip.filter({ zip: { $regex: `^${value}` } }, "zip", 8),
+    queryFn: () => base44.entities.HuZip.filter({ zip: { $regex: `^${value}` } }, "zip", 30),
     enabled: !!value && value.length >= 1,
     staleTime: 60_000,
   });
