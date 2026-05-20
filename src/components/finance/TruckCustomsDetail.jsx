@@ -1,11 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, Lock, Save, CheckCircle2, AlertCircle, XCircle, Printer, Trash2, FileEdit } from "lucide-react";
+import { ArrowLeft, Lock, Save, CheckCircle2, AlertCircle, XCircle, Printer, Trash2, FileEdit, ArrowRight } from "lucide-react";
 import StatusBadge from "@/components/ui/StatusBadge";
 import { toast } from "sonner";
 import {
@@ -34,10 +34,13 @@ export default function TruckCustomsDetail({ truck, onBack, onUpdated }) {
     exchange_rate: truck.exchange_rate || "",
     actual_weight_tons: truck.actual_weight_tons || "",
     amendment_requested: truck.amendment_requested || false,
+    amendment_requested_at: truck.amendment_requested_at || null,
     mrn_number_2: truck.mrn_number_2 || "",
     mrn_date_2: truck.mrn_date_2 || "",
+    mrn_number_2_locked: truck.mrn_number_2_locked || false,
   });
   const [saving, setSaving] = useState(false);
+  const [savingMrn2, setSavingMrn2] = useState(false);
   const [showPrint, setShowPrint] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteKey, setDeleteKey] = useState("");
@@ -45,6 +48,8 @@ export default function TruckCustomsDetail({ truck, onBack, onUpdated }) {
   const [reopenKey, setReopenKey] = useState("");
   const [showAmendmentDialog, setShowAmendmentDialog] = useState(false);
   const [amendmentKey, setAmendmentKey] = useState("");
+  const [showLockMrn2Dialog, setShowLockMrn2Dialog] = useState(false);
+  const [lockMrn2Key, setLockMrn2Key] = useState("");
 
   const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
 
@@ -149,12 +154,41 @@ export default function TruckCustomsDetail({ truck, onBack, onUpdated }) {
       toast.error("Helytelen mesterkulcs!");
       return;
     }
-    await base44.entities.Truck.update(truck.id, { amendment_requested: true });
+    const now = new Date().toISOString();
+    await base44.entities.Truck.update(truck.id, { amendment_requested: true, amendment_requested_at: now });
     toast.success("Javítási kérelem aktiválva");
     setShowAmendmentDialog(false);
     setAmendmentKey("");
-    setForm((f) => ({ ...f, amendment_requested: true }));
-    onUpdated();
+    setForm((f) => ({ ...f, amendment_requested: true, amendment_requested_at: now }));
+  };
+
+  // Mentse le a 2. MRN adatokat azonnal, és zárolja őket
+  const handleSaveMrn2 = async () => {
+    if (!form.mrn_number_2?.trim()) {
+      toast.error("A 2. MRN szám megadása kötelező a rögzítéshez!");
+      return;
+    }
+    setSavingMrn2(true);
+    await base44.entities.Truck.update(truck.id, {
+      mrn_number_2: form.mrn_number_2,
+      mrn_date_2: form.mrn_date_2,
+      mrn_number_2_locked: true,
+    });
+    setSavingMrn2(false);
+    setForm((f) => ({ ...f, mrn_number_2_locked: true }));
+    toast.success("2. MRN rögzítve és zárolva");
+  };
+
+  const handleLockMrn2Override = async () => {
+    if (lockMrn2Key !== "1985") {
+      toast.error("Helytelen mesterkulcs!");
+      return;
+    }
+    await base44.entities.Truck.update(truck.id, { mrn_number_2_locked: false });
+    setForm((f) => ({ ...f, mrn_number_2_locked: false }));
+    setShowLockMrn2Dialog(false);
+    setLockMrn2Key("");
+    toast.success("2. MRN szerkesztés feloldva");
   };
 
   const handleClose = async () => {
@@ -488,16 +522,91 @@ export default function TruckCustomsDetail({ truck, onBack, onUpdated }) {
               </label>
             </div>
             {form.amendment_requested && (
-              <>
-                <div>
-                  <Label className="text-slate-500 text-xs">2. MRN szám</Label>
-                  <Input className="mt-1 bg-amber-50 border-amber-300" value={form.mrn_number_2} onChange={(e) => set("mrn_number_2", e.target.value)} disabled={isClosed} placeholder="Módosított MRN" />
+              <div className="col-span-2">
+                {/* MRN összehasonlítás panel */}
+                <div className="rounded-xl border-2 border-amber-300 bg-amber-50 p-4 space-y-3">
+                  <div className="flex items-center gap-2 mb-1">
+                    <FileEdit className="w-4 h-4 text-amber-600" />
+                    <span className="text-sm font-bold text-amber-800">2. MRN – Módosítási kérelem</span>
+                    {form.amendment_requested_at && (
+                      <span className="ml-auto text-xs text-amber-600">
+                        Aktiválva: {new Date(form.amendment_requested_at).toLocaleDateString("hu-HU")}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Régi vs. Új MRN összehasonlítás */}
+                  {(form.mrn_number || form.mrn_number_2) && (
+                    <div className="flex items-center gap-3 bg-white rounded-lg p-3 border border-amber-200">
+                      <div className="flex-1 text-center">
+                        <p className="text-xs text-slate-400 mb-1">Eredeti MRN</p>
+                        <p className="text-sm font-mono font-bold text-slate-700">{form.mrn_number || "—"}</p>
+                        {form.mrn_date && <p className="text-xs text-slate-400 mt-0.5">{form.mrn_date}</p>}
+                      </div>
+                      <ArrowRight className="w-5 h-5 text-amber-400 flex-shrink-0" />
+                      <div className="flex-1 text-center">
+                        <p className="text-xs text-slate-400 mb-1">2. (módosított) MRN</p>
+                        <p className="text-sm font-mono font-bold text-amber-700">{form.mrn_number_2 || "—"}</p>
+                        {form.mrn_date_2 && <p className="text-xs text-amber-500 mt-0.5">{form.mrn_date_2}</p>}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 2. MRN beviteli mezők */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <Label className="text-slate-600 text-xs">2. MRN szám</Label>
+                      <Input
+                        className="mt-1 bg-white border-amber-300"
+                        value={form.mrn_number_2}
+                        onChange={(e) => set("mrn_number_2", e.target.value)}
+                        disabled={form.mrn_number_2_locked}
+                        placeholder="Módosított MRN"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-slate-600 text-xs">2. MRN dátum</Label>
+                      <Input
+                        type="date"
+                        className="mt-1 bg-white border-amber-300"
+                        value={form.mrn_date_2}
+                        onChange={(e) => set("mrn_date_2", e.target.value)}
+                        disabled={form.mrn_number_2_locked}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Rögzítés / Zárolás gomb */}
+                  {!form.mrn_number_2_locked ? (
+                    <div className="flex justify-end">
+                      <Button
+                        size="sm"
+                        onClick={handleSaveMrn2}
+                        disabled={savingMrn2}
+                        className="bg-amber-600 hover:bg-amber-700 text-white gap-2"
+                      >
+                        <Lock className="w-3.5 h-3.5" />
+                        {savingMrn2 ? "Rögzítés..." : "2. MRN Rögzítése & Zárolás"}
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-between bg-green-50 border border-green-200 rounded-lg px-3 py-2">
+                      <div className="flex items-center gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-green-600" />
+                        <span className="text-xs font-medium text-green-700">2. MRN rögzítve és zárolva</span>
+                      </div>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => setShowLockMrn2Dialog(true)}
+                        className="text-xs text-slate-400 hover:text-slate-600 gap-1"
+                      >
+                        <FileEdit className="w-3 h-3" /> Feloldás
+                      </Button>
+                    </div>
+                  )}
                 </div>
-                <div>
-                  <Label className="text-slate-500 text-xs">2. MRN dátum</Label>
-                  <Input type="date" className="mt-1 bg-amber-50 border-amber-300" value={form.mrn_date_2} onChange={(e) => set("mrn_date_2", e.target.value)} disabled={isClosed} />
-                </div>
-              </>
+              </div>
             )}
           </div>
         </div>
@@ -698,6 +807,34 @@ export default function TruckCustomsDetail({ truck, onBack, onUpdated }) {
             <AlertDialogCancel onClick={() => setReopenKey("")}>Mégse</AlertDialogCancel>
             <AlertDialogAction onClick={handleReopen} className="bg-amber-600 hover:bg-amber-700">
               Újranyitás
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Lock MRN2 Override Dialog */}
+      <AlertDialog open={showLockMrn2Dialog} onOpenChange={setShowLockMrn2Dialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>2. MRN zárolás feloldása</AlertDialogTitle>
+            <AlertDialogDescription>
+              A 2. MRN szám és dátum módosításához add meg a mesterkulcsot.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="py-4">
+            <Label className="text-sm text-slate-600">Mesterkulcs</Label>
+            <Input
+              type="password"
+              placeholder="Írd be a mesterkulcsot"
+              value={lockMrn2Key}
+              onChange={(e) => setLockMrn2Key(e.target.value)}
+              className="mt-2"
+            />
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setLockMrn2Key("")}>Mégse</AlertDialogCancel>
+            <AlertDialogAction onClick={handleLockMrn2Override} className="bg-amber-600 hover:bg-amber-700">
+              Feloldás
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
