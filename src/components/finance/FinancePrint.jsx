@@ -33,7 +33,7 @@ export default function FinancePrint({ trucks, orderbookMap, onClose }) {
   };
 
   const filtered = trucks.filter((t) => {
-    const date = t.loading_date || t.actual_loading_date || t.mrn_date || "";
+    const date = t.mrn_date || t.loading_date || t.actual_loading_date || "";
     if (fromDate && date < fromDate) return false;
     if (toDate && date > toDate) return false;
     return true;
