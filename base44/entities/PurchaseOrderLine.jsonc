@@ -1,0 +1,40 @@
+{
+  "name": "PurchaseOrderLine",
+  "type": "object",
+  "properties": {
+    "purchase_order_id": {
+      "type": "string",
+      "description": "Reference to PurchaseOrder"
+    },
+    "product_category_id": {
+      "type": "string",
+      "description": "Reference to ProductCategory (required)"
+    },
+    "product_category_name": {
+      "type": "string"
+    },
+    "planned_quantity_tons": {
+      "type": "number",
+      "description": "Optional planned quantity in tons"
+    },
+    "target_price_per_ton": {
+      "type": "number",
+      "description": "Optional target price EUR/ton"
+    },
+    "allocated_quantity_tons": {
+      "type": "number",
+      "description": "Auto-calculated from Logistics allocations",
+      "default": 0
+    },
+    "notes": {
+      "type": "string"
+    },
+    "sort_order": {
+      "type": "number"
+    }
+  },
+  "required": [
+    "purchase_order_id",
+    "product_category_id"
+  ]
+}

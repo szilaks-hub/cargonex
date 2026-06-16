@@ -1,0 +1,112 @@
+{
+  "name": "PurchaseOrder",
+  "type": "object",
+  "properties": {
+    "order_number": {
+      "type": "string",
+      "description": "Auto-generated order number"
+    },
+    "supplier_id": {
+      "type": "string",
+      "description": "Reference to Partner (supplier)"
+    },
+    "supplier_name": {
+      "type": "string"
+    },
+    "supplier_site_id": {
+      "type": "string",
+      "description": "Reference to PartnerLocation"
+    },
+    "supplier_site_name": {
+      "type": "string"
+    },
+    "order_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "currency": {
+      "type": "string",
+      "enum": [
+        "EUR",
+        "HUF",
+        "USD"
+      ],
+      "default": "EUR"
+    },
+    "incoterms_type": {
+      "type": "string",
+      "enum": [
+        "EXW",
+        "FCA",
+        "CPT",
+        "CIP",
+        "DAP",
+        "DPU",
+        "DDP",
+        "FAS",
+        "FOB",
+        "CFR",
+        "CIF"
+      ]
+    },
+    "incoterms_place": {
+      "type": "string"
+    },
+    "payment_terms": {
+      "type": "string"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "open",
+        "closed",
+        "archived"
+      ],
+      "default": "draft"
+    },
+    "allocated_quantity_tons": {
+      "type": "number",
+      "description": "Auto-sum of all line allocated quantities",
+      "default": 0
+    },
+    "closed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "closed_by": {
+      "type": "string"
+    },
+    "archived_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "archived_by": {
+      "type": "string"
+    },
+    "locked": {
+      "type": "boolean",
+      "default": false
+    },
+    "locked_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "locked_by": {
+      "type": "string"
+    },
+    "lock_reason": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "supplier_id",
+    "supplier_site_id",
+    "order_date",
+    "currency",
+    "incoterms_type"
+  ]
+}

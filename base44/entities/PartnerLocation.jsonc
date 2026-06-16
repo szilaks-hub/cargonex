@@ -1,0 +1,40 @@
+{
+  "name": "PartnerLocation",
+  "type": "object",
+  "properties": {
+    "partner_id": {
+      "type": "string",
+      "description": "Reference to Partner"
+    },
+    "partner_name": {
+      "type": "string"
+    },
+    "location_name": {
+      "type": "string",
+      "description": "Location / Telephely name"
+    },
+    "country": {
+      "type": "string"
+    },
+    "region": {
+      "type": "string"
+    },
+    "city": {
+      "type": "string"
+    },
+    "address": {
+      "type": "string"
+    },
+    "postal_code": {
+      "type": "string"
+    },
+    "is_primary": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "partner_id",
+    "location_name"
+  ]
+}

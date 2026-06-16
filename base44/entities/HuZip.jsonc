@@ -1,0 +1,22 @@
+{
+  "name": "HuZip",
+  "type": "object",
+  "properties": {
+    "zip": {
+      "type": "string",
+      "description": "Hungarian postal code / Magyar ir\u00e1ny\u00edt\u00f3sz\u00e1m"
+    },
+    "city": {
+      "type": "string",
+      "description": "City name / V\u00e1rosn\u00e9v"
+    },
+    "county": {
+      "type": "string",
+      "description": "County / V\u00e1rmegye"
+    }
+  },
+  "required": [
+    "zip",
+    "city"
+  ]
+}

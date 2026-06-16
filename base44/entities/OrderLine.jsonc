@@ -1,0 +1,54 @@
+{
+  "name": "OrderLine",
+  "type": "object",
+  "properties": {
+    "order_id": {
+      "type": "string",
+      "description": "Reference to PurchaseOrder"
+    },
+    "order_number": {
+      "type": "string"
+    },
+    "product_id": {
+      "type": "string",
+      "description": "Reference to Product"
+    },
+    "product_name": {
+      "type": "string"
+    },
+    "hs_code": {
+      "type": "string"
+    },
+    "ordered_quantity": {
+      "type": "number",
+      "description": "Ordered quantity in tons"
+    },
+    "delivered_quantity": {
+      "type": "number",
+      "description": "Total delivered so far",
+      "default": 0
+    },
+    "remaining_quantity": {
+      "type": "number",
+      "description": "Remaining to deliver"
+    },
+    "unit_price": {
+      "type": "number",
+      "description": "Price per ton"
+    },
+    "currency": {
+      "type": "string",
+      "enum": [
+        "EUR",
+        "HUF",
+        "USD"
+      ],
+      "default": "EUR"
+    }
+  },
+  "required": [
+    "order_id",
+    "product_id",
+    "ordered_quantity"
+  ]
+}

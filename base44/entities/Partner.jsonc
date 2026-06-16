@@ -1,0 +1,203 @@
+{
+  "name": "Partner",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Partner company name"
+    },
+    "short_name": {
+      "type": "string",
+      "description": "Short name / R\u00f6vid n\u00e9v"
+    },
+    "roles": {
+      "type": "array",
+      "description": "Partner roles",
+      "items": {
+        "type": "string",
+        "enum": [
+          "supplier",
+          "customer",
+          "carrier",
+          "customs_agent"
+        ]
+      }
+    },
+    "tax_number": {
+      "type": "string",
+      "description": "Tax identification number / Ad\u00f3sz\u00e1m"
+    },
+    "eu_vat": {
+      "type": "string",
+      "description": "EU VAT number"
+    },
+    "countries": {
+      "type": "array",
+      "description": "Country codes (ISO 2-letter)",
+      "items": {
+        "type": "string"
+      }
+    },
+    "country": {
+      "type": "string",
+      "description": "Legacy single country"
+    },
+    "city": {
+      "type": "string"
+    },
+    "address": {
+      "type": "string"
+    },
+    "postal_code": {
+      "type": "string"
+    },
+    "phone": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string"
+    },
+    "website": {
+      "type": "string"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "inactive",
+        "archived"
+      ],
+      "default": "active"
+    },
+    "carrier_type": {
+      "type": "string",
+      "enum": [
+        "truck",
+        "rail",
+        "sea"
+      ],
+      "description": "Carrier type / Fuvaroz\u00e1s m\u00f3dja"
+    },
+    "carrier_license_number": {
+      "type": "string"
+    },
+    "carrier_license_expiry": {
+      "type": "string",
+      "format": "date"
+    },
+    "carrier_insurance_number": {
+      "type": "string"
+    },
+    "carrier_insurance_expiry": {
+      "type": "string",
+      "format": "date"
+    },
+    "carrier_truck_count": {
+      "type": "number"
+    },
+    "carrier_capacity_tons": {
+      "type": "number"
+    },
+    "carrier_notes": {
+      "type": "string"
+    },
+    "customs_agent_aeo_number": {
+      "type": "string"
+    },
+    "customs_agent_aeo_expiry": {
+      "type": "string",
+      "format": "date"
+    },
+    "customs_agent_license_number": {
+      "type": "string"
+    },
+    "supplier_payment_terms": {
+      "type": "string"
+    },
+    "supplier_currency": {
+      "type": "string",
+      "enum": [
+        "EUR",
+        "HUF",
+        "USD"
+      ]
+    },
+    "supplier_incoterms": {
+      "type": "string",
+      "enum": [
+        "EXW",
+        "FCA",
+        "CPT",
+        "CIP",
+        "DAP",
+        "DPU",
+        "DDP",
+        "FAS",
+        "FOB",
+        "CFR",
+        "CIF"
+      ]
+    },
+    "supplier_bank_name": {
+      "type": "string"
+    },
+    "supplier_bank_account": {
+      "type": "string"
+    },
+    "supplier_bank_swift": {
+      "type": "string"
+    },
+    "supplier_bank_iban": {
+      "type": "string"
+    },
+    "customer_credit_limit": {
+      "type": "number"
+    },
+    "customer_credit_currency": {
+      "type": "string",
+      "enum": [
+        "EUR",
+        "HUF",
+        "USD"
+      ]
+    },
+    "customer_payment_terms": {
+      "type": "string"
+    },
+    "customer_delivery_preferences": {
+      "type": "string"
+    },
+    "archived_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "archived_by": {
+      "type": "string",
+      "description": "User email who archived"
+    },
+    "locked": {
+      "type": "boolean",
+      "default": false,
+      "description": "Accounting lock - no edits allowed"
+    },
+    "locked_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "locked_by": {
+      "type": "string",
+      "description": "User email who locked"
+    },
+    "lock_reason": {
+      "type": "string",
+      "description": "Reason for locking"
+    }
+  },
+  "required": [
+    "name",
+    "roles"
+  ]
+}

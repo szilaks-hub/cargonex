@@ -74,7 +74,7 @@ function AuditJelentes() {
   const today = new Date().toLocaleDateString("hu-HU");
 
   const filteredTrucks = trucks.filter((t) => {
-    if (t.status === "cancelled") return false;
+    if (!["loaded", "finance_control", "closed"].includes(t.status)) return false;
     const date = t.mrn_date || t.loading_date || t.actual_loading_date || "";
     if (fromDate && date < fromDate) return false;
     if (toDate && date > toDate) return false;
@@ -525,6 +525,7 @@ function MrnSzamlaKimutatas() {
   const allDests = [...new Set(trucks.map(t => t.destination_city).filter(Boolean))].sort();
 
   const relevant = trucks.filter(t => {
+    if (!["loaded", "finance_control", "closed"].includes(t.status)) return false;
     const date = t.mrn_date || t.loading_date || t.actual_loading_date || "";
     if (fromDate && date < fromDate) return false;
     if (toDate && date > toDate) return false;

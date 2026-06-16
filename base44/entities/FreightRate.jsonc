@@ -1,0 +1,76 @@
+{
+  "name": "FreightRate",
+  "type": "object",
+  "properties": {
+    "carrier_id": {
+      "type": "string",
+      "description": "Reference to Partner (carrier)"
+    },
+    "carrier_name": {
+      "type": "string"
+    },
+    "supplier_location_id": {
+      "type": "string",
+      "description": "Reference to PartnerLocation (loading point)"
+    },
+    "supplier_location_name": {
+      "type": "string"
+    },
+    "destination_country": {
+      "type": "string"
+    },
+    "destination_region": {
+      "type": "string"
+    },
+    "destination_city": {
+      "type": "string"
+    },
+    "foreign_rate": {
+      "type": "number",
+      "description": "Foreign freight rate per truck"
+    },
+    "domestic_rate": {
+      "type": "number",
+      "description": "Domestic freight rate per truck"
+    },
+    "currency": {
+      "type": "string",
+      "enum": [
+        "EUR",
+        "HUF",
+        "USD"
+      ],
+      "default": "EUR"
+    },
+    "capacity_tons": {
+      "type": "number",
+      "description": "Truck capacity in tons"
+    },
+    "total_freight_cost": {
+      "type": "number",
+      "description": "Calculated total freight cost"
+    },
+    "valid_from": {
+      "type": "string",
+      "format": "date"
+    },
+    "valid_to": {
+      "type": "string",
+      "format": "date"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "expired",
+        "draft"
+      ],
+      "default": "active"
+    }
+  },
+  "required": [
+    "carrier_id",
+    "destination_country",
+    "foreign_rate"
+  ]
+}

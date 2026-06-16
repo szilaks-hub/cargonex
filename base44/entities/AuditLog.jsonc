@@ -1,0 +1,50 @@
+{
+  "name": "AuditLog",
+  "type": "object",
+  "properties": {
+    "entity_name": {
+      "type": "string",
+      "description": "Entity name (e.g., PurchaseOrder, FreightSheet, Partner)"
+    },
+    "entity_id": {
+      "type": "string",
+      "description": "ID of the affected entity"
+    },
+    "action": {
+      "type": "string",
+      "enum": [
+        "HARD_DELETE",
+        "ARCHIVE",
+        "LOCK",
+        "UNLOCK",
+        "FORCE_DELETE"
+      ],
+      "description": "Action performed"
+    },
+    "user_id": {
+      "type": "string",
+      "description": "User email who performed action"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Action timestamp"
+    },
+    "reason": {
+      "type": "string",
+      "description": "Reason for action (mandatory for FORCE_DELETE)"
+    },
+    "dependency_snapshot": {
+      "type": "object",
+      "description": "JSON snapshot of dependency counts at time of action",
+      "additionalProperties": true
+    }
+  },
+  "required": [
+    "entity_name",
+    "entity_id",
+    "action",
+    "user_id",
+    "timestamp"
+  ]
+}

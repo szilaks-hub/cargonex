@@ -1,0 +1,30 @@
+{
+  "name": "ProductCategory",
+  "type": "object",
+  "properties": {
+    "name_en": {
+      "type": "string",
+      "description": "Category name in English"
+    },
+    "name_hu": {
+      "type": "string",
+      "description": "Category name in Hungarian"
+    },
+    "description": {
+      "type": "string",
+      "description": "Category description"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "inactive"
+      ],
+      "default": "active"
+    }
+  },
+  "required": [
+    "name_en",
+    "name_hu"
+  ]
+}

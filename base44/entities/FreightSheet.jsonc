@@ -1,0 +1,154 @@
+{
+  "name": "FreightSheet",
+  "type": "object",
+  "properties": {
+    "sheet_number": {
+      "type": "string",
+      "description": "Auto-generated sheet number"
+    },
+    "alias": {
+      "type": "string",
+      "description": "Rel\u00e1ci\u00f3s n\u00e9v / Custom display name for the sheet"
+    },
+    "version_group_id": {
+      "type": "string",
+      "description": "Azonos\u00edtja az ugyanazon 'csal\u00e1d' verzi\u00f3it \u2013 ugyanaz marad az archiv\u00e1l\u00e1st\u00f3l az \u00faj verzi\u00f3ig"
+    },
+    "carrier_id": {
+      "type": "string",
+      "description": "Reference to Partner (carrier)"
+    },
+    "carrier_name": {
+      "type": "string"
+    },
+    "supplier_id": {
+      "type": "string",
+      "description": "Reference to Partner (supplier)"
+    },
+    "supplier_name": {
+      "type": "string"
+    },
+    "supplier_site_id": {
+      "type": "string",
+      "description": "Reference to PartnerLocation (supplier site)"
+    },
+    "supplier_site_name": {
+      "type": "string"
+    },
+    "origin_country": {
+      "type": "string",
+      "description": "Auto from supplier site"
+    },
+    "origin_city": {
+      "type": "string",
+      "description": "Origin city / loading point city"
+    },
+    "origin_address": {
+      "type": "string",
+      "description": "Origin full address for declaration"
+    },
+    "destination_country": {
+      "type": "string",
+      "description": "Destination country code"
+    },
+    "incoterms": {
+      "type": "string",
+      "enum": [
+        "EXW",
+        "FCA",
+        "CPT",
+        "CIP",
+        "DAP",
+        "DPU",
+        "DDP",
+        "FAS",
+        "FOB",
+        "CFR",
+        "CIF"
+      ],
+      "default": "FCA"
+    },
+    "incoterms_place": {
+      "type": "string",
+      "description": "Incoterms place"
+    },
+    "goods_origin_description": {
+      "type": "string",
+      "description": "Goods origin description for declaration"
+    },
+    "valid_from": {
+      "type": "string",
+      "format": "date"
+    },
+    "valid_to": {
+      "type": "string",
+      "format": "date",
+      "description": "Leave empty = valid until revoked"
+    },
+    "valid_until_revoked": {
+      "type": "boolean",
+      "default": true,
+      "description": "If true, valid_to is ignored"
+    },
+    "currency": {
+      "type": "string",
+      "enum": [
+        "EUR",
+        "HUF",
+        "USD"
+      ],
+      "default": "EUR"
+    },
+    "default_load_tons": {
+      "type": "number",
+      "description": "Default load in tons",
+      "default": 24
+    },
+    "sheet_logo_url": {
+      "type": "string",
+      "description": "Uploaded sheet logo (PNG, SVG, JPG)"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "active",
+        "archived"
+      ],
+      "default": "draft"
+    },
+    "archived_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "archived_by": {
+      "type": "string",
+      "description": "User email who archived"
+    },
+    "locked": {
+      "type": "boolean",
+      "default": false,
+      "description": "Accounting lock - no edits allowed"
+    },
+    "locked_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "locked_by": {
+      "type": "string",
+      "description": "User email who locked"
+    },
+    "lock_reason": {
+      "type": "string",
+      "description": "Reason for locking"
+    }
+  },
+  "required": [
+    "carrier_id",
+    "destination_country",
+    "valid_from"
+  ]
+}

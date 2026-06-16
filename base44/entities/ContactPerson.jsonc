@@ -1,0 +1,41 @@
+{
+  "name": "ContactPerson",
+  "type": "object",
+  "properties": {
+    "partner_id": {
+      "type": "string",
+      "description": "Reference to Partner"
+    },
+    "partner_name": {
+      "type": "string"
+    },
+    "full_name": {
+      "type": "string"
+    },
+    "position": {
+      "type": "string"
+    },
+    "phone": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string"
+    },
+    "preferred_language": {
+      "type": "string",
+      "enum": [
+        "HU",
+        "EN"
+      ],
+      "default": "HU",
+      "description": "Preferred language / El\u0151nyben r\u00e9szes\u00edtett nyelv"
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "partner_id",
+    "full_name"
+  ]
+}

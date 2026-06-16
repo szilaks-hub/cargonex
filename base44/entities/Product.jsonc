@@ -1,0 +1,98 @@
+{
+  "name": "Product",
+  "type": "object",
+  "properties": {
+    "category_id": {
+      "type": "string",
+      "description": "Reference to ProductCategory"
+    },
+    "category_name": {
+      "type": "string",
+      "description": "Denormalized category name"
+    },
+    "diameter": {
+      "type": "number",
+      "description": "Diameter in mm"
+    },
+    "length": {
+      "type": "number",
+      "description": "Length in mm"
+    },
+    "additional_dimension": {
+      "type": "string",
+      "description": "Additional dimension for mesh products"
+    },
+    "mesh_name": {
+      "type": "string",
+      "description": "Mesh designation name"
+    },
+    "factory_code": {
+      "type": "string",
+      "description": "Factory product code"
+    },
+    "unit_of_measure": {
+      "type": "string",
+      "enum": [
+        "ton",
+        "piece",
+        "meter",
+        "kg"
+      ],
+      "default": "ton"
+    },
+    "conversion_factor": {
+      "type": "number",
+      "description": "Conversion factor to base unit"
+    },
+    "piece_weight": {
+      "type": "number",
+      "description": "Weight per piece in kg (required if unit=piece)"
+    },
+    "bundle_weight": {
+      "type": "number",
+      "description": "Bundle weight in kg"
+    },
+    "hs_code": {
+      "type": "string",
+      "description": "HS Code / VTSZ - mandatory"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "inactive",
+        "archived"
+      ],
+      "default": "active"
+    },
+    "archived_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "archived_by": {
+      "type": "string",
+      "description": "User email who archived"
+    },
+    "locked": {
+      "type": "boolean",
+      "default": false,
+      "description": "Accounting lock - no edits allowed"
+    },
+    "locked_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "locked_by": {
+      "type": "string",
+      "description": "User email who locked"
+    },
+    "lock_reason": {
+      "type": "string",
+      "description": "Reason for locking"
+    }
+  },
+  "required": [
+    "category_id",
+    "hs_code"
+  ]
+}

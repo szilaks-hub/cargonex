@@ -1,0 +1,46 @@
+{
+  "name": "OrderbookLine",
+  "type": "object",
+  "properties": {
+    "orderbook_id": {
+      "type": "string",
+      "description": "Reference to Orderbook"
+    },
+    "category_id": {
+      "type": "string",
+      "description": "Reference to ProductCategory"
+    },
+    "category_name": {
+      "type": "string"
+    },
+    "planned_quantity_tons": {
+      "type": "number",
+      "description": "Planned quantity in tons"
+    },
+    "unit_price_eur_per_ton": {
+      "type": "number",
+      "description": "Unit price EUR/ton"
+    },
+    "line_value_eur": {
+      "type": "number",
+      "description": "Auto = planned_quantity_tons * unit_price_eur_per_ton"
+    },
+    "allocated_quantity_tons": {
+      "type": "number",
+      "description": "Auto-updated from Logistics allocations",
+      "default": 0
+    },
+    "notes": {
+      "type": "string"
+    },
+    "sort_order": {
+      "type": "number"
+    }
+  },
+  "required": [
+    "orderbook_id",
+    "category_id",
+    "planned_quantity_tons",
+    "unit_price_eur_per_ton"
+  ]
+}
