@@ -122,8 +122,146 @@ export default function TruckCustomsDetail({ truck, onBack, onUpdated }) {
   };
 
   const handlePrint = () => {
-    setShowPrint(true);
-    setTimeout(() => window.print(), 100);
+    const today = new Date().toLocaleDateString("hu-HU");
+    const win = window.open("", "_blank", "width=960,height=1100");
+    win.document.write(`<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Vámkezelési Ellenőrző – ${truck.truck_number || truck.id?.slice(0,6)}</title>
+  <style>
+    @page { size: A4 portrait; margin: 14mm 16mm; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: Arial, sans-serif; font-size: 10.5px; color: #0f172a; background: #fff; }
+    .toolbar { position: fixed; top: 0; left: 0; right: 0; background: #1e3a8a; color: white; padding: 10px 20px; display: flex; align-items: center; justify-content: space-between; z-index: 999; }
+    .toolbar span { font-size: 13px; font-weight: 700; }
+    .toolbar button { background: white; color: #1e3a8a; border: none; padding: 7px 20px; border-radius: 5px; font-size: 12px; font-weight: 700; cursor: pointer; }
+    @media print { .toolbar { display: none !important; } body { padding-top: 0 !important; } }
+    body { padding-top: 52px; }
+    .page { max-width: 720px; margin: 20px auto; padding: 28px 32px; background: #fff; border: 1px solid #e2e8f0; border-radius: 6px; }
+    @media print { .page { max-width: 100%; margin: 0; padding: 0; border: none; box-shadow: none; } }
+    h1 { font-size: 18px; font-weight: 900; color: #0f172a; }
+    h2 { font-size: 11px; font-weight: 800; color: #1e3a8a; border-bottom: 1px solid #dbeafe; padding-bottom: 4px; margin: 16px 0 7px 0; }
+    .doc-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 3px solid #1e3a8a; padding-bottom: 14px; margin-bottom: 16px; }
+    .meta { font-size: 9.5px; color: #475569; margin-top: 6px; }
+    .meta span { font-weight: 700; color: #0f172a; display: inline-block; min-width: 120px; }
+    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 24px; margin-bottom: 10px; }
+    .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px 16px; }
+    .field { margin-bottom: 6px; }
+    .field .lbl { font-size: 8.5px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
+    .field .val { font-size: 10.5px; font-weight: 700; color: #0f172a; }
+    table { border-collapse: collapse; width: 100%; font-size: 10px; margin-top: 6px; }
+    th { background: #1e3a8a; color: white; padding: 5px 8px; text-align: left; font-size: 9px; }
+    td { border: 1px solid #e2e8f0; padding: 4px 8px; }
+    tr:nth-child(even) td { background: #f8fafc; }
+    tfoot td { background: #1e3a8a; color: white; font-weight: bold; }
+    .right { text-align: right; }
+    .total-row td { background: #0f172a !important; color: white; font-size: 11px; font-weight: 900; }
+    .vat-row td { background: #fef3c7; font-size: 11px; font-weight: 900; }
+    .check { font-size: 12px; }
+    .status-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 9px; font-weight: 700; }
+    .status-closed { background: #d1fae5; color: #065f46; }
+    .status-fc { background: #fef9c3; color: #854d0e; }
+    .status-loaded { background: #ffedd5; color: #9a3412; }
+    .mrn-compare { display: flex; align-items: center; gap: 10px; background: #fffbeb; border: 1px solid #f59e0b; border-radius: 6px; padding: 8px 12px; margin-top: 6px; }
+    .mrn-box { flex: 1; text-align: center; }
+    .mrn-box .lbl2 { font-size: 8px; color: #92400e; }
+    .mrn-box .val2 { font-size: 11px; font-weight: 900; font-family: monospace; }
+    .arrow { color: #f59e0b; font-size: 16px; }
+    .footer { margin-top: 24px; border-top: 1px solid #e2e8f0; padding-top: 8px; display: flex; justify-content: space-between; font-size: 8px; color: #94a3b8; }
+  </style>
+</head>
+<body>
+  <div class="toolbar">
+    <span>Vámkezelési Ellenőrző – ${truck.truck_number || "—"}</span>
+    <button onclick="window.print()">🖨️ Nyomtatás / PDF mentés</button>
+  </div>
+  <div class="page">
+    <div class="doc-header">
+      <div>
+        <h1>VÁMKEZELÉSI ELLENŐRZŐ ŰRLAP</h1>
+        <div class="meta"><span>Rendszám:</span> ${truck.truck_number || "—"}</div>
+        <div class="meta"><span>Nyomtatva:</span> ${today}</div>
+        <div class="meta"><span>Státusz:</span> <span class="status-badge ${truck.status === "closed" ? "status-closed" : truck.status === "finance_control" ? "status-fc" : "status-loaded"}">${truck.status === "closed" ? "Lezárt" : truck.status === "finance_control" ? "Pénzügyi ellenőrzés" : "Megrakott"}</span></div>
+      </div>
+    </div>
+
+    <div class="grid2">
+      <div>
+        <h2>FELADÓ / SHIPPER</h2>
+        <div class="field"><div class="lbl">Név</div><div class="val">${truck.supplier_name || "—"}</div></div>
+        <div class="field"><div class="lbl">Telephely</div><div class="val">${truck.supplier_site_name || "—"}</div></div>
+        <div class="field"><div class="lbl">Ország</div><div class="val">${truck.origin_country || "—"}</div></div>
+      </div>
+      <div>
+        <h2>LOGISZTIKA / LOGISTICS</h2>
+        <div class="field"><div class="lbl">Fuvarozó</div><div class="val">${truck.carrier_name || "—"}</div></div>
+        <div class="field"><div class="lbl">Vámügynök</div><div class="val">${truck.customs_agent_name || "—"}</div></div>
+        <div class="field"><div class="lbl">Célállomás</div><div class="val">${[truck.destination_country, truck.destination_zip, truck.destination_city].filter(Boolean).join(" ") || "—"}</div></div>
+        <div class="field"><div class="lbl">Paritás</div><div class="val">${truck.incoterms_type || "FCA"}</div></div>
+      </div>
+    </div>
+
+    <div class="grid2">
+      <div>
+        <h2>SZÁMLÁK / INVOICES</h2>
+        <div class="field"><div class="lbl">Eladó számla</div><div class="val">${form.supplier_invoice_number || "—"}</div></div>
+        <div class="field"><div class="lbl">Fuvar számla</div><div class="val">${form.freight_invoice_number || "—"}</div></div>
+      </div>
+      <div>
+        <h2>JÁRMŰ ADATOK</h2>
+        <div class="field"><div class="lbl">Tény. súly</div><div class="val">${actualWeight} t (${(actualWeight * 1000).toFixed(0)} kg)</div></div>
+        <div class="field"><div class="lbl">Árfolyam</div><div class="val">${exchangeRate ? exchangeRate + " HUF/EUR" : "—"}</div></div>
+        <div class="field"><div class="lbl">Vételár</div><div class="val">${purchasePrice ? purchasePrice + " EUR/t" : "—"}</div></div>
+      </div>
+    </div>
+
+    <h2>ÁRAK ÉS KÖLTSÉGEK / PRICES & COSTS</h2>
+    <table>
+      <thead><tr><th>Tétel</th><th class="right">EUR</th><th class="right">HUF</th></tr></thead>
+      <tbody>
+        <tr><td>Számla összege (${truck.incoterms_type || "FCA"})</td><td class="right">${invoiceEur.toFixed(2)}</td><td class="right">${invoiceHuf.toLocaleString("hu-HU", {maximumFractionDigits:0})}</td></tr>
+        <tr><td>Fuvar – külföldi szakasz</td><td class="right">${foreignFreightEur}</td><td class="right">${foreignFreightHuf.toLocaleString("hu-HU", {maximumFractionDigits:0})}</td></tr>
+        <tr><td>Fuvar – belföldi szakasz</td><td class="right">${domesticFreightEur}</td><td class="right">${domesticFreightHuf.toLocaleString("hu-HU", {maximumFractionDigits:0})}</td></tr>
+        <tr><td>Vámügynöki díj</td><td class="right">${customsAgentFeeEur}</td><td class="right">${customsAgentFeeHuf.toLocaleString("hu-HU", {maximumFractionDigits:0})}</td></tr>
+      </tbody>
+      <tfoot>
+        <tr class="total-row"><td>VÉGÖSSZEG / TOTAL BASE</td><td class="right">${(invoiceEur + totalFreightEur + customsAgentFeeEur).toFixed(2)}</td><td class="right">${totalBase.toLocaleString("hu-HU", {maximumFractionDigits:0})} HUF</td></tr>
+        <tr class="vat-row"><td>Tájékoztató ÁFA (27%)</td><td class="right"></td><td class="right">${indicativeVat.toLocaleString("hu-HU", {maximumFractionDigits:0})} HUF</td></tr>
+      </tfoot>
+    </table>
+
+    <h2>MRN ADATOK / MRN DATA</h2>
+    <div class="grid2">
+      <div class="field"><div class="lbl">MRN szám</div><div class="val">${form.mrn_number || "—"}</div></div>
+      <div class="field"><div class="lbl">MRN dátum</div><div class="val">${form.mrn_date || "—"}</div></div>
+      <div class="field"><div class="lbl">MRN megállapított összeg</div><div class="val">${mrnDeclared ? mrnDeclared.toLocaleString("hu-HU") + " HUF" : "—"}</div></div>
+      <div class="field"><div class="lbl">Számított ÁFA (27%)</div><div class="val">${indicativeVat.toLocaleString("hu-HU", {maximumFractionDigits:0})} HUF</div></div>
+    </div>
+    ${form.amendment_requested ? `
+    <div class="mrn-compare">
+      <div class="mrn-box"><div class="lbl2">Eredeti MRN</div><div class="val2">${form.mrn_number || "—"}</div><div style="font-size:8px;color:#92400e">${form.mrn_date || ""}</div></div>
+      <div class="arrow">→</div>
+      <div class="mrn-box"><div class="lbl2">2. (módosított) MRN</div><div class="val2" style="color:#b45309">${form.mrn_number_2 || "—"}</div><div style="font-size:8px;color:#b45309">${form.mrn_date_2 || ""}</div></div>
+    </div>` : ""}
+
+    <h2>CHECKLIST</h2>
+    <div class="grid3">
+      <div><span class="check">${form.ekaer ? "☑" : "☐"}</span> EKAER</div>
+      <div><span class="check">${form.hs_code_verified ? "☑" : "☐"}</span> VTSZ ellenőrizve</div>
+      <div><span class="check">${form.invoice_checked ? "☑" : "☐"}</span> Számla ellenőrizve</div>
+    </div>
+    ${form.checklist_notes ? `<div style="margin-top:8px;padding:6px 10px;background:#f8fafc;border-radius:4px;font-size:10px"><strong>Megjegyzés:</strong> ${form.checklist_notes}</div>` : ""}
+
+    <div class="footer">
+      <span>CARGONEX – Vámkezelési Ellenőrző Űrlap</span>
+      <span>Dabas, ${today}</span>
+    </div>
+  </div>
+</body>
+</html>`);
+    win.document.close();
+    win.focus();
   };
 
   const handleDelete = async () => {
@@ -215,143 +353,6 @@ export default function TruckCustomsDetail({ truck, onBack, onUpdated }) {
 
   const fmt = (n, decimals = 0) =>
     n ? n.toLocaleString("hu-HU", { minimumFractionDigits: decimals, maximumFractionDigits: decimals }) : "0";
-
-  if (showPrint) {
-    return (
-      <div className="print-sheet bg-white p-8 max-w-4xl mx-auto" style={{ fontFamily: "Arial, sans-serif" }}>
-        <style>{`
-          @media print {
-            body * { visibility: hidden; }
-            .print-sheet, .print-sheet * { visibility: visible; }
-            .print-sheet { position: absolute; left: 0; top: 0; width: 100%; }
-            @page { margin: 1cm; }
-          }
-        `}</style>
-        <div className="text-center mb-6 pb-4 border-b-2 border-slate-300">
-          <h1 className="text-2xl font-bold text-slate-800">VÁMKEZELÉSI ELLENŐRZŐ ŰRLAP</h1>
-          <p className="text-sm text-slate-500 mt-1">Customs Clearance Control Form</p>
-        </div>
-
-        <div className="grid grid-cols-2 gap-6 mb-6">
-          <div>
-            <h3 className="font-bold text-sm text-slate-600 mb-2 border-b border-slate-200 pb-1">JÁRMŰ ADATOK / VEHICLE DATA</h3>
-            <table className="w-full text-sm">
-              <tbody>
-                <tr><td className="py-1 text-slate-500">Rendszám:</td><td className="font-semibold">{truck.truck_number || `T-${truck.id?.slice(0,6)}`}</td></tr>
-                <tr><td className="py-1 text-slate-500">Termék:</td><td className="font-semibold">{truck.product_name}</td></tr>
-                <tr><td className="py-1 text-slate-500">Tény. súly:</td><td className="font-semibold">{actualWeight} t ({(actualWeight * 1000).toFixed(0)} kg)</td></tr>
-                <tr><td className="py-1 text-slate-500">Paritás:</td><td className="font-semibold">{truck.incoterms_type || "FCA"}</td></tr>
-              </tbody>
-            </table>
-          </div>
-          <div>
-            <h3 className="font-bold text-sm text-slate-600 mb-2 border-b border-slate-200 pb-1">FELADÓ / SHIPPER</h3>
-            <table className="w-full text-sm">
-              <tbody>
-                <tr><td className="py-1 text-slate-500">Név:</td><td className="font-semibold">{truck.supplier_name || "—"}</td></tr>
-                <tr><td className="py-1 text-slate-500">Telephely:</td><td className="font-semibold">{truck.supplier_site_name || "—"}</td></tr>
-                <tr><td className="py-1 text-slate-500">Ország:</td><td className="font-semibold">{truck.origin_country || "—"}</td></tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 gap-6 mb-6">
-          <div>
-            <h3 className="font-bold text-sm text-slate-600 mb-2 border-b border-slate-200 pb-1">LOGISZTIKA / LOGISTICS</h3>
-            <table className="w-full text-sm">
-              <tbody>
-                <tr><td className="py-1 text-slate-500">Fuvarozó:</td><td className="font-semibold">{truck.carrier_name}</td></tr>
-                <tr><td className="py-1 text-slate-500">Vámügynök:</td><td className="font-semibold">{truck.customs_agent_name || "—"}</td></tr>
-                <tr><td className="py-1 text-slate-500">Célállomás:</td><td className="font-semibold">{[truck.destination_country, truck.destination_zip, truck.destination_city].filter(Boolean).join(" ")}</td></tr>
-              </tbody>
-            </table>
-          </div>
-          <div>
-            <h3 className="font-bold text-sm text-slate-600 mb-2 border-b border-slate-200 pb-1">SZÁMLÁK / INVOICES</h3>
-            <table className="w-full text-sm">
-              <tbody>
-                <tr><td className="py-1 text-slate-500">Eladó számla:</td><td className="font-semibold">{form.supplier_invoice_number || "—"}</td></tr>
-                <tr><td className="py-1 text-slate-500">Fuvar számla:</td><td className="font-semibold">{form.freight_invoice_number || "—"}</td></tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <div className="mb-6">
-          <h3 className="font-bold text-sm text-slate-600 mb-2 border-b border-slate-200 pb-1">ÁRAK ÉS KÖLTSÉGEK / PRICES & COSTS</h3>
-          <table className="w-full text-sm border border-slate-200">
-            <thead className="bg-slate-50">
-              <tr>
-                <th className="text-left py-2 px-3 border-b border-slate-200">Tétel</th>
-                <th className="text-right py-2 px-3 border-b border-slate-200">EUR</th>
-                <th className="text-right py-2 px-3 border-b border-slate-200">HUF</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr><td className="py-2 px-3 border-b border-slate-100">Vételár</td><td className="text-right py-2 px-3 border-b border-slate-100">{purchasePrice} EUR/t</td><td className="text-right py-2 px-3 border-b border-slate-100">{fmt(invoiceHuf)}</td></tr>
-              <tr><td className="py-2 px-3 border-b border-slate-100">Külföldi fuvar</td><td className="text-right py-2 px-3 border-b border-slate-100">{foreignFreightEur} EUR</td><td className="text-right py-2 px-3 border-b border-slate-100">{fmt(foreignFreightHuf)}</td></tr>
-              <tr><td className="py-2 px-3 border-b border-slate-100">Belföldi fuvar</td><td className="text-right py-2 px-3 border-b border-slate-100">{domesticFreightEur} EUR</td><td className="text-right py-2 px-3 border-b border-slate-100">{fmt(domesticFreightHuf)}</td></tr>
-              <tr><td className="py-2 px-3 border-b border-slate-100 font-semibold">Összes fuvar</td><td className="text-right py-2 px-3 border-b border-slate-100 font-semibold">{totalFreightEur.toFixed(2)} EUR</td><td className="text-right py-2 px-3 border-b border-slate-100 font-semibold">{fmt(totalFreightHuf)}</td></tr>
-              <tr><td className="py-2 px-3 border-b border-slate-100">Vámügynöki díj</td><td className="text-right py-2 px-3 border-b border-slate-100">{customsAgentFeeEur} EUR</td><td className="text-right py-2 px-3 border-b border-slate-100">{fmt(customsAgentFeeHuf)}</td></tr>
-              <tr className="bg-blue-50"><td className="py-2 px-3 border-b border-slate-200 font-semibold">Belföldi + vámkezelés</td><td className="text-right py-2 px-3 border-b border-slate-200 font-semibold">{domesticAndCustomsEur.toFixed(2)} EUR</td><td className="text-right py-2 px-3 border-b border-slate-200 font-semibold">{fmt(domesticAndCustomsHuf)}</td></tr>
-              <tr className="bg-slate-100"><td className="py-2 px-3 font-bold">VÉGÖSSZEG / TOTAL</td><td className="text-right py-2 px-3 font-bold">{(invoiceEur + totalFreightEur + customsAgentFeeEur).toFixed(2)} EUR</td><td className="text-right py-2 px-3 font-bold">{fmt(totalBase)}</td></tr>
-            </tbody>
-          </table>
-          <div className="text-right text-sm text-slate-500 mt-1">Árfolyam / Exchange Rate: {exchangeRate} HUF/EUR</div>
-        </div>
-
-        <div className="mb-6">
-          <h3 className="font-bold text-sm text-slate-600 mb-2 border-b border-slate-200 pb-1">MRN ADATOK / MRN DATA</h3>
-          <table className="w-full text-sm">
-            <tbody>
-              <tr><td className="py-1 text-slate-500 w-1/3">MRN szám:</td><td className="font-semibold">{form.mrn_number || "—"}</td></tr>
-              <tr><td className="py-1 text-slate-500">MRN dátum:</td><td className="font-semibold">{form.mrn_date || "—"}</td></tr>
-              {form.amendment_requested && (
-                <>
-                  <tr><td className="py-1 text-slate-500">MRN szám (2. módosítás):</td><td className="font-semibold">{form.mrn_number_2 || "—"}</td></tr>
-                  <tr><td className="py-1 text-slate-500">MRN dátum (2. módosítás):</td><td className="font-semibold">{form.mrn_date_2 || "—"}</td></tr>
-                </>
-              )}
-              <tr><td className="py-1 text-slate-500">MRN megállapított összeg:</td><td className="font-semibold">{fmt(mrnDeclared)} HUF</td></tr>
-              <tr><td className="py-1 text-slate-500">Számított ÁFA (27%):</td><td className="font-semibold">{fmt(indicativeVat)} HUF</td></tr>
-            </tbody>
-          </table>
-        </div>
-
-        <div className="mb-6">
-          <h3 className="font-bold text-sm text-slate-600 mb-2 border-b border-slate-200 pb-1">CHECKLIST</h3>
-          <div className="grid grid-cols-3 gap-3 text-sm">
-            <div className="flex items-center gap-2">
-              <input type="checkbox" checked={form.ekaer} readOnly className="w-4 h-4" />
-              <span>EKAER</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <input type="checkbox" checked={form.hs_code_verified} readOnly className="w-4 h-4" />
-              <span>VTSZ ellenőrizve</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <input type="checkbox" checked={form.invoice_checked} readOnly className="w-4 h-4" />
-              <span>Számla ellenőrizve</span>
-            </div>
-          </div>
-          {form.checklist_notes && (
-            <div className="mt-3 p-2 bg-slate-50 rounded text-sm">
-              <strong>Megjegyzés:</strong> {form.checklist_notes}
-            </div>
-          )}
-        </div>
-
-        <div className="text-center mt-8 pt-4 border-t-2 border-slate-300 text-xs text-slate-400">
-          Nyomtatva: {new Date().toLocaleDateString("hu-HU")} | CARGONEX © 2026
-        </div>
-
-        <div className="mt-4 text-center no-print">
-          <Button onClick={() => setShowPrint(false)} variant="outline">Vissza a szerkesztéshez</Button>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-5 max-w-5xl" style={{ background: "linear-gradient(135deg, #f8f9fb 0%, #e8ecf4 100%)", padding: "1.5rem", borderRadius: "16px" }}>
@@ -736,6 +737,9 @@ export default function TruckCustomsDetail({ truck, onBack, onUpdated }) {
             <span className="text-sm font-medium">Ez a fuvar le van zárva és véglegesítve.</span>
           </div>
           <div className="flex gap-2">
+            <Button variant="outline" size="sm" onClick={handlePrint} className="gap-2">
+              <Printer className="w-4 h-4" /> Nyomtatás
+            </Button>
             <Button
               variant="outline"
               size="sm"
