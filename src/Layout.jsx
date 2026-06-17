@@ -83,8 +83,17 @@ export default function Layout({ children, currentPageName }) {
                 src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6995745b061c5cfec8978279/7ed19bd16_image.png"
                 alt="CARGONEX"
                 className="w-auto object-contain"
-                style={{ height: "240px" }}
+                style={{ height: "120px" }}
+                onError={(e) => {
+                  e.target.style.display = "none";
+                  e.target.nextSibling.style.display = "block";
+                }}
               />
+              <span
+                style={{ display: "none", fontSize: "22px", fontWeight: 900, color: "#1e3a8a", letterSpacing: "0.1em" }}
+              >
+                CARGONEX
+              </span>
             </div>
             <button
               onClick={() => setSidebarOpen(false)}
