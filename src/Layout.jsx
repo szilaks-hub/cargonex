@@ -14,7 +14,9 @@ import {
   ClipboardList,
   FileText,
   Settings2,
-  BadgeCheck
+  BadgeCheck,
+  LogOut,
+  UserCircle2
 } from "lucide-react";
 
 const navItems = [
@@ -32,12 +34,14 @@ const navItems = [
 export default function Layout({ children, currentPageName }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [userRole, setUserRole] = useState(null);
+  const [currentUser, setCurrentUser] = useState(null);
   const navigate = useNavigate();
   const location = useLocation();
 
   useEffect(() => {
     base44.auth.me().then(u => {
       setUserRole(u?.role || null);
+      setCurrentUser(u || null);
       if (u?.role === 'logistics_viewer' && currentPageName !== 'Logistics') {
         navigate('/Logistics', { replace: true });
       }
@@ -122,8 +126,26 @@ export default function Layout({ children, currentPageName }) {
           })}
         </nav>
 
-        {/* Sidebar Footer */}
-        <div className="p-4" style={{ borderTop: "1px solid #EEF0F6" }}>
+        {/* Sidebar Footer – user info + logout */}
+        <div className="p-4 space-y-3" style={{ borderTop: "1px solid #EEF0F6" }}>
+          {currentUser && (
+            <div className="flex items-center gap-2.5 px-2 py-2 rounded-xl bg-slate-50">
+              <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                <UserCircle2 className="w-5 h-5 text-blue-500" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-semibold text-slate-700 truncate">{currentUser.full_name || "—"}</p>
+                <p className="text-[10px] text-slate-400 truncate">{currentUser.email}</p>
+              </div>
+              <button
+                onClick={() => base44.auth.logout()}
+                title="Kijelentkezés"
+                className="flex-shrink-0 p-1.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
+            </div>
+          )}
           <p className="text-[10px] text-slate-400 text-center">CARGONEX © 2026</p>
         </div>
       </aside>
