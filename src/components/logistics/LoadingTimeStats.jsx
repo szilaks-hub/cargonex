@@ -3,7 +3,8 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { format, parseISO, differenceInDays } from "date-fns";
 import { hu } from "date-fns/locale";
-import { Clock, PackageCheck, Timer, TrendingUp, CalendarRange } from "lucide-react";
+import { Clock, PackageCheck, Timer, TrendingUp, CalendarRange, Printer, FileSpreadsheet } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 function safeDate(val) {
   if (!val) return null;
@@ -45,6 +46,15 @@ function getDurationColor(days) {
   if (days <= 14) return "text-amber-600";
   if (days <= 30) return "text-orange-600";
   return "text-red-600";
+}
+
+function durationColorHex(days) {
+  if (days === null || days === undefined) return "#94a3b8";
+  if (days <= 3) return "#16a34a";
+  if (days <= 7) return "#2563eb";
+  if (days <= 14) return "#d97706";
+  if (days <= 30) return "#ea580c";
+  return "#dc2626";
 }
 
 export default function LoadingTimeStats({ trucks, orderbookMap = {} }) {
@@ -172,6 +182,136 @@ export default function LoadingTimeStats({ trucks, orderbookMap = {} }) {
 
   const maxLeadDays = Math.max(...truckLeadTimes.map(t => t.leadDays), 1);
 
+  const todayStr = new Date().toLocaleDateString("hu-HU");
+
+  const handlePrint = () => {
+    const win = window.open("", "_blank", "width=1200,height=900");
+    if (!win) return;
+
+    const orderRows = sortedOrders.map(o => `
+      <tr>
+        <td>${o.orderNo}</td>
+        <td>${o.supplierName}</td>
+        <td>${fmtDate(o.orderDate)}</td>
+        <td>${fmtDate(o.firstLoading)}</td>
+        <td style="text-align:right;font-weight:bold;color:${durationColorHex(o.orderToFirst)}">${fmtDuration(o.orderToFirst)}</td>
+        <td>${fmtDate(o.lastLoading)}</td>
+        <td style="text-align:right;font-weight:bold;color:${durationColorHex(o.firstToLast)}">${fmtDuration(o.firstToLast)}</td>
+        <td style="text-align:right">${o.truckCount} db</td>
+        <td style="text-align:right;font-weight:bold">${o.orderToLast !== null ? fmtDuration(o.orderToLast) : "—"}</td>
+      </tr>`).join("");
+
+    const truckRows = truckLeadTimes.map(t => `
+      <tr>
+        <td>${t.truckNumber}</td>
+        <td>${t.orderNo}</td>
+        <td>${t.supplierName}</td>
+        <td>${fmtDate(t.created)}</td>
+        <td>${fmtDate(t.mrnDate)}</td>
+        <td style="text-align:right;font-weight:bold;color:${durationColorHex(t.leadDays)}">${fmtDuration(t.leadDays)}</td>
+      </tr>`).join("");
+
+    win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"/>
+    <title>Átfutási idők – ${todayStr}</title>
+    <style>
+      @page { size: A4 landscape; margin: 12mm; }
+      body { font-family: Arial, sans-serif; font-size: 9.5px; color: #0f172a; margin: 0; }
+      .rh { display:flex; justify-content:space-between; align-items:center; border-bottom:2.5px solid #1e293b; padding-bottom:10px; margin-bottom:16px; }
+      .rh-title { font-size:20px; font-weight:900; }
+      .rh-sub { font-size:10px; color:#64748b; margin-top:3px; }
+      .rh-meta { text-align:right; font-size:10px; color:#64748b; }
+      h2 { font-size:13px; font-weight:700; margin:20px 0 8px; color:#1e293b; border-bottom:1px solid #cbd5e1; padding-bottom:4px; }
+      .summary { display:flex; gap:12px; margin-bottom:16px; }
+      .summary div { background:#f1f5f9; border:1px solid #e2e8f0; border-radius:6px; padding:8px 14px; }
+      .summary .v { font-size:18px; font-weight:800; color:#1e293b; }
+      .summary .l { font-size:9px; color:#64748b; }
+      table { border-collapse:collapse; width:100%; margin-bottom:8px; }
+      thead th { background:#1e293b; color:white; padding:6px 8px; font-size:8.5px; font-weight:700; text-align:left; letter-spacing:0.04em; text-transform:uppercase; }
+      tbody td { border:1px solid #cbd5e1; padding:5px 7px; vertical-align:top; }
+      tbody tr:nth-child(even) td { background:#f8fafc; }
+      .footer { margin-top:16px; font-size:9px; color:#94a3b8; border-top:1px solid #e2e8f0; padding-top:8px; display:flex; justify-content:space-between; }
+    </style></head><body>
+      <div class="rh">
+        <div>
+          <div class="rh-title">Rakodási és átfutási idők</div>
+          <div class="rh-sub">Loading time & lead time analysis</div>
+        </div>
+        <div class="rh-meta">CARGONEX · ${todayStr}</div>
+      </div>
+      <div class="summary">
+        <div><div class="l">Rendelések</div><div class="v">${orderSummary?.orderCount || 0}</div></div>
+        <div><div class="l">Átl. első kamion</div><div class="v">${orderSummary ? fmtDuration(Math.round(orderSummary.avgOrderToFirst)) : "—"}</div></div>
+        <div><div class="l">Átl. teljesítés</div><div class="v">${orderSummary?.avgSpan !== null ? fmtDuration(Math.round(orderSummary.avgSpan)) : "—"}</div></div>
+        <div><div class="l">Átl. MRN átfutás</div><div class="v">${leadSummary ? fmtDuration(Math.round(leadSummary.avg)) : "—"}</div></div>
+      </div>
+      <h2>Rendelés teljesítési idő (order_date → első rakodás → utolsó rakodás)</h2>
+      <table>
+        <thead><tr>
+          <th>Rendelés</th><th>Beszállító</th><th>Rendelés dátum</th><th>Első rakodás</th>
+          <th style="text-align:right">Első kamion</th><th>Utolsó rakodás</th>
+          <th style="text-align:right">Teljesítés</th><th style="text-align:right">Kamion</th><th style="text-align:right">Összes</th>
+        </tr></thead>
+        <tbody>${orderRows}</tbody>
+      </table>
+      <h2>Kamion átfutási idő (beírás → MRN)</h2>
+      <table>
+        <thead><tr>
+          <th>Rendszám</th><th>Rendelés</th><th>Beszállító</th>
+          <th>Beírás dátum</th><th>MRN dátum</th><th style="text-align:right">Átfutás</th>
+        </tr></thead>
+        <tbody>${truckRows}</tbody>
+      </table>
+      <div class="footer"><span>CARGONEX © 2026</span><span>${todayStr}</span></div>
+    </body></html>`);
+    win.document.close();
+    win.focus();
+    setTimeout(() => { win.print(); }, 500);
+  };
+
+  const handleExportCSV = () => {
+    const sep = ";";
+    const rows = [];
+
+    rows.push(["Rakodási és átfutási idők – " + todayStr]);
+    rows.push([]);
+
+    rows.push(["RENDELÉS TELJESÍTÉSI IDŐ"]);
+    rows.push(["Rendelés", "Beszállító", "Rendelés dátum", "Első rakodás", "Első kamion (nap)",
+               "Utolsó rakodás", "Teljesítés (nap)", "Kamion db", "Összes (nap)"]);
+    sortedOrders.forEach(o => {
+      rows.push([
+        o.orderNo, o.supplierName, fmtDate(o.orderDate), fmtDate(o.firstLoading),
+        fmtDuration(o.orderToFirst), fmtDate(o.lastLoading), fmtDuration(o.firstToLast),
+        `${o.truckCount} db`, fmtDuration(o.orderToLast)
+      ]);
+    });
+    rows.push([]);
+
+    rows.push(["KAMION ÁTFUTÁSI IDŐ (beírás → MRN)"]);
+    rows.push(["Rendszám", "Rendelés", "Beszállító", "Beírás dátum", "MRN dátum", "Átfutás (nap)"]);
+    truckLeadTimes.forEach(t => {
+      rows.push([
+        t.truckNumber, t.orderNo, t.supplierName,
+        fmtDate(t.created), fmtDate(t.mrnDate), fmtDuration(t.leadDays)
+      ]);
+    });
+
+    const csv = "\uFEFF" + rows.map(r => r.map(cell => {
+      const s = String(cell ?? "");
+      return s.includes(sep) || s.includes('"') || s.includes("\n") ? `"${s.replace(/"/g, '""')}"` : s;
+    }).join(sep)).join("\n");
+
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `atfutasi_idok_${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
   if (activeTrucks.length === 0) {
     return (
       <div className="bg-white border border-slate-200 rounded-xl p-8 text-center text-slate-400 shadow-sm">
@@ -184,14 +324,26 @@ export default function LoadingTimeStats({ trucks, orderbookMap = {} }) {
     <div className="space-y-5">
       {/* ── HEADER ── */}
       <div className="bg-gradient-to-r from-cyan-50 to-blue-50 border border-cyan-200 rounded-xl p-4">
-        <div className="flex items-center gap-2">
-          <Clock className="w-5 h-5 text-cyan-600" />
-          <h3 className="font-semibold text-slate-800">Rakodási és átfutási idők</h3>
-          <span className="text-xs text-slate-500 ml-1">Loading time & lead time analysis</span>
+        <div className="flex items-center justify-between flex-wrap gap-2">
+          <div>
+            <div className="flex items-center gap-2">
+              <Clock className="w-5 h-5 text-cyan-600" />
+              <h3 className="font-semibold text-slate-800">Rakodási és átfutási idők</h3>
+              <span className="text-xs text-slate-500 ml-1">Loading time & lead time analysis</span>
+            </div>
+            <p className="text-xs text-slate-500 mt-1">
+              Rendelés beírásától a kamionok rakodásáig, valamint kamiononként a beírás → MRN dátum intervallum
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button onClick={handlePrint} className="bg-blue-600 hover:bg-blue-700 text-white gap-2" size="sm">
+              <Printer className="w-4 h-4" /> Nyomtatás / PDF
+            </Button>
+            <Button onClick={handleExportCSV} className="bg-green-600 hover:bg-green-700 text-white gap-2" size="sm">
+              <FileSpreadsheet className="w-4 h-4" /> Excel / CSV
+            </Button>
+          </div>
         </div>
-        <p className="text-xs text-slate-500 mt-1">
-          Rendelés beírásától a kamionok rakodásáig, valamint kamiononként a beírás → MRN dátum intervallum
-        </p>
       </div>
 
       {/* ── SUMMARY CARDS ── */}
