@@ -5,6 +5,7 @@ import { format, parseISO, differenceInDays } from "date-fns";
 import { hu } from "date-fns/locale";
 import { Clock, PackageCheck, Timer, TrendingUp, CalendarRange, Printer, FileSpreadsheet } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import TruckLeadTimeTimeline from "@/components/logistics/TruckLeadTimeTimeline";
 
 function safeDate(val) {
   if (!val) return null;
@@ -484,6 +485,8 @@ export default function LoadingTimeStats({ trucks, orderbookMap = {} }) {
         {truckLeadTimes.length === 0 ? (
           <div className="text-center py-8 text-slate-400 text-sm">Nincs kamion beírás → MRN adat.</div>
         ) : (
+          <>
+          <TruckLeadTimeTimeline trucks={truckLeadTimes} />
           <div className="overflow-x-auto max-h-[500px] overflow-y-auto">
             <table className="w-full" style={{ fontSize: "0.82rem" }}>
               <thead className="bg-slate-50/50 border-b sticky top-0">
@@ -524,6 +527,7 @@ export default function LoadingTimeStats({ trucks, orderbookMap = {} }) {
               </tbody>
             </table>
           </div>
+          </>
         )}
       </Card>
     </div>
