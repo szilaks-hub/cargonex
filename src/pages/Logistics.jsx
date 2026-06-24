@@ -7,6 +7,7 @@ import TruckReportModal from "@/components/logistics/TruckReportModal";
 import LogisticsCalendar from "@/components/logistics/LogisticsCalendar";
 import DailyLoadingStats from "@/components/logistics/DailyLoadingStats";
 import LoadingStatsPanel from "@/components/logistics/LoadingStatsPanel";
+import LoadingTimeStats from "@/components/logistics/LoadingTimeStats";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -237,7 +238,12 @@ export default function Logistics() {
         />
       )}
 
-      {!showForm && view === "stats" && <LoadingStatsPanel trucks={trucks} />}
+      {!showForm && view === "stats" && (
+        <>
+          <LoadingStatsPanel trucks={trucks} />
+          <LoadingTimeStats trucks={trucks} orderbookMap={orderbookMap} />
+        </>
+      )}
 
 
 
