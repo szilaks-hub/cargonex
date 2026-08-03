@@ -537,15 +537,31 @@ export default function OrderbookDetail({ orderId, onClose, onUpdated, trucks = 
                     )}
                   </div>
                   <div>
-                    <label className="text-xs font-medium text-slate-600 mb-1 block">Díj (EUR/kamion)</label>
-                    <Input
-                      type="number"
-                      step="0.01"
-                      value={form.customs_fee_eur_per_truck || ""}
-                      onChange={(e) => handleFormChange({ customs_fee_eur_per_truck: e.target.value ? parseFloat(e.target.value) : 0 })}
-                      disabled={!isEditable}
-                      className={!isEditable ? 'bg-slate-100 text-slate-600' : 'bg-white'}
-                    />
+                    <label className="text-xs font-medium text-slate-600 mb-1 block">Vámügynöki díj / kamion</label>
+                    <div className="flex gap-2">
+                      <Input
+                        type="number"
+                        step="0.01"
+                        value={form.customs_fee_eur_per_truck || ""}
+                        onChange={(e) => handleFormChange({ customs_fee_eur_per_truck: e.target.value ? parseFloat(e.target.value) : 0 })}
+                        disabled={!isEditable}
+                        className={!isEditable ? 'bg-slate-100 text-slate-600' : 'bg-white'}
+                      />
+                      {isEditable ? (
+                        <Select
+                          value={form.customs_fee_currency || "EUR"}
+                          onValueChange={(v) => handleFormChange({ customs_fee_currency: v })}
+                        >
+                          <SelectTrigger className="w-24 bg-white"><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="EUR">EUR</SelectItem>
+                            <SelectItem value="HUF">HUF</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      ) : (
+                        <div className="px-3 py-2 bg-white rounded border border-slate-300 text-slate-800 text-sm w-24 text-center">{form.customs_fee_currency || "EUR"}</div>
+                      )}
+                    </div>
                   </div>
                 </div>
               )}

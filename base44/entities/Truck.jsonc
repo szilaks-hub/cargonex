@@ -104,6 +104,15 @@
     "customs_agent_fee": {
       "type": "number"
     },
+    "customs_agent_fee_currency": {
+      "type": "string",
+      "enum": [
+        "EUR",
+        "HUF"
+      ],
+      "default": "EUR",
+      "description": "Currency of the customs agent fee (EUR or HUF)"
+    },
     "purchase_price": {
       "type": "number"
     },

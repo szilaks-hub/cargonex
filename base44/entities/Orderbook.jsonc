@@ -113,7 +113,16 @@
     },
     "customs_fee_eur_per_truck": {
       "type": "number",
-      "description": "Customs fee EUR per truck (not per ton)"
+      "description": "Customs fee per truck (not per ton) \u2013 in customs_fee_currency"
+    },
+    "customs_fee_currency": {
+      "type": "string",
+      "enum": [
+        "EUR",
+        "HUF"
+      ],
+      "default": "EUR",
+      "description": "Currency of the customs agent fee per truck"
     },
     "other_fees": {
       "type": "array",

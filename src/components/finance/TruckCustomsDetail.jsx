@@ -61,7 +61,8 @@ export default function TruckCustomsDetail({ truck, onBack, onUpdated }) {
   // EUR values from freight snapshot or direct fields
   const foreignFreightEur = truck.freight_foreign_leg_snapshot || truck.foreign_freight || 0;
   const domesticFreightEur = truck.freight_domestic_leg_snapshot || truck.domestic_freight || 0;
-  const customsAgentFeeEur = truck.customs_agent_fee || 0;
+  const customsFeeCurrency = truck.customs_agent_fee_currency || "EUR";
+  const customsAgentFeeRaw = truck.customs_agent_fee || 0;
 
   // FCA invoice value = actual weight * purchase price (EUR)
   const invoiceEur = actualWeight * purchasePrice;
@@ -69,7 +70,9 @@ export default function TruckCustomsDetail({ truck, onBack, onUpdated }) {
   const invoiceHuf = invoiceEur * exchangeRate;
   const foreignFreightHuf = foreignFreightEur * exchangeRate;
   const domesticFreightHuf = domesticFreightEur * exchangeRate;
-  const customsAgentFeeHuf = customsAgentFeeEur * exchangeRate;
+  // If fee is HUF, use directly; if EUR, convert via exchange rate
+  const customsAgentFeeHuf = customsFeeCurrency === "HUF" ? customsAgentFeeRaw : customsAgentFeeRaw * exchangeRate;
+  const customsAgentFeeEur = customsFeeCurrency === "HUF" ? (exchangeRate > 0 ? customsAgentFeeRaw / exchangeRate : 0) : customsAgentFeeRaw;
 
   // Combined totals
   const totalFreightEur = foreignFreightEur + domesticFreightEur;
@@ -223,7 +226,7 @@ export default function TruckCustomsDetail({ truck, onBack, onUpdated }) {
         <tr><td>Számla összege (${truck.incoterms_type || "FCA"})</td><td class="right">${invoiceEur.toFixed(2)}</td><td class="right">${invoiceHuf.toLocaleString("hu-HU", {maximumFractionDigits:0})}</td></tr>
         <tr><td>Fuvar – külföldi szakasz</td><td class="right">${foreignFreightEur}</td><td class="right">${foreignFreightHuf.toLocaleString("hu-HU", {maximumFractionDigits:0})}</td></tr>
         <tr><td>Fuvar – belföldi szakasz</td><td class="right">${domesticFreightEur}</td><td class="right">${domesticFreightHuf.toLocaleString("hu-HU", {maximumFractionDigits:0})}</td></tr>
-        <tr><td>Vámügynöki díj</td><td class="right">${customsAgentFeeEur}</td><td class="right">${customsAgentFeeHuf.toLocaleString("hu-HU", {maximumFractionDigits:0})}</td></tr>
+        <tr><td>Vámügynöki díj (${customsFeeCurrency}/kamion)</td><td class="right">${customsAgentFeeEur.toFixed(2)}</td><td class="right">${customsAgentFeeHuf.toLocaleString("hu-HU", {maximumFractionDigits:0})}</td></tr>
       </tbody>
       <tfoot>
         <tr class="total-row"><td>VÉGÖSSZEG / TOTAL BASE</td><td class="right">${(invoiceEur + totalFreightEur + customsAgentFeeEur).toFixed(2)}</td><td class="right">${totalBase.toLocaleString("hu-HU", {maximumFractionDigits:0})} HUF</td></tr>
@@ -438,7 +441,7 @@ export default function TruckCustomsDetail({ truck, onBack, onUpdated }) {
             </div>
             <div>
               <p className="text-xs text-slate-400">Vámügynöki díj</p>
-              <p className="text-sm font-semibold text-slate-800">{customsAgentFeeEur ? `${customsAgentFeeEur} EUR` : "—"}</p>
+              <p className="text-sm font-semibold text-slate-800">{customsAgentFeeRaw ? `${customsAgentFeeRaw} ${customsFeeCurrency}` : "—"}</p>
             </div>
             <div className="pt-2 border-t border-blue-200 bg-blue-50 -mx-3 px-3 py-2 rounded">
               <p className="text-xs text-slate-500">Belföldi + vámkezelés</p>
@@ -661,7 +664,7 @@ export default function TruckCustomsDetail({ truck, onBack, onUpdated }) {
           <div className="flex items-center justify-between py-2 border-b border-slate-100">
             <div>
               <span className="font-medium text-slate-700">Vám (vámügynöki díj)</span>
-              <span className="text-slate-400 ml-2 text-xs">{customsAgentFeeEur} EUR</span>
+              <span className="text-slate-400 ml-2 text-xs">{customsAgentFeeRaw} {customsFeeCurrency}</span>
             </div>
             <div className="font-semibold text-slate-700">{fmt(customsAgentFeeHuf, 0)} HUF</div>
           </div>

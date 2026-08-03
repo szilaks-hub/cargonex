@@ -37,7 +37,7 @@ export default function TruckForm({ item, onClose, onSaved, defaultOrderbookId, 
       freight_domestic_leg_snapshot: "", freight_foreign_leg_snapshot: "",
       freight_total_snapshot: "", freight_eur_per_ton_snapshot: "",
       orderbook_id: defaultOrderbookId || "", orderbook_no: defaultOrderNo || "",
-      customs_agent_id: "", customs_agent_name: "", customs_agent_fee: "",
+      customs_agent_id: "", customs_agent_name: "", customs_agent_fee: "", customs_agent_fee_currency: "EUR",
       purchase_price: "", hs_code: "",
       transit: false,
       status: "booked",
@@ -86,7 +86,10 @@ export default function TruckForm({ item, onClose, onSaved, defaultOrderbookId, 
       if (ob.customs_required && ob.customs_agent_id && !form.customs_agent_id) {
         updates.customs_agent_id = ob.customs_agent_id;
         updates.customs_agent_name = ob.customs_agent_name || "";
-        if (ob.customs_fee_eur_per_truck) updates.customs_agent_fee = ob.customs_fee_eur_per_truck;
+        if (ob.customs_fee_eur_per_truck) {
+          updates.customs_agent_fee = ob.customs_fee_eur_per_truck;
+          updates.customs_agent_fee_currency = ob.customs_fee_currency || "EUR";
+        }
       }
       // Auto-fill destination country (use first country from list, or legacy)
       const firstCountry = ob.destination_countries?.[0] || ob.destination_country;
@@ -334,6 +337,7 @@ export default function TruckForm({ item, onClose, onSaved, defaultOrderbookId, 
                   set("customs_agent_name", o.customs_agent_name || "");
                   if (o.customs_fee_eur_per_truck) {
                     set("customs_agent_fee", o.customs_fee_eur_per_truck);
+                    set("customs_agent_fee_currency", o.customs_fee_currency || "EUR");
                   }
                 }
               }}>
@@ -688,8 +692,17 @@ export default function TruckForm({ item, onClose, onSaved, defaultOrderbookId, 
               </Select>
             </div>
             <div>
-              <Label className={lbl}>Vámügynöki díj (EUR)</Label>
-              <Input type="number" className={inp} value={form.customs_agent_fee} onChange={(e) => set("customs_agent_fee", e.target.value)} placeholder="Auto-kitöltés" />
+              <Label className={lbl}>Vámügynöki díj / kamion</Label>
+              <div className="flex gap-2">
+                <Input type="number" className={inp} value={form.customs_agent_fee} onChange={(e) => set("customs_agent_fee", e.target.value)} placeholder="Auto-kitöltés" />
+                <Select value={form.customs_agent_fee_currency || "EUR"} onValueChange={(v) => set("customs_agent_fee_currency", v)}>
+                  <SelectTrigger className={`${inp} w-24`}><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="EUR">EUR</SelectItem>
+                    <SelectItem value="HUF">HUF</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
             <div>
               <Label className={lbl}>Eladó számlaszáma</Label>
