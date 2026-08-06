@@ -18,8 +18,15 @@ export default function RevisionList() {
 
   const pending = amendmentTrucks.filter((t) => !t.mrn_number_2);
   const done = amendmentTrucks.filter((t) => t.mrn_number_2);
+  const flagged = amendmentTrucks.filter(
+    (t) => (t.mrn_number && t.mrn_number.includes("!")) || (t.mrn_number_2 && t.mrn_number_2.includes("!"))
+  );
 
-  const shown = filter === "pending" ? pending : filter === "done" ? done : amendmentTrucks;
+  const shown =
+    filter === "pending" ? pending
+    : filter === "done" ? done
+    : filter === "flagged" ? flagged
+    : amendmentTrucks;
 
   return (
     <div className="space-y-5">
@@ -52,6 +59,7 @@ export default function RevisionList() {
       <div className="flex gap-2">
         {[
           { key: "all", label: "Összes" },
+          { key: "flagged", label: `! Jelölt (${flagged.length})` },
           { key: "pending", label: `Várható (${pending.length})` },
           { key: "done", label: `Megérkezett (${done.length})` },
         ].map((f) => (
@@ -107,12 +115,12 @@ export default function RevisionList() {
                   <td className="px-3 py-2 text-slate-600 whitespace-nowrap">{t.actual_loading_date || t.loading_date || "—"}</td>
                   <td className="px-3 py-2 text-slate-700 max-w-[10rem] truncate">{t.carrier_name || "—"}</td>
                   <td className="px-3 py-2 text-slate-700 max-w-[10rem] truncate">{t.supplier_name || "—"}</td>
-                  <td className="px-3 py-2 font-mono font-semibold text-slate-800 whitespace-nowrap">{t.mrn_number || "—"}</td>
+                  <td className={`px-3 py-2 font-mono font-semibold whitespace-nowrap ${(t.mrn_number && t.mrn_number.includes("!")) ? "text-red-600 bg-red-50" : "text-slate-800"}`}>{t.mrn_number || "—"}</td>
                   <td className="px-3 py-2 text-slate-600 whitespace-nowrap">{t.mrn_date || "—"}</td>
                   <td className="px-3 py-2 text-amber-700 font-semibold whitespace-nowrap">
                     {t.amendment_requested_at ? new Date(t.amendment_requested_at).toLocaleDateString("hu-HU") : "—"}
                   </td>
-                  <td className={`px-3 py-2 font-mono font-semibold whitespace-nowrap ${has2 ? "text-green-700" : "text-slate-300"}`}>
+                  <td className={`px-3 py-2 font-mono font-semibold whitespace-nowrap ${has2 ? (t.mrn_number_2.includes("!") ? "text-red-600 bg-red-50" : "text-green-700") : "text-slate-300"}`}>
                     {t.mrn_number_2 || "—"}
                   </td>
                   <td className={`px-3 py-2 whitespace-nowrap ${has2 ? "text-green-700 font-semibold" : "text-slate-300"}`}>
