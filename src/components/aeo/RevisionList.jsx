@@ -6,7 +6,7 @@ import { AlertCircle, Clock, FileWarning } from "lucide-react";
 export default function RevisionList() {
   const { data: trucks = [] } = useQuery({
     queryKey: ["trucks"],
-    queryFn: () => base44.entities.Truck.list(),
+    queryFn: () => base44.entities.Truck.list("-created_date", 1000),
   });
 
   const [filter, setFilter] = useState("all"); // all | pending | done
