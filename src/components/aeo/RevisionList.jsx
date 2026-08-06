@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
-import { AlertCircle, Clock, FileWarning } from "lucide-react";
+import { AlertCircle, Clock, FileWarning, Printer } from "lucide-react";
 
 export default function RevisionList() {
   const { data: trucks = [] } = useQuery({
@@ -27,6 +27,98 @@ export default function RevisionList() {
     : filter === "done" ? done
     : filter === "flagged" ? flagged
     : amendmentTrucks;
+
+  const filterLabel =
+    filter === "pending" ? "2. MRN várható"
+    : filter === "done" ? "2. MRN megérkezett"
+    : filter === "flagged" ? "! jelölt MRN"
+    : "Összes";
+
+  const handlePrint = () => {
+    const now = new Date().toLocaleString("hu-HU");
+    const rows = shown.map((t, i) => {
+      const has2 = !!t.mrn_number_2;
+      const mrn1Flag = t.mrn_number && t.mrn_number.includes("!");
+      const mrn2Flag = has2 && t.mrn_number_2.includes("!");
+      return `<tr>
+        <td style="text-align:center">${i + 1}</td>
+        <td style="white-space:nowrap;font-weight:700">${t.truck_number || "—"}</td>
+        <td style="white-space:nowrap">${t.actual_loading_date || t.loading_date || "—"}</td>
+        <td>${t.carrier_name || "—"}</td>
+        <td>${t.supplier_name || "—"}</td>
+        <td style="font-family:monospace;font-weight:600${mrn1Flag ? ";color:#dc2626;background:#fef2f2" : ""}">${t.mrn_number || "—"}</td>
+        <td style="white-space:nowrap">${t.mrn_date || "—"}</td>
+        <td style="white-space:nowrap">${t.amendment_requested_at ? new Date(t.amendment_requested_at).toLocaleDateString("hu-HU") : "—"}</td>
+        <td style="font-family:monospace;font-weight:600${mrn2Flag ? ";color:#dc2626;background:#fef2f2" : has2 ? ";color:#16a34a" : ";color:#ccc"}">${t.mrn_number_2 || "—"}</td>
+        <td style="white-space:nowrap;${has2 ? "color:#16a34a;font-weight:600" : "color:#ccc"}">${t.mrn_date_2 || "—"}</td>
+        <td style="text-align:center">${has2 ? "✔ Megérkezett" : "⏳ Várható"}</td>
+      </tr>`;
+    }).join("");
+
+    const html = `<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="UTF-8">
+<title>Revízió lista — ${filterLabel}</title>
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: 'Inter', Arial, sans-serif; font-size: 11px; color: #0f172a; margin: 24px; }
+  h1 { font-size: 18px; margin: 0 0 4px; }
+  .meta { font-size: 10px; color: #64748b; margin-bottom: 16px; }
+  .summary { display: flex; gap: 12px; margin-bottom: 16px; }
+  .summary-card { border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 14px; }
+  .summary-card .label { font-size: 9px; color: #64748b; font-weight: 600; text-transform: uppercase; }
+  .summary-card .value { font-size: 20px; font-weight: 800; }
+  table { width: 100%; border-collapse: collapse; }
+  th { background: #1e293b; color: #fff; padding: 7px 8px; text-align: left; font-size: 9.5px; font-weight: 700; letter-spacing: 0.02em; }
+  td { padding: 5px 8px; border-bottom: 1px solid #e2e8f0; font-size: 10px; }
+  tr:nth-child(even) td { background: #f8fafc; }
+  .footer { margin-top: 20px; font-size: 9px; color: #94a3b8; text-align: center; }
+  @media print { body { margin: 12px; } .no-print { display: none; } }
+</style>
+</head>
+<body>
+  <h1>Revízió lista — ${filterLabel}</h1>
+  <div class="meta">CARGONEX · ${now} · ${shown.length} db tétel</div>
+  <div class="summary">
+    <div class="summary-card"><div class="label">Összes</div><div class="value">${amendmentTrucks.length}</div></div>
+    <div class="summary-card"><div class="label">Várható</div><div class="value">${pending.length}</div></div>
+    <div class="summary-card"><div class="label">Megérkezett</div><div class="value">${done.length}</div></div>
+    <div class="summary-card"><div class="label">! Jelölt</div><div class="value">${flagged.length}</div></div>
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Rendszám</th>
+        <th>Rakodás dátuma</th>
+        <th>Fuvarozó</th>
+        <th>Eladó</th>
+        <th>1. MRN szám</th>
+        <th>1. MRN dátum</th>
+        <th>Kérelem dátuma</th>
+        <th>2. MRN szám</th>
+        <th>2. MRN dátum</th>
+        <th style="text-align:center">Státusz</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${rows || '<tr><td colspan="11" style="text-align:center;padding:24px;color:#94a3b8">Nincs megjeleníthető tétel</td></tr>'}
+    </tbody>
+  </table>
+  <div class="footer">CARGONEX © 2026 — Revízió lista</div>
+  <div class="no-print" style="margin-top:16px;text-align:center">
+    <button onclick="window.print()" style="padding:8px 24px;font-size:12px;font-weight:600;background:#3B6CF4;color:#fff;border:none;border-radius:8px;cursor:pointer">Nyomtatás</button>
+  </div>
+</body>
+</html>`;
+
+    const win = window.open("", "_blank");
+    if (win) {
+      win.document.write(html);
+      win.document.close();
+    }
+  };
 
   return (
     <div className="space-y-5">
@@ -55,26 +147,34 @@ export default function RevisionList() {
         </div>
       </div>
 
-      {/* Filter buttons */}
-      <div className="flex gap-2">
-        {[
-          { key: "all", label: "Összes" },
-          { key: "flagged", label: `! Jelölt (${flagged.length})` },
-          { key: "pending", label: `Várható (${pending.length})` },
-          { key: "done", label: `Megérkezett (${done.length})` },
-        ].map((f) => (
-          <button
-            key={f.key}
-            onClick={() => setFilter(f.key)}
-            className={`px-4 py-2 text-sm font-semibold rounded-lg border transition-colors ${
-              filter === f.key
-                ? "bg-blue-600 text-white border-blue-600"
-                : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
-            }`}
-          >
-            {f.label}
-          </button>
-        ))}
+      {/* Filter buttons + print */}
+      <div className="flex gap-2 items-center justify-between flex-wrap">
+        <div className="flex gap-2">
+          {[
+            { key: "all", label: "Összes" },
+            { key: "flagged", label: `! Jelölt (${flagged.length})` },
+            { key: "pending", label: `Várható (${pending.length})` },
+            { key: "done", label: `Megérkezett (${done.length})` },
+          ].map((f) => (
+            <button
+              key={f.key}
+              onClick={() => setFilter(f.key)}
+              className={`px-4 py-2 text-sm font-semibold rounded-lg border transition-colors ${
+                filter === f.key
+                  ? "bg-blue-600 text-white border-blue-600"
+                  : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
+              }`}
+            >
+              {f.label}
+            </button>
+          ))}
+        </div>
+        <button
+          onClick={handlePrint}
+          className="flex items-center gap-1.5 px-3 py-2 text-sm font-semibold rounded-lg bg-slate-800 text-white hover:bg-slate-700 transition-colors"
+        >
+          <Printer className="w-4 h-4" /> Nyomtatás
+        </button>
       </div>
 
       {/* Table */}
