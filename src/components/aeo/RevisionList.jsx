@@ -11,8 +11,9 @@ export default function RevisionList() {
 
   const [filter, setFilter] = useState("all"); // all | pending | done
 
+  // Minden eshetőség: amendment_requested=true VAGY van már 2. MRN (mrn_number_2)
   const amendmentTrucks = trucks
-    .filter((t) => t.amendment_requested)
+    .filter((t) => t.amendment_requested || t.mrn_number_2)
     .sort((a, b) => (b.amendment_requested_at || "").localeCompare(a.amendment_requested_at || ""));
 
   const pending = amendmentTrucks.filter((t) => !t.mrn_number_2);
