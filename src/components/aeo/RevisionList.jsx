@@ -11,10 +11,10 @@ export default function RevisionList() {
 
   const [filter, setFilter] = useState("all"); // all | pending | done
 
-  // Minden eshetőség: amendment_requested=true VAGY van már 2. MRN (mrn_number_2)
+  // Minden MRN-es kamion: van mrn_number VAGY mrn_number_2 VAGY amendment_requested
   const amendmentTrucks = trucks
-    .filter((t) => t.amendment_requested || t.mrn_number_2)
-    .sort((a, b) => (b.amendment_requested_at || "").localeCompare(a.amendment_requested_at || ""));
+    .filter((t) => t.mrn_number || t.mrn_number_2 || t.amendment_requested)
+    .sort((a, b) => (b.mrn_date || b.loading_date || "").localeCompare(a.mrn_date || a.loading_date || ""));
 
   const pending = amendmentTrucks.filter((t) => !t.mrn_number_2);
   const done = amendmentTrucks.filter((t) => t.mrn_number_2);
