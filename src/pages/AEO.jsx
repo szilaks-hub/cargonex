@@ -4,7 +4,8 @@ import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { FileText, Printer, Shield, Upload, X } from "lucide-react";
+import { FileText, Printer, Shield, Upload, X, RotateCw } from "lucide-react";
+import RevisionList from "@/components/aeo/RevisionList";
 
 export default function AEO() {
   const [activeSection, setActiveSection] = useState("audit");
@@ -46,10 +47,22 @@ export default function AEO() {
           <Shield className="w-4 h-4" />
           MRN – Számla kimutatás
         </button>
+        <button
+          onClick={() => setActiveSection("revision")}
+          className={`flex items-center gap-2 px-4 py-2.5 text-sm font-semibold rounded-t-lg border-b-2 transition-colors ${
+            activeSection === "revision"
+              ? "border-blue-600 text-blue-700 bg-blue-50"
+              : "border-transparent text-slate-500 hover:text-slate-700"
+          }`}
+        >
+          <RotateCw className="w-4 h-4" />
+          Revízió
+        </button>
       </div>
 
       {activeSection === "audit" && <AuditJelentes />}
       {activeSection === "mrn" && <MrnSzamlaKimutatas />}
+      {activeSection === "revision" && <RevisionList />}
     </div>
   );
 }
