@@ -170,11 +170,8 @@ export default function TruckForm({ item, onClose, onSaved, defaultOrderbookId, 
     };
   });
 
-  // Filter: only show orderbooks with available capacity (or currently selected one for editing)
-  // RELAXED: Allow orderbooks with at least 0.01t remaining OR if it's currently selected
-  const availableOrderbooks = orderbooksWithCapacity.filter(ob => 
-    ob._remainingCapacity >= 0.01 || ob.id === form.orderbook_id
-  );
+  // Show ALL open orderbooks — capacity is shown as info, over-allocation is only a warning
+  const availableOrderbooks = orderbooksWithCapacity;
 
   const selectedOrderbook = orderbooksWithCapacity.find(o => o.id === form.orderbook_id);
 
@@ -215,6 +212,18 @@ export default function TruckForm({ item, onClose, onSaved, defaultOrderbookId, 
     // Validate required fields
     if (!finalLoadingDate) {
       toast.error('⚠️ Tervezett rakodási dátum kötelező!');
+      return;
+    }
+    if (!form.carrier_id) {
+      toast.error('⚠️ Fuvarozó kiválasztása kötelező!');
+      return;
+    }
+    if (!form.destination_country) {
+      toast.error('⚠️ Célország kiválasztása kötelező!');
+      return;
+    }
+    if (!form.planned_quantity_tons || parseFloat(form.planned_quantity_tons) <= 0) {
+      toast.error('⚠️ Tervezett súly megadása kötelező!');
       return;
     }
 
