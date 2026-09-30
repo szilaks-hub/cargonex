@@ -44,42 +44,43 @@ Deno.serve(async (req) => {
       // Determine which categories this truck covers
       let categoryTons = []; // [{category_id, tons}]
 
+      const truckPlannedTons = Number(t.planned_quantity_tons) || 0;
+      const truckActualTons = Number(t.actual_weight_tons) || 0;
+
       if (t.items && t.items.length > 0) {
         for (const item of t.items) {
           const catId = item.category_id || item._category_id || (item.product_id ? resolveCategoryId(item.product_id) : null);
           if (catId) {
-            // Support both quantity_tons and planned_quantity_tons
-            const tons = item.quantity_tons || item.planned_quantity_tons || 0;
+            // Support both quantity_tons and planned_quantity_tons — always coerce to number
+            const tons = Number(item.quantity_tons || item.planned_quantity_tons || 0);
             categoryTons.push({ category_id: catId, tons });
           }
         }
         // If items have no categories, fallback to truck-level
         if (categoryTons.length === 0 && t.product_id) {
           const catId = resolveCategoryId(t.product_id);
-          if (catId) categoryTons.push({ category_id: catId, tons: t.planned_quantity_tons || 0 });
+          if (catId) categoryTons.push({ category_id: catId, tons: truckPlannedTons });
         }
       } else if (t.product_id) {
         const catId = resolveCategoryId(t.product_id);
-        if (catId) categoryTons.push({ category_id: catId, tons: t.planned_quantity_tons || 0 });
+        if (catId) categoryTons.push({ category_id: catId, tons: truckPlannedTons });
       } else {
         // No product info: allocate to first line category if only 1 line
         if (lines.length === 1) {
-          categoryTons.push({ category_id: lines[0].category_id, tons: t.planned_quantity_tons || 0 });
+          categoryTons.push({ category_id: lines[0].category_id, tons: truckPlannedTons });
         }
       }
 
       for (const { category_id, tons } of categoryTons) {
         // Use actual_weight_tons for loaded/closed trucks, planned for booked
-        const effectiveTons = (t.status === 'loaded' || t.status === 'closed') && t.actual_weight_tons
-          ? (t.actual_weight_tons / (t.planned_quantity_tons || 1)) * tons
+        const effectiveTons = (t.status === 'loaded' || t.status === 'closed') && truckActualTons
+          ? (truckActualTons / (truckPlannedTons || 1)) * tons
           : tons;
         
         categoryAllocated[category_id] = (categoryAllocated[category_id] || 0) + effectiveTons;
 
         if (t.status === 'closed') {
-          const actualTons = t.actual_weight_tons || t.planned_quantity_tons || 0;
-          // Ratio of actual vs planned for this truck
-          const ratio = (t.planned_quantity_tons || 0) > 0 ? (actualTons / t.planned_quantity_tons) : 1;
+          const ratio = truckPlannedTons > 0 ? (truckActualTons || truckPlannedTons) / truckPlannedTons : 1;
           const deliveredForCat = tons * ratio;
           categoryDelivered[category_id] = (categoryDelivered[category_id] || 0) + deliveredForCat;
         }

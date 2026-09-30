@@ -455,20 +455,20 @@ function OrderbooksList({ orders, lines, trucks = [], onSelect, onDelete, isClos
           <tbody>
             {displayOrders.map((order, idx) => {
               const orderLines = lines.filter(l => l.orderbook_id === order.id);
-              const plannedTons = orderLines.reduce((s, l) => s + (l.planned_quantity_tons || 0), 0);
-              const allocatedTons = orderLines.reduce((s, l) => s + (l.allocated_quantity_tons || 0), 0);
-              const valueEUR = orderLines.reduce((s, l) => s + (l.line_value_eur || 0), 0);
+              const plannedTons = orderLines.reduce((s, l) => s + (Number(l.planned_quantity_tons) || 0), 0);
+              const allocatedTons = orderLines.reduce((s, l) => s + (Number(l.allocated_quantity_tons) || 0), 0);
+              const valueEUR = orderLines.reduce((s, l) => s + (Number(l.line_value_eur) || 0), 0);
               const isExpanded = expandedId === order.id;
               const orderTrucksAll = trucks.filter(t => t.orderbook_id === order.id && t.status !== 'cancelled');
               const megrakottTons = orderTrucksAll
                 .filter(t => ['loaded', 'finance_control', 'closed'].includes(t.status))
-                .reduce((s, t) => s + (t.actual_weight_tons || t.planned_quantity_tons || 0), 0);
+                .reduce((s, t) => s + (Number(t.actual_weight_tons) || Number(t.planned_quantity_tons) || 0), 0);
               const tervezettTons = orderTrucksAll
                 .filter(t => t.status === 'booked')
-                .reduce((s, t) => s + (t.planned_quantity_tons || 0), 0);
+                .reduce((s, t) => s + (Number(t.planned_quantity_tons) || 0), 0);
               const felrakhatoTons = Math.max(0, plannedTons - megrakottTons - tervezettTons);
               const remainingTons = plannedTons - allocatedTons;
-              const allocPct = plannedTons > 0 ? Math.round((allocatedTons / plannedTons) * 100) : 0;
+              const allocPct = plannedTons > 0 ? Math.min(100, Math.round((allocatedTons / plannedTons) * 100)) : 0;
               const colorDef = ROW_COLORS.find(r => r.key === order.row_color) || ROW_COLORS[0];
               const isDragging = dragIdx === idx;
               const isDragOver = dragOverIdx === idx;
@@ -552,10 +552,12 @@ function OrderbooksList({ orders, lines, trucks = [], onSelect, onDelete, isClos
                          <div className="space-y-2">
                            <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Termékkörök összesítése</div>
                            {orderLines.map(line => {
-                            const pct = line.planned_quantity_tons > 0
-                              ? Math.round(((line.allocated_quantity_tons || 0) / line.planned_quantity_tons) * 100)
+                            const linePlanned = Number(line.planned_quantity_tons) || 0;
+                            const lineAllocated = Number(line.allocated_quantity_tons) || 0;
+                            const pct = linePlanned > 0
+                              ? Math.min(100, Math.round((lineAllocated / linePlanned) * 100))
                               : 0;
-                            const remaining = (line.planned_quantity_tons || 0) - (line.allocated_quantity_tons || 0);
+                            const remaining = linePlanned - lineAllocated;
                             return (
                               <div key={line.id} className="flex items-center gap-3">
                                 <div className="w-36 text-sm font-medium text-slate-700 truncate">{line.category_name || '\u2014'}</div>
@@ -564,21 +566,21 @@ function OrderbooksList({ orders, lines, trucks = [], onSelect, onDelete, isClos
                                     <div className="h-2 flex-1 bg-slate-200 rounded-full overflow-hidden">
                                       <div
                                         className={`h-full rounded-full transition-all ${pct >= 100 ? 'bg-emerald-500' : pct >= 50 ? 'bg-blue-500' : 'bg-amber-400'}`}
-                                        style={{ width: `${Math.min(pct, 100)}%` }}
+                                        style={{ width: `${pct}%` }}
                                       />
                                     </div>
                                     <span className={`text-xs font-bold w-10 text-right ${pct >= 100 ? 'text-emerald-600' : pct >= 50 ? 'text-blue-600' : 'text-amber-600'}`}>{pct}%</span>
                                   </div>
                                   <div className="text-xs text-slate-500">
-                                    <span className="font-medium text-blue-700">{(line.allocated_quantity_tons || 0).toFixed(2)} t</span>
+                                    <span className="font-medium text-blue-700">{lineAllocated.toLocaleString("hu-HU", {maximumFractionDigits: 2})} t</span>
                                     {' / '}
-                                    <span>{(line.planned_quantity_tons || 0).toLocaleString("hu-HU", {maximumFractionDigits: 2})} t tervezett</span>
+                                    <span>{linePlanned.toLocaleString("hu-HU", {maximumFractionDigits: 2})} t tervezett</span>
                                       {remaining > 0.01 && <span className="ml-2 text-amber-600">&middot; {remaining.toLocaleString("hu-HU", {maximumFractionDigits: 2})} t szabad</span>}
                                     {remaining <= 0 && remaining > -0.01 && <span className="ml-2 text-emerald-600">&middot; Teljes</span>}
                                   </div>
                                 </div>
                                 <div className="text-right text-xs text-slate-500 w-24">
-                                  {(line.unit_price_eur_per_ton || 0).toFixed(2)} EUR/t
+                                  {(Number(line.unit_price_eur_per_ton) || 0).toFixed(2)} EUR/t
                                 </div>
                               </div>
                             );
@@ -590,7 +592,7 @@ function OrderbooksList({ orders, lines, trucks = [], onSelect, onDelete, isClos
                                 <div className="h-2 flex-1 bg-slate-200 rounded-full overflow-hidden">
                                   <div
                                     className={`h-full rounded-full ${allocPct >= 100 ? 'bg-emerald-500' : allocPct >= 50 ? 'bg-blue-500' : 'bg-amber-400'}`}
-                                    style={{ width: `${Math.min(allocPct, 100)}%` }}
+                                    style={{ width: `${allocPct}%` }}
                                   />
                                 </div>
                                 <span className={`text-xs font-bold w-10 text-right ${allocPct >= 100 ? 'text-emerald-600' : allocPct >= 50 ? 'text-blue-600' : 'text-amber-600'}`}>{allocPct}%</span>
