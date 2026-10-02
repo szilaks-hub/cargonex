@@ -47,7 +47,6 @@ export default function OrderbooksPage() {
   const { data: trucks = [] } = useQuery({
     queryKey: ['trucks'],
     queryFn: () => base44.entities.Truck.list(),
-    refetchInterval: 2000, // Auto-refresh trucks for real-time allocation updates
   });
 
   const allSuppliers = [...new Set(orders.filter(o => o.supplier_id).map(o => ({ id: o.supplier_id, name: o.supplier_name })))];
