@@ -68,7 +68,6 @@ export default function TruckForm({ item, onClose, onSaved, defaultOrderbookId, 
   const { data: existingTrucks = [] } = useQuery({
     queryKey: ["all-trucks-for-capacity"],
     queryFn: () => base44.entities.Truck.list(),
-    refetchInterval: 2000, // Refetch every 2 seconds for real-time capacity updates
   });
 
   const carriers = partners.filter((p) => (p.roles || []).includes("carrier"));
@@ -235,47 +234,61 @@ export default function TruckForm({ item, onClose, onSaved, defaultOrderbookId, 
     }
     setSaving(true);
     
-    // Denormalize supplier data from orderbook for Finance/Customs
-    const supplier_name = selectedOrderbook?.supplier_name || "";
-    const supplier_site_name = selectedOrderbook?.supplier_site_name || "";
-    const origin_country = locations.find(s => s.id === selectedOrderbook?.supplier_site_id)?.country || "";
-    
-    const data = {
-      ...form,
-      loading_date: finalLoadingDate,
-      planned_quantity_tons: Number(form.planned_quantity_tons) || 0,
-      actual_weight_tons: Number(form.actual_weight_tons) || 0,
-      freight_domestic_leg_snapshot: Number(form.freight_domestic_leg_snapshot) || 0,
-      freight_foreign_leg_snapshot: Number(form.freight_foreign_leg_snapshot) || 0,
-      freight_total_snapshot: Number(form.freight_total_snapshot) || 0,
-      freight_eur_per_ton_snapshot: Number(form.freight_eur_per_ton_snapshot) || 0,
-      customs_agent_fee: Number(form.customs_agent_fee) || 0,
-      purchase_price: Number(form.purchase_price) || 0,
-      supplier_name,
-      supplier_site_name,
-      origin_country,
-    };
-    if (item?.id) await base44.entities.Truck.update(item.id, data);
-    else await base44.entities.Truck.create(data);
-    
-    // Manually trigger sync so orderbook lines update IMMEDIATELY
     try {
-      await base44.functions.invoke('syncOrderbookAllocations', {
-        event: { type: item?.id ? 'update' : 'create' },
-        data: { ...data, id: item?.id, orderbook_id: form.orderbook_id }
-      });
+      // Denormalize supplier data from orderbook for Finance/Customs
+      const supplier_name = selectedOrderbook?.supplier_name || "";
+      const supplier_site_name = selectedOrderbook?.supplier_site_name || "";
+      const origin_country = locations.find(s => s.id === selectedOrderbook?.supplier_site_id)?.country || "";
+      
+      const data = {
+        ...form,
+        loading_date: finalLoadingDate,
+        planned_quantity_tons: Number(form.planned_quantity_tons) || 0,
+        actual_weight_tons: Number(form.actual_weight_tons) || 0,
+        freight_domestic_leg_snapshot: Number(form.freight_domestic_leg_snapshot) || 0,
+        freight_foreign_leg_snapshot: Number(form.freight_foreign_leg_snapshot) || 0,
+        freight_total_snapshot: Number(form.freight_total_snapshot) || 0,
+        freight_eur_per_ton_snapshot: Number(form.freight_eur_per_ton_snapshot) || 0,
+        customs_agent_fee: Number(form.customs_agent_fee) || 0,
+        purchase_price: Number(form.purchase_price) || 0,
+        supplier_name,
+        supplier_site_name,
+        origin_country,
+      };
+      // Clean up empty strings for number/date fields — empty strings fail server validation
+      const cleanData = { ...data };
+      const dateFields = ['loading_date', 'expected_loading_date', 'actual_loading_date', 'mrn_date', 'mrn_date_2', 'closed_date'];
+      const numberFields = ['planned_quantity_tons', 'actual_weight_tons', 'freight_domestic_leg_snapshot', 'freight_foreign_leg_snapshot', 'freight_total_snapshot', 'freight_eur_per_ton_snapshot', 'freight_load_tons_snapshot', 'customs_agent_fee', 'purchase_price', 'avg_price', 'exchange_rate', 'goods_value', 'calculated_customs_value', 'calculated_vat', 'mrn_declared_amount', 'declared_vat', 'total_base'];
+      for (const f of [...dateFields, ...numberFields]) {
+        if (cleanData[f] === "" || cleanData[f] === null) delete cleanData[f];
+      }
+
+      if (item?.id) await base44.entities.Truck.update(item.id, cleanData);
+      else await base44.entities.Truck.create(cleanData);
+      
+      // Manually trigger sync so orderbook lines update IMMEDIATELY
+      try {
+        await base44.functions.invoke('syncOrderbookAllocations', {
+          event: { type: item?.id ? 'update' : 'create' },
+          data: { ...cleanData, id: item?.id, orderbook_id: form.orderbook_id }
+        });
+      } catch (err) {
+        console.warn('Sync failed:', err);
+      }
+      
+      // Invalidate queries - including orderbook data so capacity updates immediately
+      queryClient.invalidateQueries({ queryKey: ["trucks"] });
+      queryClient.invalidateQueries({ queryKey: ["all-trucks-for-capacity"] });
+      queryClient.invalidateQueries({ queryKey: ["orderbook-lines"] });
+      queryClient.invalidateQueries({ queryKey: ["orderbooks"] });
+      
+      onSaved();
     } catch (err) {
-      console.warn('Sync failed:', err);
+      console.error('Save failed:', err);
+      toast.error(`❌ Mentés sikertelen: ${err.message || 'Ismeretlen hiba'}`);
+    } finally {
+      setSaving(false);
     }
-    
-    // Invalidate queries - including orderbook data so capacity updates immediately
-    queryClient.invalidateQueries({ queryKey: ["trucks"] });
-    queryClient.invalidateQueries({ queryKey: ["all-trucks-for-capacity"] });
-    queryClient.invalidateQueries({ queryKey: ["orderbook-lines"] });
-    queryClient.invalidateQueries({ queryKey: ["orderbooks"] });
-    
-    setSaving(false);
-    onSaved();
   };
 
   const handleDelete = async () => {
